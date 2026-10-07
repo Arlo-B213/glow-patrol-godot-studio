@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Costume detail pass for the idol hunter outfits (Story 032): shoulder caps, collars,
 ## skirt/coat flare, pockets, trims, embroidery, chains and a cel sheen drawn after the base
 ## garment of hunter_outfits.gd / hunter_outfits_b.gd. Figure units, same origin and scale as
@@ -50,7 +51,7 @@ static func front(ci: CanvasItem, style: String, o: Vector2, s: float, outfit: C
 			for row in range(2):
 				for i in range(8):
 					var cx: float = -30.0 + float(i) * 8.6 + (4.3 if row == 1 else 0.0) + sw
-					ci.draw_arc(o + Vector2(cx, -15.0 + float(row) * 5.0) * s, 4.4 * s, PI, TAU, 8, K.c(gold, 0.85), maxf(1.0, 0.9 * s))
+					FD.arc(ci, o + Vector2(cx, -15.0 + float(row) * 5.0) * s, 4.4 * s, PI, TAU, 8, K.c(gold, 0.85), maxf(1.0, 0.9 * s))
 			K.ln(ci, o, s, Vector2(-9, -53.5), Vector2(0, -50), K.c(lt, 0.8), 1.2)
 			K.ln(ci, o, s, Vector2(9, -53.5), Vector2(0, -50), K.c(lt, 0.8), 1.2)
 		"hanbok":
@@ -72,7 +73,7 @@ static func front(ci: CanvasItem, style: String, o: Vector2, s: float, outfit: C
 			for i in range(7):
 				var t: float = float(i) / 6.0
 				chain.append(o + Vector2(lerpf(-8.0, 8.0, t), -36.0 + sin(t * PI) * 4.0) * s)
-			ci.draw_polyline(chain, gold, maxf(1.0, 0.9 * s))
+			FD.polyline(ci, chain, gold, maxf(1.0, 0.9 * s))
 			K.part(ci, o, s, K.ell(Vector2(0, -53), 9.5, 3.4), dk)
 		"cape":
 			for i in range(11):
@@ -83,7 +84,7 @@ static func front(ci: CanvasItem, style: String, o: Vector2, s: float, outfit: C
 			for i in range(9):
 				var t: float = float(i) / 8.0
 				ch.append(o + Vector2(lerpf(-24.0, 24.0, t), -50.0 + sin(t * PI) * 7.0) * s)
-			ci.draw_polyline(ch, gold, maxf(1.0, 1.1 * s))
+			FD.polyline(ci, ch, gold, maxf(1.0, 1.1 * s))
 			for x in [-30.0, -16.0, 16.0, 30.0]:
 				K.dot(ci, o, s, Vector2(x * 1.15 + sw, -12.0), 1.4, gold)
 		"galaxy":

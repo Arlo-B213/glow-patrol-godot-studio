@@ -1,5 +1,6 @@
 class_name DailyPopup
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## "Daily Glow Bonus!" card (Story 022): streak flames, the star bonus and a Claim button.
 ## The bonus is paid by DailyRewards.claim, which cannot pay twice on one date.
 
@@ -31,11 +32,11 @@ class FlameRow extends Control:
 				c + Vector2(h * 0.7, h * 0.35), c + Vector2(h * 0.35, h * 0.85),
 				c + Vector2(-h * 0.35, h * 0.85), c + Vector2(-h * 0.7, h * 0.35),
 				c + Vector2(-h * 0.5, -h * 0.25), c + Vector2(-h * 0.15, -h * 0.05)])
-			draw_colored_polygon(pts, col.darkened(0.15) if on else col.darkened(0.4))
+			FD.poly(self, pts, col.darkened(0.15) if on else col.darkened(0.4))
 			if on:
 				var inner := PackedVector2Array([c + Vector2(0, -h * 0.2), c + Vector2(h * 0.35, h * 0.35),
 					c + Vector2(h * 0.2, h * 0.7), c + Vector2(-h * 0.2, h * 0.7), c + Vector2(-h * 0.35, h * 0.35)])
-				draw_colored_polygon(inner, Color("#FFF1B8"))
+				FD.poly(self, inner, Color("#FFF1B8"))
 
 
 ## Builds the popup for `game_state` and a pending bonus from DailyRewards.pending().

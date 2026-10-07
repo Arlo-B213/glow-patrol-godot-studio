@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Alley Brawl HUD (Story 025), code-drawn in the shared UiTheme style: hearts (UiIcons "heart")
 ## with the guard meter under them at top-left, a world minimap in the centre (districts, encounter
 ## zones, boss crown, hunter dot) and score + wave pills on the right. Also draws the pulsing
@@ -125,18 +126,18 @@ func _draw_minimap(u: float, m: float) -> void:
 			_crown(zc, 9.0 * u, UiTheme.GOLD if not boss_active else UiTheme.ACCENT)
 		else:
 			var done: bool = i < zones_cleared
-			draw_circle(zc, 5.5 * u, UiTheme.GOLD if done else Color(UiTheme.TEXT, 0.85))
-			draw_arc(zc, 5.5 * u, 0.0, TAU, 14, UiTheme.BG, 1.5 * u, true)
+			FD.circle(self, zc, 5.5 * u, UiTheme.GOLD if done else Color(UiTheme.TEXT, 0.85))
+			FD.arc(self, zc, 5.5 * u, 0.0, TAU, 14, UiTheme.BG, 1.5 * u, true)
 	var hx: float = track.position.x + track.size.x * clampf(progress, 0.0, 1.0)
 	var hc := Vector2(hx, track.position.y + track.size.y * 0.5)
-	draw_circle(hc, 7.5 * u, UiTheme.ACCENT)
-	draw_arc(hc, 7.5 * u, 0.0, TAU, 16, Color.WHITE, 2.0 * u, true)
+	FD.circle(self, hc, 7.5 * u, UiTheme.ACCENT)
+	FD.arc(self, hc, 7.5 * u, 0.0, TAU, 16, Color.WHITE, 2.0 * u, true)
 	if district_name != "":
 		draw_string(ThemeDB.fallback_font, Vector2(track.position.x, track.end.y + 18.0 * u), district_name, HORIZONTAL_ALIGNMENT_CENTER, track.size.x, int(12.0 * u), Color(UiTheme.TEXT, 0.75))
 
 
 func _crown(c: Vector2, r: float, col: Color) -> void:
-	draw_colored_polygon(PackedVector2Array([c + Vector2(-r, r * 0.7), c + Vector2(-r, -r * 0.6), c + Vector2(-r * 0.45, 0.0),
+	FD.poly(self, PackedVector2Array([c + Vector2(-r, r * 0.7), c + Vector2(-r, -r * 0.6), c + Vector2(-r * 0.45, 0.0),
 		c + Vector2(0.0, -r * 0.9), c + Vector2(r * 0.45, 0.0), c + Vector2(r, -r * 0.6), c + Vector2(r, r * 0.7)]), col)
 
 

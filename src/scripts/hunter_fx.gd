@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Glow effects for the idol hunter (Story 032): soft aura, rim-light strokes, four-point
 ## sparkles, the fever ring and weapon light trails. Pure drawing helpers; every polygon is
 ## simple. Call from a CanvasItem's _draw().
@@ -11,13 +12,13 @@ static func aura(ci: CanvasItem, c: Vector2, rx: float, ry: float, col: Color, a
 	for i in range(4):
 		var f: float = float(i) / 3.0
 		var a: float = (0.05 + 0.035 * f) * strength * alpha
-		ci.draw_colored_polygon(Shade.ellipse(c, rx * pulse * (1.0 - 0.22 * f), ry * pulse * (1.0 - 0.22 * f), 20), Color(col.r, col.g, col.b, a))
+		FD.ellipse(ci, c, rx * pulse * (1.0 - 0.22 * f), ry * pulse * (1.0 - 0.22 * f), Color(col.r, col.g, col.b, a))
 
 
 ## Four-point sparkle star (simple polygon) of radius `r` at `p`.
 static func sparkle(ci: CanvasItem, p: Vector2, r: float, col: Color) -> void:
 	var q: float = r * 0.24
-	ci.draw_colored_polygon(PackedVector2Array([p + Vector2(0, -r), p + Vector2(q, -q), p + Vector2(r, 0), p + Vector2(q, q),
+	FD.poly(ci, PackedVector2Array([p + Vector2(0, -r), p + Vector2(q, -q), p + Vector2(r, 0), p + Vector2(q, q),
 		p + Vector2(0, r), p + Vector2(-q, q), p + Vector2(-r, 0), p + Vector2(-q, -q)]), col)
 
 
@@ -33,7 +34,7 @@ static func fever(ci: CanvasItem, c: Vector2, rx: float, ry: float, glow: Color,
 	for j in range(5):
 		var ph: float = fposmod(t * 0.55 + float(j) * 0.2, 1.0)
 		var sx: float = c.x + (float(j) - 2.0) * rx * 0.34 + sin(t * 2.0 + float(j)) * 3.0 * unit
-		ci.draw_circle(Vector2(sx, c.y + ry * 0.9 - ph * ry * 1.8), (1.0 + float(j % 2)) * unit, Shade.fade(Shade.lighten(glow, 0.7), (1.0 - ph) * 0.8 * alpha))
+		FD.circle(ci, Vector2(sx, c.y + ry * 0.9 - ph * ry * 1.8), (1.0 + float(j % 2)) * unit, Shade.fade(Shade.lighten(glow, 0.7), (1.0 - ph) * 0.8 * alpha))
 
 
 ## Light trail along `pts` (oldest first): tapering, fading strokes in `col`.

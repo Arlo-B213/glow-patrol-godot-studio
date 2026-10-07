@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Code-drawn art for Glow Bubbles (Story 028): glowing orbs with a colour-blind-friendly shape
 ## inside (heart, star, leaf, moon, bolt), plus rainbow and bomb specials. Circles and simple
 ## (non-self-crossing) polygons only.
@@ -57,10 +58,10 @@ static func draw_orb(ci: CanvasItem, c: Vector2, r: float, kind: int, t: float =
 		_bomb(ci, c, r, t, alpha)
 		return
 	var col: Color = COLORS[clampi(kind, 0, COLORS.size() - 1)]
-	ci.draw_circle(c, r * 1.12, Color(col, 0.16 * alpha))
-	ci.draw_circle(c, r * 0.94, Color(col.darkened(0.35), alpha))
-	ci.draw_circle(c + Vector2(0.0, -r * 0.04), r * 0.84, Color(col, alpha))
-	ci.draw_circle(c + Vector2(-r * 0.3, -r * 0.34), r * 0.2, Color(1, 1, 1, 0.42 * alpha))
+	FD.circle(ci, c, r * 1.12, Color(col, 0.16 * alpha))
+	FD.circle(ci, c, r * 0.94, Color(col.darkened(0.35), alpha))
+	FD.circle(ci, c + Vector2(0.0, -r * 0.04), r * 0.84, Color(col, alpha))
+	FD.circle(ci, c + Vector2(-r * 0.3, -r * 0.34), r * 0.2, Color(1, 1, 1, 0.42 * alpha))
 	_icon(ci, c + Vector2(0.0, r * 0.05), r * 0.5, ICONS[clampi(kind, 0, ICONS.size() - 1)], Color(1, 1, 1, 0.88 * alpha))
 
 
@@ -69,27 +70,27 @@ static func _icon(ci: CanvasItem, c: Vector2, s: float, icon: String, col: Color
 	var pts := PackedVector2Array()
 	for p in base:
 		pts.append(c + p * s)
-	ci.draw_colored_polygon(pts, col)
+	FD.poly(ci, pts, col)
 
 
 static func _rainbow(ci: CanvasItem, c: Vector2, r: float, t: float, alpha: float) -> void:
-	ci.draw_circle(c, r * 1.12, Color(1, 1, 1, 0.14 * alpha))
+	FD.circle(ci, c, r * 1.12, Color(1, 1, 1, 0.14 * alpha))
 	for i in 5:
 		var a0: float = t * 1.5 + float(i) * TAU / 5.0
-		ci.draw_arc(c, r * 0.62, a0, a0 + TAU / 5.0 + 0.04, 8, Color(COLORS[i], alpha), r * 0.62, true)
-	ci.draw_arc(c, r * 0.93, 0.0, TAU, 28, Color(1, 1, 1, 0.9 * alpha), 2.5, true)
-	ci.draw_circle(c, r * 0.22, Color(1, 1, 1, 0.9 * alpha))
+		FD.arc(ci, c, r * 0.62, a0, a0 + TAU / 5.0 + 0.04, 8, Color(COLORS[i], alpha), r * 0.62, true)
+	FD.arc(ci, c, r * 0.93, 0.0, TAU, 28, Color(1, 1, 1, 0.9 * alpha), 2.5, true)
+	FD.circle(ci, c, r * 0.22, Color(1, 1, 1, 0.9 * alpha))
 
 
 static func _bomb(ci: CanvasItem, c: Vector2, r: float, t: float, alpha: float) -> void:
-	ci.draw_circle(c, r * 1.12, Color(1.0, 0.45, 0.2, 0.18 * alpha))
-	ci.draw_circle(c, r * 0.94, Color("#1B1233", alpha))
-	ci.draw_circle(c, r * 0.8, Color("#3A2A66", alpha))
-	ci.draw_circle(c + Vector2(-r * 0.3, -r * 0.3), r * 0.18, Color(1, 1, 1, 0.35 * alpha))
-	ci.draw_arc(c, r * 0.94, 0.0, TAU, 28, Color("#FF9A4D", 0.9 * alpha), 2.5, true)
+	FD.circle(ci, c, r * 1.12, Color(1.0, 0.45, 0.2, 0.18 * alpha))
+	FD.circle(ci, c, r * 0.94, Color("#1B1233", alpha))
+	FD.circle(ci, c, r * 0.8, Color("#3A2A66", alpha))
+	FD.circle(ci, c + Vector2(-r * 0.3, -r * 0.3), r * 0.18, Color(1, 1, 1, 0.35 * alpha))
+	FD.arc(ci, c, r * 0.94, 0.0, TAU, 28, Color("#FF9A4D", 0.9 * alpha), 2.5, true)
 	var spark: float = 0.6 + 0.4 * sin(t * 14.0)
 	var tip: Vector2 = c + Vector2(r * 0.2, -r * 0.95)
 	ci.draw_line(c + Vector2(0.0, -r * 0.7), tip, Color("#FFC15E", alpha), 2.5)
-	ci.draw_circle(tip, r * 0.2 * spark + 2.0, Color("#FF5FA2", alpha))
-	ci.draw_circle(tip, r * 0.1, Color(1, 1, 1, alpha))
+	FD.circle(ci, tip, r * 0.2 * spark + 2.0, Color("#FF5FA2", alpha))
+	FD.circle(ci, tip, r * 0.1, Color(1, 1, 1, alpha))
 	_icon(ci, c + Vector2(0.0, r * 0.1), r * 0.36, "star", Color("#FFC15E", 0.9 * alpha))

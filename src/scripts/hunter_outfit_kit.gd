@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Drawing kit shared by the outfit files (Story 015): figure-unit polygons with a soft
 ## outline, two-tone shaded garment pieces, stitching and small bead / star / glint details.
 ## All functions draw onto a CanvasItem inside its _draw(). `o` = origin, `s` = scale.
@@ -30,7 +31,7 @@ static func pl(ci: CanvasItem, o: Vector2, s: float, pts, col: Color) -> void:
 
 ## Filled polygon, no outline.
 static func flat(ci: CanvasItem, o: Vector2, s: float, pts, col: Color) -> void:
-	ci.draw_colored_polygon(_pts(o, s, pts), col)
+	FD.poly(ci, _pts(o, s, pts), col)
 
 
 ## Big garment piece: outline, then a shadow crescent and a highlight (`light` -1 = from left).
@@ -59,13 +60,13 @@ static func stitch(ci: CanvasItem, o: Vector2, s: float, a: Vector2, b: Vector2,
 
 ## Plain dot.
 static func dot(ci: CanvasItem, o: Vector2, s: float, p: Vector2, r: float, col: Color) -> void:
-	ci.draw_circle(o + p * s, r * s, col)
+	FD.circle(ci, o + p * s, r * s, col)
 
 
 ## Button / rivet: outlined disc with a small highlight dot.
 static func bead(ci: CanvasItem, o: Vector2, s: float, p: Vector2, r: float, col: Color) -> void:
 	Shade.circle(ci, o + p * s, r * s, col, maxf(1.0, 0.7 * s), Shade.ink(col))
-	ci.draw_circle(o + (p + Vector2(-r * 0.3, -r * 0.3)) * s, maxf(0.6, r * 0.3 * s), Color(1, 1, 1, 0.75 * col.a))
+	FD.circle(ci, o + (p + Vector2(-r * 0.3, -r * 0.3)) * s, maxf(0.6, r * 0.3 * s), Color(1, 1, 1, 0.75 * col.a))
 
 
 ## Ellipse points in figure units.
@@ -117,4 +118,4 @@ static func sheen(ci: CanvasItem, o: Vector2, s: float, pts: Array, a: float) ->
 		var v: Vector2 = p
 		var t: float = clampf((v.y + 75.0) / 55.0 + (v.x + 28.0) / 140.0, 0.0, 1.0)
 		cols.append(Color(1, 1, 1, 0.2 * a * (1.0 - t)).lerp(Color(0.1, 0.04, 0.2, 0.28 * a), t))
-	ci.draw_polygon(poly, cols)
+	FD.gpoly(ci, poly, cols)

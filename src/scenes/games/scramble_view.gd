@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Word Scramble (Story 029): 8 grade-appropriate words per round. Letter tiles sit scrambled in a
 ## tray; tap a tile to send it to the next answer slot, tap a slot tile to return it, drag tiles, or
 ## type letters. Hint (reveals the next letter, -5 points), Shuffle, a gentle timer ring per word
@@ -490,7 +491,7 @@ func _draw_tile(i: int, t: float) -> void:
 		border = Color.WHITE
 		if not Kit.calm():
 			p.y -= absf(sin(t * 10.0 - float(i) * 0.7)) * 14.0 * _u * clampf(_state_t / CORRECT_TIME * 1.6, 0.0, 1.0)
-		draw_circle(p, _ts * 0.68, Color(UiTheme.GOLD, 0.22))
+		FD.circle(self, p, _ts * 0.68, Color(UiTheme.GOLD, 0.22))
 	elif state == State.WRONG and in_slot:
 		border = Color("#FF5F6D")
 		if not Kit.calm():

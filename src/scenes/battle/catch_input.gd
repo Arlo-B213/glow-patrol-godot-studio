@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Star Catch controls (Story 027): drag anywhere to steer (the hero eases toward the finger),
 ## or hold the two round left/right buttons, or use A/D / arrow keys. Covers the whole view but
 ## ignores the GUI mouse filter and reads raw input, so several fingers work at once. Pointers are
@@ -123,11 +124,11 @@ func _draw() -> void:
 		var down: bool = _held(role) or (role == "left" and Input.is_physical_key_pressed(KEY_A)) or (role == "right" and Input.is_physical_key_pressed(KEY_D))
 		var rr: float = r * (0.94 if down else 1.0)
 		var fill: Color = UiTheme.PANEL_LIGHT.lerp(Color.WHITE, 0.18) if down else UiTheme.PANEL_LIGHT
-		draw_circle(c + Vector2(0.0, 3.0 * _u), rr, Color(0, 0, 0, 0.35))
-		draw_circle(c, rr, Color(fill, 0.92))
-		draw_arc(c, rr - 2.0 * _u, 0.0, TAU, 36, Color(1, 1, 1, 0.5), 2.5 * _u, true)
+		FD.circle(self, c + Vector2(0.0, 3.0 * _u), rr, Color(0, 0, 0, 0.35))
+		FD.circle(self, c, rr, Color(fill, 0.92))
+		FD.arc(self, c, rr - 2.0 * _u, 0.0, TAU, 36, Color(1, 1, 1, 0.5), 2.5 * _u, true)
 		UiIcons.draw(self, "back" if role == "left" else "forward", Rect2(c - Vector2(rr, rr) * 0.55, Vector2(rr, rr) * 1.1), UiTheme.TEXT)
 	if _drag_id != -2:
 		var y: float = size.y - r * 2.0 - 40.0 * _u
-		draw_circle(Vector2(_drag_x, y), 20.0 * _u, Color(UiTheme.VIOLET, 0.35))
-		draw_arc(Vector2(_drag_x, y), 20.0 * _u, 0.0, TAU, 28, Color(UiTheme.TEXT, 0.6), 2.5 * _u, true)
+		FD.circle(self, Vector2(_drag_x, y), 20.0 * _u, Color(UiTheme.VIOLET, 0.35))
+		FD.arc(self, Vector2(_drag_x, y), 20.0 * _u, 0.0, TAU, 28, Color(UiTheme.TEXT, 0.6), 2.5 * _u, true)

@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Alley Brawl scenery (Story 025): sky, moon, far skyline (parallax 0.3), mid row of shopfronts or
 ## bridge water (parallax 0.6), the floor, then props (brawl_props.gd) and drifting fireflies.
 ## Everything is drawn in screen space from `cam_x` and culled to the visible range. `t` is
@@ -28,7 +29,7 @@ static func draw_back(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: flo
 	var pal: Dictionary = World.palette_at(cam_x + size.x * 0.5, size.x)
 	var top: Color = pal["sky_top"]
 	var bot: Color = pal["sky_bot"]
-	ci.draw_polygon(PackedVector2Array([Vector2(0, 0), Vector2(size.x, 0), Vector2(size.x, ground_y), Vector2(0, ground_y)]),
+	FD.gpoly(ci, PackedVector2Array([Vector2(0, 0), Vector2(size.x, 0), Vector2(size.x, ground_y), Vector2(0, ground_y)]),
 		PackedColorArray([top, top, bot, bot]))
 	_stars(ci, cam_x, size, ground_y, u, t)
 	_moon(ci, cam_x, size, ground_y, u, float(pal["moon"]))
@@ -46,18 +47,18 @@ static func _stars(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float,
 		var x: float = fposmod(hash01(i, 3) * size.x * 1.4 - cam_x * 0.05, size.x * 1.4) - size.x * 0.2
 		var y: float = ground_y * 0.08 + hash01(i, 4) * ground_y * 0.3
 		var tw: float = 0.55 + 0.35 * sin(t * 1.3 + float(i) * 2.1)
-		ci.draw_circle(Vector2(x, y), (1.4 + hash01(i, 5)) * u, Color(1.0, 0.97, 0.85, 0.5 * tw))
+		FD.circle(ci, Vector2(x, y), (1.4 + hash01(i, 5)) * u, Color(1.0, 0.97, 0.85, 0.5 * tw))
 
 
 static func _moon(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float, u: float, strength: float) -> void:
 	if strength < 0.02:
 		return
 	var c := Vector2(size.x * 0.74 - cam_x * 0.04, ground_y * 0.3)
-	ci.draw_circle(c, 78.0 * u, Color(0.75, 0.85, 1.0, 0.07 * strength))
-	ci.draw_circle(c, 56.0 * u, Color(0.8, 0.9, 1.0, 0.12 * strength))
-	ci.draw_circle(c, 40.0 * u, Color(0.93, 0.96, 1.0, 0.95 * strength))
-	ci.draw_circle(c + Vector2(-12.0, -8.0) * u, 8.0 * u, Color(0.78, 0.84, 0.95, 0.5 * strength))
-	ci.draw_circle(c + Vector2(14.0, 12.0) * u, 5.0 * u, Color(0.78, 0.84, 0.95, 0.5 * strength))
+	FD.circle(ci, c, 78.0 * u, Color(0.75, 0.85, 1.0, 0.07 * strength))
+	FD.circle(ci, c, 56.0 * u, Color(0.8, 0.9, 1.0, 0.12 * strength))
+	FD.circle(ci, c, 40.0 * u, Color(0.93, 0.96, 1.0, 0.95 * strength))
+	FD.circle(ci, c + Vector2(-12.0, -8.0) * u, 8.0 * u, Color(0.78, 0.84, 0.95, 0.5 * strength))
+	FD.circle(ci, c + Vector2(14.0, 12.0) * u, 5.0 * u, Color(0.78, 0.84, 0.95, 0.5 * strength))
 
 
 static func _skyline(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float, u: float, pal: Dictionary, t: float = 0.0) -> void:
@@ -119,15 +120,15 @@ static func _noodle_shop(ci: CanvasItem, x: float, slot: float, ground_y: float,
 	var wy: float = ground_y - 78.0 * u
 	ci.draw_rect(Rect2(x + 12.0 * u, wy, w - 24.0 * u, 52.0 * u), _c(warm, 0.78))
 	ci.draw_rect(Rect2(x + 12.0 * u, wy + 24.0 * u, w - 24.0 * u, 3.0 * u), _c(Color("#4A2238"), 0.7))
-	ci.draw_colored_polygon(PackedVector2Array([Vector2(x - 6.0 * u, wy), Vector2(x + w + 6.0 * u, wy), Vector2(x + w, wy - 18.0 * u), Vector2(x, wy - 18.0 * u)]), awn)
+	FD.poly(ci, PackedVector2Array([Vector2(x - 6.0 * u, wy), Vector2(x + w + 6.0 * u, wy), Vector2(x + w, wy - 18.0 * u), Vector2(x, wy - 18.0 * u)]), awn)
 	for s in 5:
 		if s % 2 == 0:
 			ci.draw_rect(Rect2(x + float(s) * (w / 5.0), wy - 18.0 * u, w / 5.0, 18.0 * u), _c(Color.WHITE, 0.22))
 	var sway: float = sin(t * 1.6 + float(i)) * 3.5 * u
 	var lx: float = x + w * (0.25 if hash01(i, 12) > 0.5 else 0.75)
 	ci.draw_line(Vector2(lx, wy), Vector2(lx + sway * 0.5, wy + 14.0 * u), Color("#3B2A2A"), 1.5 * u)
-	ci.draw_circle(Vector2(lx + sway, wy + 22.0 * u), 12.0 * u, _c(warm, 0.18))
-	ci.draw_circle(Vector2(lx + sway, wy + 22.0 * u), 7.0 * u, _c(awn, 0.95))
+	FD.circle(ci, Vector2(lx + sway, wy + 22.0 * u), 12.0 * u, _c(warm, 0.18))
+	FD.circle(ci, Vector2(lx + sway, wy + 22.0 * u), 7.0 * u, _c(awn, 0.95))
 	ci.draw_rect(Rect2(x + w * 0.2, top + 16.0 * u, w * 0.6, 14.0 * u), _c(awn, 0.85))
 	ci.draw_rect(Rect2(x + w * 0.2 + 4.0 * u, top + 20.0 * u, w * 0.6 - 8.0 * u, 6.0 * u), _c(Color("#FFF3D0"), 0.85))
 
@@ -147,7 +148,7 @@ static func _neon_shop(ci: CanvasItem, x: float, slot: float, ground_y: float, u
 	var zig := PackedVector2Array()
 	for k in 5:
 		zig.append(Vector2(sign_r.position.x + 12.0 * u + float(k) * (sign_r.size.x - 24.0 * u) / 4.0, sign_r.position.y + (10.0 if k % 2 == 0 else 24.0) * u))
-	ci.draw_polyline(zig, _c(teal if neon == pink else pink, 0.9 * flick), 2.5 * u)
+	FD.polyline(ci, zig, _c(teal if neon == pink else pink, 0.9 * flick), 2.5 * u)
 	for r in 2:
 		for c in 2:
 			if hash01(i * 5 + r * 2 + c, 15) > 0.35:
@@ -168,8 +169,8 @@ static func _bridge_bay(ci: CanvasItem, x: float, slot: float, ground_y: float, 
 		var lx: float = x + slot * 0.5
 		var sway: float = sin(t * 1.3 + float(i)) * 4.0 * u
 		ci.draw_line(Vector2(lx, ground_y - 170.0 * u), Vector2(lx + sway, ground_y - 138.0 * u), Color("#3B2A6B"), 2.0 * u)
-		ci.draw_circle(Vector2(lx + sway, ground_y - 126.0 * u), 22.0 * u, _c(pal["a"], 0.15))
-		ci.draw_circle(Vector2(lx + sway, ground_y - 126.0 * u), 12.0 * u, _c(pal["a"], 0.95))
+		FD.circle(ci, Vector2(lx + sway, ground_y - 126.0 * u), 22.0 * u, _c(pal["a"], 0.15))
+		FD.circle(ci, Vector2(lx + sway, ground_y - 126.0 * u), 12.0 * u, _c(pal["a"], 0.95))
 
 
 static func _floor(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float, u: float, pal: Dictionary) -> void:
@@ -197,5 +198,5 @@ static func draw_fore(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: flo
 		var a: float = 0.6 + 0.4 * sin(t * 2.2 + float(i) * 2.7)
 		var col: Color = pal["a"] if i % 2 == 0 else pal["b"]
 		FxLight.halo(ci, Vector2(x, y), 13.0 * u, col, 0.55 * a)
-		ci.draw_circle(Vector2(x, y), 2.4 * u, _c(Color.WHITE.lerp(col, 0.3), 0.9 * a))
+		FD.circle(ci, Vector2(x, y), 2.4 * u, _c(Color.WHITE.lerp(col, 0.3), 0.9 * a))
 	Env.fore_extras(ci, cam_x, size, ground_y, u, t, pal)

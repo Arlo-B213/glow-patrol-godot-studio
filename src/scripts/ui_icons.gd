@@ -1,5 +1,6 @@
 class_name UiIcons
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Code-drawn UI icon set (Story 011). Entry point is `UiIcons.draw()`.
 ## Shared language: bold fills, one stroke weight (UiIconKit.STROKE), round caps,
 ## the `tint` as the main colour with light/dark companions derived from it.
@@ -63,7 +64,7 @@ static func draw(ci: CanvasItem, icon: String, rect: Rect2, tint: Color) -> void
 		"motion_off": draw_motion(ci, sq, tint, false)
 		_:
 			push_warning("UiIcons: unknown icon '%s'" % icon)
-			ci.draw_circle(sq.get_center(), side * 0.4, tint)
+			FD.circle(ci, sq.get_center(), side * 0.4, tint)
 
 
 ## Motion toggle: sparkle (big four-point star plus small spark); crossed out when `on` is false.

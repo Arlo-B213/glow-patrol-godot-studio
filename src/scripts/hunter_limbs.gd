@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Legs, boots, arms and hands of the idol hunter (Story 015, upgraded in Story 032), both
 ## side-view and front. Limbs are tapered with elbows/knees, boots have cuffs, toe caps and glow
 ## piping, hands show fingers (relaxed) or a wrapped grip. Every function draws onto a CanvasItem
@@ -21,7 +22,7 @@ static func leg_side(ci: CanvasItem, hip: Vector2, foot: Vector2, u: float, alph
 	var ankle: Vector2 = foot - Vector2(0.0, 1.0) * u
 	Shade.taper(ci, hip, knee, 10.5 * u, 8.6 * u, col, ow, -1.0, rim)
 	Shade.taper(ci, knee, ankle, 8.6 * u, 7.0 * u, col, ow, -1.0, rim)
-	ci.draw_circle(knee, 4.2 * u, col)
+	FD.circle(ci, knee, 4.2 * u, col)
 	ci.draw_line(knee + Vector2(-3.0, 0.5) * u, knee + Vector2(3.0, 0.5) * u, Shade.fade(Shade.darken(col, 0.45), 0.55), maxf(1.0, 0.8 * u))
 	ci.draw_line(hip.lerp(knee, 0.2) + Vector2(0.0, 0.0), ankle.lerp(knee, 0.2), Shade.fade(Color("#FFF2FF"), 0.18 * alpha), maxf(1.0, 0.8 * u))
 
@@ -36,15 +37,15 @@ static func boot_side(ci: CanvasItem, foot: Vector2, u: float, f: float, glow: C
 	var cuff := _boot_pts(foot, u, f, [Vector2(-5.2, -10.2), Vector2(4.0, -10.2), Vector2(4.1, -7.4), Vector2(-5.2, -7.4)])
 	Shade.fill(ci, cuff, Shade.fade(Shade.lighten(glow, 0.5), alpha), maxf(1.0, 0.7 * u), Shade.ink(col))
 	var cap := _boot_pts(foot, u, f, [Vector2(5.0, -1.8), Vector2(8.2, -1.2), Vector2(9.0, 1.5), Vector2(9.0, 2.6), Vector2(4.6, 2.6)])
-	ci.draw_colored_polygon(cap, Shade.fade(Shade.darken(glow, 0.25), 0.8 * alpha))
+	FD.poly(ci, cap, Shade.fade(Shade.darken(glow, 0.25), 0.8 * alpha))
 	var sole := _boot_pts(foot, u, f, [Vector2(-6.8, 2.6), Vector2(9.2, 2.6), Vector2(9.2, 4.2), Vector2(-6.8, 4.2)])
-	ci.draw_colored_polygon(sole, Shade.fade(SOLE, alpha))
-	ci.draw_colored_polygon(_boot_pts(foot, u, f, [Vector2(-6.8, 4.2), Vector2(-3.0, 4.2), Vector2(-3.0, 5.4), Vector2(-6.8, 5.4)]), Shade.fade(SOLE, alpha))
+	FD.poly(ci, sole, Shade.fade(SOLE, alpha))
+	FD.poly(ci, _boot_pts(foot, u, f, [Vector2(-6.8, 4.2), Vector2(-3.0, 4.2), Vector2(-3.0, 5.4), Vector2(-6.8, 5.4)]), Shade.fade(SOLE, alpha))
 	for i in range(3):
 		var lx: float = -2.0 + 2.2 * float(i)
 		ci.draw_line(foot + Vector2(f * (lx + 2.0), -5.5 + 1.0 * float(i)) * u, foot + Vector2(f * (lx + 3.6), -4.6 + 1.0 * float(i)) * u, Shade.fade(Color.WHITE, 0.7 * alpha), maxf(1.0, 0.7 * u))
 	ci.draw_line(foot + Vector2(f * (-4.0 + 2.0), -1.0) * u, foot + Vector2(f * (6.0 + 2.0), -0.4) * u, Shade.fade(Shade.lighten(glow, 0.6), 0.85 * alpha), maxf(1.0, 1.0 * u))
-	ci.draw_circle(foot + Vector2(f * (-1.0 + 2.0), -8.8) * u, 0.9 * u, Shade.fade(Color("#FFD36E"), alpha))
+	FD.circle(ci, foot + Vector2(f * (-1.0 + 2.0), -8.8) * u, 0.9 * u, Shade.fade(Color("#FFD36E"), alpha))
 
 
 static func _boot_pts(foot: Vector2, u: float, f: float, local: Array) -> PackedVector2Array:
@@ -74,11 +75,11 @@ static func leg_front(ci: CanvasItem, origin: Vector2, up: Vector2, side: float,
 	])
 	Shade.fill(ci, pts, bcol, maxf(1.0, 1.1 * k), Shade.ink(bcol))
 	Shade.shade_band(ci, pts, bcol, -1.0)
-	ci.draw_colored_polygon(PackedVector2Array([bc + Vector2(-9.8, -1.2) * k, bc + Vector2(9.8, -1.2) * k, bc + Vector2(10.0, 1.0) * k, bc + Vector2(-10.0, 1.0) * k]), Shade.fade(SOLE, alpha))
+	FD.poly(ci, PackedVector2Array([bc + Vector2(-9.8, -1.2) * k, bc + Vector2(9.8, -1.2) * k, bc + Vector2(10.0, 1.0) * k, bc + Vector2(-10.0, 1.0) * k]), Shade.fade(SOLE, alpha))
 	Shade.fill(ci, PackedVector2Array([bc + Vector2(-6.4, -11.2) * k, bc + Vector2(6.4, -11.2) * k, bc + Vector2(6.8, -8.2) * k, bc + Vector2(-6.8, -8.2) * k]), Shade.fade(Shade.lighten(glow, 0.5), alpha), maxf(1.0, 0.8 * k), Shade.ink(bcol))
-	ci.draw_colored_polygon(Shade.ellipse(bc + Vector2(0.0, -3.4) * k, 4.8 * k, 2.4 * k, 10), Shade.fade(Shade.darken(glow, 0.25), 0.7 * alpha))
+	FD.poly(ci, Shade.ellipse(bc + Vector2(0.0, -3.4) * k, 4.8 * k, 2.4 * k, 10), Shade.fade(Shade.darken(glow, 0.25), 0.7 * alpha))
 	ci.draw_line(bc + Vector2(-7.0, -5.6) * k, bc + Vector2(7.0, -5.6) * k, Shade.fade(Shade.lighten(glow, 0.55), 0.85 * alpha), maxf(1.0, 1.1 * k))
-	ci.draw_circle(bc + Vector2(0.0, -9.7) * k, 1.0 * k, Shade.fade(Color("#FFD36E"), alpha))
+	FD.circle(ci, bc + Vector2(0.0, -9.7) * k, 1.0 * k, Shade.fade(Color("#FFD36E"), alpha))
 
 
 ## Sleeve/arm from `a` to `b` with an elbow bend, tapered, plus a lighter cuff at the wrist.
@@ -93,7 +94,7 @@ static func arm(ci: CanvasItem, a: Vector2, b: Vector2, w: float, outfit: Color,
 	var ow: float = maxf(1.0, w * 0.13)
 	Shade.taper(ci, a, elbow, w, w * 0.86, col, ow, -1.0, rim)
 	Shade.taper(ci, elbow, b, w * 0.86, w * 0.72, col, ow, -1.0, rim)
-	ci.draw_circle(elbow, w * 0.42, col)
+	FD.circle(ci, elbow, w * 0.42, col)
 	var dn: Vector2 = (b - elbow).normalized()
 	var cuff: Color = Shade.lighten(col, 0.3)
 	Shade.limb(ci, b - dn * w * 0.55, b - dn * w * 0.3, w * 0.9, cuff, maxf(1.0, w * 0.1), -1.0)

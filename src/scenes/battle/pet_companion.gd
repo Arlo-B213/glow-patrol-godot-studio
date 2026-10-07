@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Alley Brawl sidekick (Story 024): the active pet trails the hunter, bobs, and every few
 ## seconds is ready to "zap" a Gloomling for a tiny assist. Zap strength and timing are data
 ## (GameState.PETS zap_every / zap_boss) and it can never finish the boss on its own.
@@ -101,6 +102,6 @@ func _draw_spark(ci: CanvasItem, u: float) -> void:
 		var k := float(i) / 5.0
 		var jitter := 0.0 if (i == 0 or i == 5) else sin(float(i) * 9.1 + _t * 40.0) * 7.0 * u
 		pts.append(_spark_from.lerp(_spark_to, k) + Vector2(0.0, jitter))
-	ci.draw_polyline(pts, Color(_spark_col, 0.45 * f), 7.0 * u, true)
-	ci.draw_polyline(pts, Color(1.0, 1.0, 0.9, f), 2.4 * u, true)
-	ci.draw_circle(_spark_to, 9.0 * u * f, Color(_spark_col, 0.6 * f))
+	FD.polyline(ci, pts, Color(_spark_col, 0.45 * f), 7.0 * u, true)
+	FD.polyline(ci, pts, Color(1.0, 1.0, 0.9, f), 2.4 * u, true)
+	FD.circle(ci, _spark_to, 9.0 * u * f, Color(_spark_col, 0.6 * f))

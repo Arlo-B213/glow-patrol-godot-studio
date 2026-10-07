@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Extra Alley Brawl environment layers (Story 034), called from brawl_scenery.gd: distant hills
 ## and gradient clouds, drifting fog, neon street spill + wet-road reflections, lantern light
 ## pools on the ground, bridge crowd with glow sticks, fireworks, moon shimmer, and the
@@ -54,7 +55,7 @@ static func sky_extras(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: fl
 		pts.append(Vector2(xx, ground_y - h))
 		xx += step
 	pts.append(Vector2(xx, ground_y))
-	ci.draw_colored_polygon(pts, _c(hill, 0.85))
+	FD.poly(ci, pts, _c(hill, 0.85))
 	FxLight.fog_band(ci, 0.0, size.x, ground_y - 110.0 * u, 100.0 * u, _c(a.lerp(Color.WHITE, 0.3), 0.14 + (0.05 * sin(t * 0.5) if t != 0.0 else 0.0)))
 
 
@@ -92,7 +93,7 @@ static func _crowd(ci: CanvasItem, x: float, slot: float, ground_y: float, u: fl
 		var bob: float = 0.0 if t == 0.0 else sin(t * 4.0 + h1 * 10.0) * 2.0 * u
 		var by: float = ground_y - 34.0 * u + bob
 		ci.draw_rect(Rect2(px - 5.0 * u, by - 18.0 * u, 10.0 * u, 18.0 * u), dark)
-		ci.draw_circle(Vector2(px, by - 23.0 * u), 5.0 * u, dark)
+		FD.circle(ci, Vector2(px, by - 23.0 * u), 5.0 * u, dark)
 		if h1 > 0.35:
 			var wave: float = 0.0 if t == 0.0 else sin(t * 5.0 + h1 * 7.0) * 0.5
 			var tip := Vector2(px + 8.0 * u + wave * 10.0 * u, by - 40.0 * u)
@@ -118,10 +119,10 @@ static func ground_extras(ci: CanvasItem, cam_x: float, size: Vector2, ground_y:
 		var h1: float = FxLight.hash01(i, 81)
 		var y: float = ground_y + road_h * (0.34 + 0.4 * FxLight.hash01(i, 82))
 		if h1 > 0.6:
-			ci.draw_arc(Vector2(x, y), 15.0 * u, 0.0, TAU, 16, _c(pal["floor_line"], 0.22), 2.0 * u, true)
-			ci.draw_arc(Vector2(x, y), 9.0 * u, 0.0, TAU, 12, Color(0, 0, 0, 0.25), 2.0 * u, true)
+			FD.arc(ci, Vector2(x, y), 15.0 * u, 0.0, TAU, 16, _c(pal["floor_line"], 0.22), 2.0 * u, true)
+			FD.arc(ci, Vector2(x, y), 9.0 * u, 0.0, TAU, 12, Color(0, 0, 0, 0.25), 2.0 * u, true)
 		elif h1 > 0.25:
-			ci.draw_polyline(PackedVector2Array([Vector2(x, y), Vector2(x + 18.0 * u, y + 5.0 * u), Vector2(x + 30.0 * u, y + 2.0 * u), Vector2(x + 52.0 * u, y + 9.0 * u)]), Color(0, 0, 0, 0.3), 1.6 * u)
+			FD.polyline(ci, PackedVector2Array([Vector2(x, y), Vector2(x + 18.0 * u, y + 5.0 * u), Vector2(x + 30.0 * u, y + 2.0 * u), Vector2(x + 52.0 * u, y + 9.0 * u)]), Color(0, 0, 0, 0.3), 1.6 * u)
 		else:
 			for s in 4:
 				ci.draw_rect(Rect2(x + float(s) * 16.0 * u, ground_y + road_h * 0.55, 9.0 * u, road_h * 0.2), Color(1, 1, 1, 0.08))

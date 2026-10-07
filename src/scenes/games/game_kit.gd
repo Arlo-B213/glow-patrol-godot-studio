@@ -1,5 +1,6 @@
 class_name GameKit
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Shared look for the mini-games (Story 026-030): the same pills, hearts, round buttons, themed
 ## animated backdrops and pet cheer as the Alley Brawl, so every game feels like one family.
 ## All helpers draw onto a CanvasItem; they never touch GameState except to read reduce_motion/pet.
@@ -36,14 +37,14 @@ static func draw_backdrop(ci: CanvasItem, size: Vector2, theme: String, t: float
 	for i in 46:
 		var p := Vector2(rng.randf() * size.x, rng.randf() * size.y * 0.6)
 		var tw: float = 0.55 + 0.45 * sin(t * 2.0 + float(i) * 1.7)
-		ci.draw_circle(p, 1.2 + rng.randf() * 1.4, Color(th["star"], 0.25 + 0.6 * tw))
+		FD.circle(ci, p, 1.2 + rng.randf() * 1.4, Color(th["star"], 0.25 + 0.6 * tw))
 	_skyline(ci, size, th["sil"], 0.30, 0.20, scroll * 0.25, 7)
 	_skyline(ci, size, (th["sil"] as Color).darkened(0.25), 0.22, 0.14, scroll * 0.5, 11)
 	for i in 14:
 		var bx: float = fposmod(rng.randf() * size.x + t * (8.0 + float(i % 4) * 3.0) + scroll * 0.7, size.x + 40.0) - 20.0
 		var by: float = size.y * (0.15 + rng.randf() * 0.7) + sin(t * 1.3 + float(i)) * 8.0
-		ci.draw_circle(Vector2(bx, by), 5.0, Color(th["glow"], 0.07))
-		ci.draw_circle(Vector2(bx, by), 2.0, Color(th["glow"], 0.55))
+		FD.circle(ci, Vector2(bx, by), 5.0, Color(th["glow"], 0.07))
+		FD.circle(ci, Vector2(bx, by), 2.0, Color(th["glow"], 0.55))
 	_light_pass(ci, size, th, t)
 
 
@@ -120,10 +121,10 @@ static func score_pills(ci: CanvasItem, size: Vector2, u: float, score: int, sub
 
 ## Circular countdown ring with seconds inside. `ratio` 1 -> 0.
 static func timer_ring(ci: CanvasItem, c: Vector2, radius: float, ratio: float, label: String, hot: bool = false) -> void:
-	ci.draw_circle(c, radius, Color(UiTheme.PANEL, 0.85))
-	ci.draw_arc(c, radius - 3.0, 0.0, TAU, 40, Color(1, 1, 1, 0.12), 5.0, true)
+	FD.circle(ci, c, radius, Color(UiTheme.PANEL, 0.85))
+	FD.arc(ci, c, radius - 3.0, 0.0, TAU, 40, Color(1, 1, 1, 0.12), 5.0, true)
 	var col: Color = UiTheme.ACCENT if hot else UiTheme.TEAL
-	ci.draw_arc(c, radius - 3.0, -PI * 0.5, -PI * 0.5 + TAU * clampf(ratio, 0.0, 1.0), 40, col, 5.0, true)
+	FD.arc(ci, c, radius - 3.0, -PI * 0.5, -PI * 0.5 + TAU * clampf(ratio, 0.0, 1.0), 40, col, 5.0, true)
 	text(ci, label, Rect2(c - Vector2(radius, radius), Vector2(radius, radius) * 2.0), radius * 0.8, UiTheme.TEXT)
 
 

@@ -1,5 +1,6 @@
 class_name UiIconKit
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Drawing helpers shared by the UI icon set. All icon geometry is authored in
 ## unit coordinates (0..1 across a square rect) so icons scale cleanly.
 
@@ -33,8 +34,8 @@ static func line(ci: CanvasItem, r: Rect2, a: Vector2, b: Vector2, col: Color, w
 	var pa := p(r, a.x, a.y)
 	var pb := p(r, b.x, b.y)
 	ci.draw_line(pa, pb, col, w, true)
-	ci.draw_circle(pa, w * 0.5, col)
-	ci.draw_circle(pb, w * 0.5, col)
+	FD.circle(ci, pa, w * 0.5, col)
+	FD.circle(ci, pb, w * 0.5, col)
 
 
 ## Draws an open polyline through unit points with round joints and caps.
@@ -42,9 +43,9 @@ static func polyline(ci: CanvasItem, r: Rect2, pts: Array, col: Color, w: float)
 	var out := PackedVector2Array()
 	for q in pts:
 		out.append(p(r, q.x, q.y))
-	ci.draw_polyline(out, col, w, true)
+	FD.polyline(ci, out, col, w, true)
 	for v in out:
-		ci.draw_circle(v, w * 0.5, col)
+		FD.circle(ci, v, w * 0.5, col)
 
 
 ## Fills a simple polygon given in unit points and softens its corners with a
@@ -53,24 +54,24 @@ static func poly(ci: CanvasItem, r: Rect2, pts: Array, col: Color, round_w: floa
 	var out := PackedVector2Array()
 	for q in pts:
 		out.append(p(r, q.x, q.y))
-	ci.draw_colored_polygon(out, col)
+	FD.poly(ci, out, col)
 	if round_w > 0.0:
 		var closed := out.duplicate()
 		closed.append(out[0])
-		ci.draw_polyline(closed, col, round_w, true)
+		FD.polyline(ci, closed, col, round_w, true)
 		for v in out:
-			ci.draw_circle(v, round_w * 0.5, col)
+			FD.circle(ci, v, round_w * 0.5, col)
 
 
 ## Filled circle at unit coordinates with a unit-size radius.
 static func circ(ci: CanvasItem, r: Rect2, x: float, y: float, rad: float, col: Color) -> void:
-	ci.draw_circle(p(r, x, y), rad * r.size.x, col, true)
+	FD.circle(ci, p(r, x, y), rad * r.size.x, col, true)
 
 
 ## Arc stroke at unit coordinates (angles in radians, clockwise on screen).
 static func arc(ci: CanvasItem, r: Rect2, x: float, y: float, rad: float,
 		a0: float, a1: float, col: Color, w: float) -> void:
-	ci.draw_arc(p(r, x, y), rad * r.size.x, a0, a1, 24, col, w, true)
+	FD.arc(ci, p(r, x, y), rad * r.size.x, a0, a1, 24, col, w, true)
 
 
 ## Filled heart centred at unit (cx, cy), `s` = width in unit size.

@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Zap Patrol mini-game (Story 027, Alley Brawl standard): tap the floating Gloomlings on the
 ## neon rooftops before they drift off-screen. The Grumble King shows up partway through and
 ## takes 5 hits (+15). Rules, 45 s timer and payout (GameState.payout_for) are unchanged; the
@@ -274,7 +275,7 @@ func _draw() -> void:
 	for rp in ripples:
 		ZapArt.ripple(self, rp["pos"], 30.0 * u * reach, float(rp["t"]) / 0.4, _weapon_col, bool(rp["hit"]))
 	for q in particles:
-		draw_circle(q["pos"], 3.0 * u, Color(q["color"], 1.0 - float(q["t"]) * 1.8))
+		FD.circle(self, q["pos"], 3.0 * u, Color(q["color"], 1.0 - float(q["t"]) * 1.8))
 	_draw_popups(calm)
 	_draw_hud()
 
@@ -287,8 +288,8 @@ func _draw_hero(calm: bool, t: float) -> void:
 	var charge: float = float(combo % COMBO_STEP) / float(COMBO_STEP)
 	var tip: Vector2 = _tip()
 	var pulse: float = 0.0 if calm else 0.5 + 0.5 * sin(t * 6.0)
-	draw_circle(tip, (7.0 + charge * 12.0 + pulse * 2.0) * u, Color(_weapon_col, 0.22 + 0.25 * charge))
-	draw_circle(tip, (3.0 + charge * 4.0) * u, Color(_weapon_col.lightened(0.4), 0.9))
+	FD.circle(self, tip, (7.0 + charge * 12.0 + pulse * 2.0) * u, Color(_weapon_col, 0.22 + 0.25 * charge))
+	FD.circle(self, tip, (3.0 + charge * 4.0) * u, Color(_weapon_col.lightened(0.4), 0.9))
 	Kit.pet_cheer(self, h + Vector2(-100.0 * u, 18.0 * u), 54.0 * u, t, 0.0 if calm else _cheer)
 
 

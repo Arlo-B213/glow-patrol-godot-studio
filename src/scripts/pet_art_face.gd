@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Faces for PetArt (Story 033): big glossy eyes (iris gradient, two highlights, lashes,
 ## blink), brows, mouths and blush for the seven expressions MOOD_NORMAL .. MOOD_SURPRISED.
 ## All positions are pet space; sizes follow the stage so babies get bigger eyes.
@@ -24,11 +25,11 @@ static func eye(ci: CanvasItem, p: Dictionary, x: float, y: float, r: float, sid
 	var mood: int = p["mood"]
 	var w := maxf(1.5, rr * 0.36)
 	if mood == PetArt.MOOD_HAPPY or mood == PetArt.MOOD_EATING:
-		ci.draw_arc(c + Vector2(0.0, rr * 0.5), rr * 0.95, PI * 1.1, PI * 1.9, 12, INK, w, true)
+		FD.arc(ci, c + Vector2(0.0, rr * 0.5), rr * 0.95, PI * 1.1, PI * 1.9, 12, INK, w, true)
 		_lashes(ci, c + Vector2(0.0, -rr * 0.1), rr, side)
 		return
 	if bool(p["blink"]):
-		ci.draw_arc(c - Vector2(0.0, rr * 0.25), rr * 0.95, PI * 0.1, PI * 0.9, 12, INK, w, true)
+		FD.arc(ci, c - Vector2(0.0, rr * 0.25), rr * 0.95, PI * 0.1, PI * 0.9, 12, INK, w, true)
 		_lashes(ci, c + Vector2(0.0, rr * 0.35), rr, side)
 		return
 	var surprised := mood == PetArt.MOOD_SURPRISED
@@ -41,28 +42,28 @@ static func eye(ci: CanvasItem, p: Dictionary, x: float, y: float, r: float, sid
 		look = Vector2(-side * 0.5, 0.75)
 	elif mood == PetArt.MOOD_EXCITED:
 		look = Vector2(look.x * 0.4, -0.35)
-	ci.draw_circle(c, rr * 1.12, INK)
+	FD.circle(ci, c, rr * 1.12, INK)
 	if surprised:
-		ci.draw_circle(c, rr * 1.0, Color(1.0, 1.0, 1.0))
+		FD.circle(ci, c, rr * 1.0, Color(1.0, 1.0, 1.0))
 	var ir: float = rr * (0.62 if surprised else 0.94)
 	var ic := c + look.limit_length(1.0) * rr * (0.38 if surprised else 0.16)
-	ci.draw_circle(ic, ir, iris_dark)
-	ci.draw_circle(ic + Vector2(0.0, ir * 0.22), ir * 0.78, iris_mid)
-	ci.draw_circle(ic + Vector2(0.0, ir * 0.44), ir * 0.46, iris_lite)
-	ci.draw_circle(ic, ir * (0.3 if surprised else 0.4), INK)
-	ci.draw_circle(ic + Vector2(-ir * 0.36, -ir * 0.4), ir * 0.34, Color.WHITE)
+	FD.circle(ci, ic, ir, iris_dark)
+	FD.circle(ci, ic + Vector2(0.0, ir * 0.22), ir * 0.78, iris_mid)
+	FD.circle(ci, ic + Vector2(0.0, ir * 0.44), ir * 0.46, iris_lite)
+	FD.circle(ci, ic, ir * (0.3 if surprised else 0.4), INK)
+	FD.circle(ci, ic + Vector2(-ir * 0.36, -ir * 0.4), ir * 0.34, Color.WHITE)
 	if mood == PetArt.MOOD_EXCITED:
 		PetArt.star4(ci, ic + Vector2(ir * 0.34, ir * 0.38), ir * 0.34, Color(1.0, 1.0, 1.0, 0.95))
 	else:
-		ci.draw_circle(ic + Vector2(ir * 0.34, ir * 0.4), ir * 0.15, Color(1.0, 1.0, 1.0, 0.85))
-	ci.draw_arc(c, rr * 1.06, PI * 1.05, PI * 1.95, 12, INK, w * 1.2, true)
+		FD.circle(ci, ic + Vector2(ir * 0.34, ir * 0.4), ir * 0.15, Color(1.0, 1.0, 1.0, 0.85))
+	FD.arc(ci, c, rr * 1.06, PI * 1.05, PI * 1.95, 12, INK, w * 1.2, true)
 	_lashes(ci, c, rr, side)
 	if mood == PetArt.MOOD_SLEEPY:
 		var lid := PackedVector2Array()
 		for i in 13:
 			var a := PI + PI * float(i) / 12.0
 			lid.append(c + Vector2(0.0, rr * 0.18) + Vector2(cos(a), sin(a)) * rr * 1.3)
-		ci.draw_colored_polygon(lid, PetArt.shade_of(p["col"]))
+		FD.poly(ci, lid, PetArt.shade_of(p["col"]))
 		ci.draw_line(c + Vector2(-rr * 1.1, rr * 0.18), c + Vector2(rr * 1.1, rr * 0.18), INK, w, true)
 		_lashes(ci, c + Vector2(0.0, rr * 0.35), rr, side)
 
@@ -110,7 +111,7 @@ static func mouth(ci: CanvasItem, p: Dictionary, x: float, y: float, w: float, w
 	var t: float = p["t"]
 	match mood:
 		PetArt.MOOD_SLEEPY:
-			ci.draw_arc(c + Vector2(0.0, ww * 0.1), ww * 0.14, 0.0, TAU, 10, INK, 1.4, true)
+			FD.arc(ci, c + Vector2(0.0, ww * 0.1), ww * 0.14, 0.0, TAU, 10, INK, 1.4, true)
 		PetArt.MOOD_HAPPY:
 			_open(ci, c, ww, 0.6)
 		PetArt.MOOD_EXCITED:
@@ -122,19 +123,19 @@ static func mouth(ci: CanvasItem, p: Dictionary, x: float, y: float, w: float, w
 			for i in 14:
 				var a := TAU * float(i) / 14.0
 				pts.append(c + Vector2(cos(a) * ww * 0.14, sin(a) * ww * 0.22))
-			ci.draw_colored_polygon(pts, MOUTH)
+			FD.poly(ci, pts, MOUTH)
 		PetArt.MOOD_SHY:
 			var wv := PackedVector2Array()
 			for i in 7:
 				var f := float(i) / 6.0
 				wv.append(c + Vector2((f - 0.5) * ww * 0.6, sin(f * TAU * 1.5) * ww * 0.05))
-			ci.draw_polyline(wv, INK, 1.3, true)
+			FD.polyline(ci, wv, INK, 1.3, true)
 		_:
 			if wide:
-				ci.draw_arc(c - Vector2(0.0, ww * 0.25), ww * 0.5, PI * 0.15, PI * 0.85, 12, INK, 1.5, true)
+				FD.arc(ci, c - Vector2(0.0, ww * 0.25), ww * 0.5, PI * 0.15, PI * 0.85, 12, INK, 1.5, true)
 			else:
-				ci.draw_arc(c + Vector2(-ww * 0.17, -ww * 0.12), ww * 0.2, PI * 0.05, PI * 0.9, 8, INK, 1.4, true)
-				ci.draw_arc(c + Vector2(ww * 0.17, -ww * 0.12), ww * 0.2, PI * 0.1, PI * 0.95, 8, INK, 1.4, true)
+				FD.arc(ci, c + Vector2(-ww * 0.17, -ww * 0.12), ww * 0.2, PI * 0.05, PI * 0.9, 8, INK, 1.4, true)
+				FD.arc(ci, c + Vector2(ww * 0.17, -ww * 0.12), ww * 0.2, PI * 0.1, PI * 0.95, 8, INK, 1.4, true)
 
 
 static func _open(ci: CanvasItem, c: Vector2, ww: float, open: float) -> void:
@@ -143,9 +144,9 @@ static func _open(ci: CanvasItem, c: Vector2, ww: float, open: float) -> void:
 	for i in 13:
 		var a := PI * float(i) / 12.0
 		pts.append(c + Vector2(cos(a) * ww * 0.42, sin(a) * h))
-	ci.draw_colored_polygon(pts, MOUTH)
+	FD.poly(ci, pts, MOUTH)
 	if h > ww * 0.12:
-		ci.draw_colored_polygon(Shade.ellipse(c + Vector2(0.0, h * 0.62), ww * 0.2, h * 0.24, 10), TONGUE)
+		FD.poly(ci, Shade.ellipse(c + Vector2(0.0, h * 0.62), ww * 0.2, h * 0.24, 10), TONGUE)
 	ci.draw_line(pts[0], pts[12], INK, 1.3, true)
 
 
@@ -157,8 +158,8 @@ static func cheeks(ci: CanvasItem, p: Dictionary, x: float, y: float, r: float) 
 		a += 0.1
 	for side in [-1.0, 1.0]:
 		var cx: float = side * x
-		ci.draw_colored_polygon(PetArt.ell(p, cx, y, r * 1.15, r * 0.75, 0.0, 14), Color(1.0, 0.45, 0.62, a * 0.5))
-		ci.draw_colored_polygon(PetArt.ell(p, cx, y, r * 0.78, r * 0.5, 0.0, 12), Color(1.0, 0.4, 0.58, a))
+		FD.poly(ci, PetArt.ell(p, cx, y, r * 1.15, r * 0.75, 0.0, 14), Color(1.0, 0.45, 0.62, a * 0.5))
+		FD.poly(ci, PetArt.ell(p, cx, y, r * 0.78, r * 0.5, 0.0, 12), Color(1.0, 0.4, 0.58, a))
 		for j in 3:
 			var a0 := PetArt.q(p, cx + (float(j) - 1.0) * r * 0.42 - r * 0.1, y + r * 0.22)
 			ci.draw_line(a0, a0 + Vector2(r * 0.22, -r * 0.4) * float(p["k"]), Color(1.0, 0.3, 0.5, a + 0.2), 0.8, true)

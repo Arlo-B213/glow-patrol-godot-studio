@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Clothing and head gear shared by the gloom characters (Story 031): hoods, horns, ears, spiky hair,
 ## tails, scarves, mushrooms, shell lumps and sleepy "Z"s. Every function takes a `Kit.Rig` and local
 ## units (see gloom_kit.gd); all polygons are simple.
@@ -14,11 +15,11 @@ static func hood_back(r: Kit.Rig, cx: float, cy: float, hw: float, hh: float, co
 
 ## The hood's front rim over the forehead and cheeks, drawn AFTER the head and before the face.
 static func hood_rim(r: Kit.Rig, cx: float, cy: float, hw: float, hh: float, col: Color) -> void:
-	r.ci.draw_arc(r.p(cx, cy), hw * 1.06 * r.k, PI * 1.03, PI * 1.97, 16, r.c(Shade.darken(col, 0.15)), hh * 0.34 * r.k, true)
-	r.ci.draw_arc(r.p(cx, cy), hw * 1.2 * r.k, PI * 1.03, PI * 1.97, 10, r.ink(col), r.ow, r.detail)
+	FD.arc(r.ci, r.p(cx, cy), hw * 1.06 * r.k, PI * 1.03, PI * 1.97, 16, r.c(Shade.darken(col, 0.15)), hh * 0.34 * r.k, true)
+	FD.arc(r.ci, r.p(cx, cy), hw * 1.2 * r.k, PI * 1.03, PI * 1.97, 10, r.ink(col), r.ow, r.detail)
 	r.n += 2
 	if r.detail:
-		r.ci.draw_arc(r.p(cx, cy), hw * 0.95 * r.k, PI * 1.12, PI * 1.5, 8, r.c(Shade.fade(Shade.lighten(col, 0.4), 0.6)), maxf(1.0, hh * 0.08 * r.k), true)
+		FD.arc(r.ci, r.p(cx, cy), hw * 0.95 * r.k, PI * 1.12, PI * 1.5, 8, r.c(Shade.fade(Shade.lighten(col, 0.4), 0.6)), maxf(1.0, hh * 0.08 * r.k), true)
 		r.n += 1
 
 

@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Expressive faces for the gloom characters (Story 031): glowing eyes with sclera, iris, pupil and
 ## highlights, thick brows, a nose hint, cheeks and mouths with fangs, teeth and tongue. One
 ## entry point, `draw`, picks the look from a `Kit.Mood`. Local units, see gloom_kit.gd.
@@ -109,8 +110,8 @@ static func _brow(r: Kit.Rig, sd: float, ex: float, by: float, erx: float, ery: 
 
 
 static func _monocle(r: Kit.Rig, ex: float, ey: float, erx: float, ery: float) -> void:
-	r.ci.draw_arc(r.p(ex, ey), maxf(erx, ery) * 1.22 * r.k, 0.0, TAU, 18, r.c(Color("#FFD36E")), maxf(1.6, r.ow * 1.2), true)
-	r.ci.draw_arc(r.p(ex, ey), maxf(erx, ery) * 0.95 * r.k, 3.6, 4.9, 6, r.c(Color(1, 1, 1, 0.8)), maxf(1.0, r.ow * 0.8), true)
+	FD.arc(r.ci, r.p(ex, ey), maxf(erx, ery) * 1.22 * r.k, 0.0, TAU, 18, r.c(Color("#FFD36E")), maxf(1.6, r.ow * 1.2), true)
+	FD.arc(r.ci, r.p(ex, ey), maxf(erx, ery) * 0.95 * r.k, 3.6, 4.9, 6, r.c(Color(1, 1, 1, 0.8)), maxf(1.0, r.ow * 0.8), true)
 	r.line(Vector2(ex - erx * 0.8, ey + ery * 1.15), Vector2(ex - erx * 1.4, ey + ery * 3.2), 0.9, Color("#FFD36E"))
 	r.n += 2
 

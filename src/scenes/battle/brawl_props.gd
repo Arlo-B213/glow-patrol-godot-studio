@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Near-ground props for Alley Brawl (Story 025): crates, lampposts, steam vents, a noodle cart,
 ## a bicycle, barrels, benches and light-reflecting puddles, plus the twinkle that hints at a
 ## secret spot. Positions are in view widths (S) along the world; drawn at parallax 1.0 and
@@ -54,32 +55,32 @@ static func _glint(ci: CanvasItem, c: Vector2, r: float, col: Color) -> void:
 		var a: float = TAU * float(k) / 8.0 - PI * 0.5
 		var rr: float = r if k % 2 == 0 else r * 0.3
 		pts.append(c + Vector2(cos(a), sin(a)) * rr)
-	ci.draw_colored_polygon(pts, col)
-	ci.draw_circle(c, r * 1.5, _c(col, 0.18))
+	FD.poly(ci, pts, col)
+	FD.circle(ci, c, r * 1.5, _c(col, 0.18))
 
 
 static func _lamp(ci: CanvasItem, b: Vector2, u: float, pal: Dictionary) -> void:
 	var warm: Color = pal["a"]
 	ci.draw_rect(Rect2(b.x - 3.0 * u, b.y - 150.0 * u, 6.0 * u, 150.0 * u), Color("#1A1236"))
 	ci.draw_rect(Rect2(b.x - 9.0 * u, b.y - 6.0 * u, 18.0 * u, 6.0 * u), Color("#1A1236"))
-	ci.draw_circle(b + Vector2(0, -158.0 * u), 34.0 * u, _c(warm, 0.1))
-	ci.draw_circle(b + Vector2(0, -158.0 * u), 20.0 * u, _c(warm, 0.2))
+	FD.circle(ci, b + Vector2(0, -158.0 * u), 34.0 * u, _c(warm, 0.1))
+	FD.circle(ci, b + Vector2(0, -158.0 * u), 20.0 * u, _c(warm, 0.2))
 	ci.draw_rect(Rect2(b.x - 8.0 * u, b.y - 168.0 * u, 16.0 * u, 20.0 * u), _c(warm, 0.95))
-	ci.draw_colored_polygon(PackedVector2Array([b + Vector2(-11.0, -168.0) * u, b + Vector2(11.0, -168.0) * u, b + Vector2(0.0, -178.0) * u]), Color("#1A1236"))
+	FD.poly(ci, PackedVector2Array([b + Vector2(-11.0, -168.0) * u, b + Vector2(11.0, -168.0) * u, b + Vector2(0.0, -178.0) * u]), Color("#1A1236"))
 
 
 static func _cart(ci: CanvasItem, b: Vector2, u: float, t: float, pal: Dictionary) -> void:
 	ci.draw_rect(Rect2(b.x - 44.0 * u, b.y - 52.0 * u, 88.0 * u, 36.0 * u), Color("#5A2A2A"))
 	ci.draw_rect(Rect2(b.x - 44.0 * u, b.y - 52.0 * u, 88.0 * u, 6.0 * u), Color("#FFB35E"))
-	ci.draw_colored_polygon(PackedVector2Array([b + Vector2(-52.0, -92.0) * u, b + Vector2(52.0, -92.0) * u, b + Vector2(44.0, -70.0) * u, b + Vector2(-44.0, -70.0) * u]), pal["b"])
+	FD.poly(ci, PackedVector2Array([b + Vector2(-52.0, -92.0) * u, b + Vector2(52.0, -92.0) * u, b + Vector2(44.0, -70.0) * u, b + Vector2(-44.0, -70.0) * u]), pal["b"])
 	ci.draw_rect(Rect2(b.x - 40.0 * u, b.y - 70.0 * u, 3.0 * u, 18.0 * u), Color("#3B2A2A"))
 	ci.draw_rect(Rect2(b.x + 37.0 * u, b.y - 70.0 * u, 3.0 * u, 18.0 * u), Color("#3B2A2A"))
-	ci.draw_circle(b + Vector2(0, -60.0) * u, 8.0 * u, _c(pal["a"], 0.35))
-	ci.draw_circle(b + Vector2(-26.0, -4.0) * u, 11.0 * u, Color("#2A1A1A"))
-	ci.draw_circle(b + Vector2(26.0, -4.0) * u, 11.0 * u, Color("#2A1A1A"))
+	FD.circle(ci, b + Vector2(0, -60.0) * u, 8.0 * u, _c(pal["a"], 0.35))
+	FD.circle(ci, b + Vector2(-26.0, -4.0) * u, 11.0 * u, Color("#2A1A1A"))
+	FD.circle(ci, b + Vector2(26.0, -4.0) * u, 11.0 * u, Color("#2A1A1A"))
 	for k in 3:
 		var rise: float = 0.0 if t == 0.0 else fposmod(t * 0.6 + float(k) * 0.33, 1.0)
-		ci.draw_circle(b + Vector2(-8.0 + float(k) * 8.0, -98.0 - 26.0 * rise - float(k) * 6.0) * u, (6.0 + 5.0 * rise) * u, Color(1, 1, 1, 0.22 * (1.0 - rise)))
+		FD.circle(ci, b + Vector2(-8.0 + float(k) * 8.0, -98.0 - 26.0 * rise - float(k) * 6.0) * u, (6.0 + 5.0 * rise) * u, Color(1, 1, 1, 0.22 * (1.0 - rise)))
 
 
 static func _crate(ci: CanvasItem, b: Vector2, u: float) -> void:
@@ -106,14 +107,14 @@ static func _vent(ci: CanvasItem, b: Vector2, u: float, t: float) -> void:
 		ci.draw_rect(Rect2(b.x - 18.0 * u + float(k) * 10.0 * u, b.y - 11.0 * u, 5.0 * u, 8.0 * u), Color("#0C0720"))
 	for k in 4:
 		var rise: float = 0.35 + float(k) * 0.15 if t == 0.0 else fposmod(t * 0.5 + float(k) * 0.25, 1.0)
-		ci.draw_circle(b + Vector2(sin(rise * 5.0 + float(k)) * 6.0, -18.0 - 70.0 * rise) * u, (8.0 + 12.0 * rise) * u, Color(1, 1, 1, 0.26 * (1.0 - rise)))
+		FD.circle(ci, b + Vector2(sin(rise * 5.0 + float(k)) * 6.0, -18.0 - 70.0 * rise) * u, (8.0 + 12.0 * rise) * u, Color(1, 1, 1, 0.26 * (1.0 - rise)))
 
 
 static func _bike(ci: CanvasItem, b: Vector2, u: float, pal: Dictionary) -> void:
 	var col: Color = pal["b"]
 	for dx in [-24.0, 24.0]:
-		ci.draw_arc(b + Vector2(dx, -18.0) * u, 17.0 * u, 0.0, TAU, 20, Color("#1A1236"), 3.0 * u)
-	ci.draw_polyline(PackedVector2Array([b + Vector2(-24, -18) * u, b + Vector2(-6, -44) * u, b + Vector2(16, -44) * u, b + Vector2(24, -18) * u]), col, 3.0 * u)
+		FD.arc(ci, b + Vector2(dx, -18.0) * u, 17.0 * u, 0.0, TAU, 20, Color("#1A1236"), 3.0 * u)
+	FD.polyline(ci, PackedVector2Array([b + Vector2(-24, -18) * u, b + Vector2(-6, -44) * u, b + Vector2(16, -44) * u, b + Vector2(24, -18) * u]), col, 3.0 * u)
 	ci.draw_line(b + Vector2(-6, -44) * u, b + Vector2(0, -18) * u, col, 3.0 * u)
 	ci.draw_line(b + Vector2(16, -44) * u, b + Vector2(12, -56) * u, col, 3.0 * u)
 	ci.draw_rect(Rect2(b.x - 14.0 * u, b.y - 50.0 * u, 16.0 * u, 5.0 * u), Color("#1A1236"))
@@ -133,7 +134,7 @@ static func _puddle(ci: CanvasItem, c: Vector2, u: float, t: float, pal: Diction
 	for k in 18:
 		var a: float = TAU * float(k) / 18.0
 		pts.append(c + Vector2(cos(a) * rx, sin(a) * ry))
-	ci.draw_colored_polygon(pts, Color(0.1, 0.12, 0.3, 0.7))
+	FD.poly(ci, pts, Color(0.1, 0.12, 0.3, 0.7))
 	var shimmer: float = 0.0 if t == 0.0 else sin(t * 1.8 + c.x * 0.01) * 5.0 * u
 	ci.draw_rect(Rect2(c.x - 14.0 * u + shimmer, c.y - 2.5 * u, 28.0 * u, 3.0 * u), _c(pal["a"], 0.65))
 	ci.draw_rect(Rect2(c.x - 26.0 * u - shimmer, c.y + 2.0 * u, 18.0 * u, 2.0 * u), _c(pal["b"], 0.55))

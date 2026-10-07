@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## The Hiccup Hydra (Story 031): three humanoid kid heads and torsos fused into one fluffy teal body,
 ## each with its own personality: an angry spiky-haired one, a sleepy one in a nightcap and a giggly
 ## one with pigtails. Every ~2.5 s one head sneezes sparkles (purely visual) and the body hiccups.
@@ -142,5 +143,5 @@ static func _sparkles(r: Kit.Rig, sneezer: int, s: float, p: float) -> void:
 		var pos: Vector2 = from + Vector2(cos(a) * dist, sin(a) * dist * 0.7 + p * p * s * 0.12)
 		var col: Color = cols[k % 4]
 		col.a = 1.0 - p * 0.7
-		r.ci.draw_colored_polygon(_star(pos, s * (0.05 + 0.015 * float(k % 2)) * (1.2 - p * 0.5), p * 3.0 + float(k)), col)
+		FD.poly(r.ci, _star(pos, s * (0.05 + 0.015 * float(k % 2)) * (1.2 - p * 0.5), p * 3.0 + float(k)), col)
 		r.n += 1

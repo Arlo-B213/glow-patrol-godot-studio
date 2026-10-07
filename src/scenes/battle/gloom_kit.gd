@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Shared toolkit for the "gloom" enemy and boss art (Story 031). A `Rig` wraps one character draw:
 ## it maps local units (100 = the enemy size `s`, y up is negative, feet at y = 0, +x = towards the
 ## hunter) to canvas pixels and draws outlined, three-tone shaded parts. Limb helpers (legs, arms)
@@ -71,7 +72,7 @@ static func make_rig(ci: CanvasItem, x: float, ground_y: float, s: float, color:
 	r.mood = mood_from(fx, r.flash)
 	r.blink = (not r.calm) and age % 97 < 5 and r.mood == Mood.IDLE
 	r.breath = sin(r.t * 0.11) * 0.5 + 0.5
-	r.detail = s >= 80.0
+	r.detail = s >= 110.0
 	return r
 
 
@@ -124,7 +125,7 @@ static func aura(r: Rig, cy: float, rad: float, a: float) -> void:
 
 ## Soft dark floor shadow under the feet.
 static func floor_shadow(r: Rig, rx: float) -> void:
-	r.ci.draw_colored_polygon(Shade.ellipse(r.o + Vector2(0.0, r.ky * 0.5), rx * r.kx, rx * 0.16 * r.ky, 16), Color(0.03, 0.0, 0.08, 0.4 * r.al))
+	FD.poly(r.ci, Shade.ellipse(r.o + Vector2(0.0, r.ky * 0.5), rx * r.kx, rx * 0.16 * r.ky, 16), Color(0.03, 0.0, 0.08, 0.4 * r.al))
 	r.n += 1
 
 
@@ -132,7 +133,7 @@ static func floor_shadow(r: Rig, rx: float) -> void:
 static func dizzy(r: Rig, x: float, y: float, rad: float) -> void:
 	for i in 3:
 		var a: float = (0.0 if r.calm else r.t * 0.14) + TAU * float(i) / 3.0
-		r.ci.draw_circle(r.p(x + cos(a) * rad, y + sin(a) * rad * 0.28), 2.6 * r.k * 0.55 + 1.0, r.c(Color("#FFE27A")))
+		FD.circle(r.ci, r.p(x + cos(a) * rad, y + sin(a) * rad * 0.28), 2.6 * r.k * 0.55 + 1.0, r.c(Color("#FFE27A")))
 		r.n += 1
 
 
@@ -188,17 +189,17 @@ class Rig extends RefCounted:
 		return maxf(1.1, units * k)
 
 	func disc(x: float, y: float, rad: float, col: Color) -> void:
-		ci.draw_circle(p(x, y), rad * k, c(col))
+		FD.circle(ci, p(x, y), rad * k, c(col))
 		n += 1
 
 	## Filled circle with an optional outline and an alpha multiplier.
 	func circ(x: float, y: float, rad: float, col: Color, outline: bool = true, alpha: float = 1.0) -> void:
 		var cc: Color = c(col)
 		cc.a *= alpha
-		ci.draw_circle(p(x, y), rad * k, cc)
+		FD.circle(ci, p(x, y), rad * k, cc)
 		n += 1
 		if outline and (detail or rad * k > 6.0):
-			ci.draw_arc(p(x, y), rad * k, 0.0, TAU, 10, ink(col), ow, detail)
+			FD.arc(ci, p(x, y), rad * k, 0.0, TAU, 10, ink(col), ow, detail)
 			n += 1
 
 	## Ellipse with outline and (when `shade`) a shadow crescent, a highlight and a rim light.
@@ -210,12 +211,12 @@ class Rig extends RefCounted:
 		for i in 14:
 			var a: float = TAU * float(i) / 14.0
 			pts.append(ctr + Vector2(cos(a) * wx, sin(a) * wy))
-		ci.draw_colored_polygon(pts, c(col))
+		FD.poly(ci, pts, c(col))
 		n += 1
 		if outline and (detail or wx > 7.0):
 			var closed := PackedVector2Array(pts)
 			closed.append(pts[0])
-			ci.draw_polyline(closed, ink(col), ow, detail)
+			FD.polyline(ci, closed, ink(col), ow, detail)
 			n += 1
 		if shade and detail and wx > 2.5 and wy > 2.5:
 			_shade_ellipse(ctr, wx, wy, col)
@@ -232,13 +233,13 @@ class Rig extends RefCounted:
 		for i in 9:
 			var a2: float = 2.0 - 2.5 * float(i) / 8.0
 			crescent.append(ctr + shift + Vector2(cos(a2) * wx * 0.93, sin(a2) * wy * 0.93))
-		ci.draw_colored_polygon(crescent, c(Shade.fade(Shade.darken(col, 0.3), 0.6)))
-		ci.draw_polyline(rim, c(Shade.fade(glow, 0.75)), maxf(1.0, ow * 0.8), true)
+		FD.poly(ci, crescent, c(Shade.fade(Shade.darken(col, 0.3), 0.6)))
+		FD.polyline(ci, rim, c(Shade.fade(glow, 0.75)), maxf(1.0, ow * 0.8), true)
 		var hl := PackedVector2Array()
 		for i in 10:
 			var a3: float = TAU * float(i) / 10.0
 			hl.append(ctr + Vector2(-wx * 0.34, -wy * 0.42) + Vector2(cos(a3) * wx * 0.28, sin(a3) * wy * 0.17))
-		ci.draw_colored_polygon(hl, c(Shade.fade(Shade.lighten(col, 0.5), 0.55)))
+		FD.poly(ci, hl, c(Shade.fade(Shade.lighten(col, 0.5), 0.55)))
 		n += 3
 
 	## Simple polygon in local units, with outline and an optional lit edge line.
@@ -248,12 +249,12 @@ class Rig extends RefCounted:
 			wp.append(pv(v as Vector2))
 		if wp.size() < 3:
 			return
-		ci.draw_colored_polygon(wp, c(col))
+		FD.poly(ci, wp, c(col))
 		n += 1
 		if outline and (detail or _span(wp) > 14.0):
 			var closed := PackedVector2Array(wp)
 			closed.append(wp[0])
-			ci.draw_polyline(closed, ink(col), ow, detail)
+			FD.polyline(ci, closed, ink(col), ow, detail)
 			n += 1
 
 	func _span(wp: PackedVector2Array) -> float:
@@ -271,9 +272,9 @@ class Rig extends RefCounted:
 			n += 4
 			return
 		if wid * k > 5.0:
-			ci.draw_colored_polygon(Shade.capsule(pv(a), pv(b), wid * k * 0.5 + ow * 0.7, 3), ink(col))
+			FD.poly(ci, Shade.capsule(pv(a), pv(b), wid * k * 0.5 + ow * 0.7, 3), ink(col))
 			n += 1
-		ci.draw_colored_polygon(Shade.capsule(pv(a), pv(b), wid * k * 0.5, 3), c(col))
+		FD.poly(ci, Shade.capsule(pv(a), pv(b), wid * k * 0.5, 3), c(col))
 		n += 1
 
 	## Plain line in local units.
@@ -285,10 +286,10 @@ class Rig extends RefCounted:
 		var wp := PackedVector2Array()
 		for v in pts:
 			wp.append(pv(v as Vector2))
-		ci.draw_polyline(wp, c(col), maxf(1.0, wid * k), true)
+		FD.polyline(ci, wp, c(col), maxf(1.0, wid * k), true)
 		n += 1
 
 	## Arc around a local centre (angles in canvas space: 0 = right, PI/2 = down).
 	func arc(x: float, y: float, rad: float, a0: float, a1: float, wid: float, col: Color) -> void:
-		ci.draw_arc(p(x, y), rad * k, a0, a1, 10, c(col), maxf(1.0, wid * k), true)
+		FD.arc(ci, p(x, y), rad * k, a0, a1, 10, c(col), maxf(1.0, wid * k), true)
 		n += 1

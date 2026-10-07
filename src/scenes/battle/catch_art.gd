@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Procedural art for Star Catch (Story 027): stars (normal / golden / magnet), falling-star
 ## streaks, the glowing ground, the hunter holding a lantern basket, and Gloomling hazards (the
 ## Alley Brawl enemy art). Every function draws onto a CanvasItem from its _draw().
@@ -14,21 +15,21 @@ const STAR_COL := Color("#FFC15E")
 
 ## A five-point star (simple 10-vertex polygon) with a soft glow; `golden` adds a bright halo.
 static func star(ci: CanvasItem, c: Vector2, r: float, col: Color, rot: float, golden: bool = false) -> void:
-	ci.draw_circle(c, r * (2.3 if golden else 1.8), Color(col, 0.22 if golden else 0.14))
+	FD.circle(ci, c, r * (2.3 if golden else 1.8), Color(col, 0.22 if golden else 0.14))
 	var pts := PackedVector2Array()
 	for i in 10:
 		var rad: float = r if i % 2 == 0 else r * 0.45
 		var a: float = PI / 5.0 * float(i) - PI * 0.5 + rot
 		pts.append(c + Vector2(cos(a), sin(a)) * rad)
-	ci.draw_colored_polygon(pts, col)
-	ci.draw_circle(c, r * 0.32, Color(1, 1, 1, 0.75))
+	FD.poly(ci, pts, col)
+	FD.circle(ci, c, r * 0.32, Color(1, 1, 1, 0.75))
 
 
 ## A magnet bonus: a teal disc with a white horseshoe and red/blue poles.
 static func magnet(ci: CanvasItem, c: Vector2, r: float, t: float) -> void:
-	ci.draw_circle(c, r * (1.8 + 0.12 * sin(t * 6.0)), Color(UiTheme.TEAL, 0.18))
-	ci.draw_circle(c, r, UiTheme.TEAL)
-	ci.draw_arc(c + Vector2(0.0, -r * 0.05), r * 0.5, 0.0, PI, 14, Color.WHITE, r * 0.3, true)
+	FD.circle(ci, c, r * (1.8 + 0.12 * sin(t * 6.0)), Color(UiTheme.TEAL, 0.18))
+	FD.circle(ci, c, r, UiTheme.TEAL)
+	FD.arc(ci, c + Vector2(0.0, -r * 0.05), r * 0.5, 0.0, PI, 14, Color.WHITE, r * 0.3, true)
 	ci.draw_rect(Rect2(c.x - r * 0.65, c.y - r * 0.55, r * 0.3, r * 0.5), UiTheme.ACCENT)
 	ci.draw_rect(Rect2(c.x + r * 0.35, c.y - r * 0.55, r * 0.3, r * 0.5), UiTheme.VIOLET)
 
@@ -54,7 +55,7 @@ static func ambient(ci: CanvasItem, size: Vector2, t: float) -> void:
 		var p := Vector2(fposmod(x0 - t * sp * 0.25, size.x + 60.0) - 30.0, fposmod(y0 + t * sp, size.y * 0.8 + 80.0) - 40.0)
 		for k in 5:
 			var f: float = float(k) / 5.0
-			ci.draw_circle(p + Vector2(f * 10.0, -f * 36.0), 2.4 * (1.0 - f) + 0.6, Color(1.0, 0.94, 0.8, 0.5 * (1.0 - f)))
+			FD.circle(ci, p + Vector2(f * 10.0, -f * 36.0), 2.4 * (1.0 - f) + 0.6, Color(1.0, 0.94, 0.8, 0.5 * (1.0 - f)))
 
 
 ## Glowing ground strip from `ground_y` down, with pulsing glow dots along the edge.
@@ -68,8 +69,8 @@ static func ground(ci: CanvasItem, size: Vector2, ground_y: float, t: float, u: 
 	for i in n:
 		var pulse: float = 0.5 + 0.5 * sin(t * 2.2 + float(i) * 1.3)
 		var c := Vector2(float(i) * 46.0 * u + 12.0 * u, ground_y + 14.0 * u)
-		ci.draw_circle(c, 6.0 * u, Color(GOLD, 0.10 + 0.12 * pulse))
-		ci.draw_circle(c, 2.2 * u, Color(GOLD, 0.45 + 0.4 * pulse))
+		FD.circle(ci, c, 6.0 * u, Color(GOLD, 0.10 + 0.12 * pulse))
+		FD.circle(ci, c, 2.2 * u, Color(GOLD, 0.45 + 0.4 * pulse))
 
 
 ## Hunter with a lantern basket held overhead. `glow` 0..1 flashes the basket after a catch;
@@ -79,13 +80,13 @@ static func hero(ci: CanvasItem, x: float, ground_y: float, hs: float, look: Dic
 	var c := Vector2(x, ground_y - BASKET_UP * hs)
 	var w: float = 34.0 * hs
 	var gl: Color = look.get("glow", UiTheme.TEAL)
-	ci.draw_circle(c + Vector2(0.0, -4.0 * hs), w * (1.5 + glow * 0.6), Color(gl, 0.14 + 0.2 * glow))
+	FD.circle(ci, c + Vector2(0.0, -4.0 * hs), w * (1.5 + glow * 0.6), Color(gl, 0.14 + 0.2 * glow))
 	var pts := PackedVector2Array()
 	for i in 13:
 		var a: float = PI * float(i) / 12.0
 		pts.append(c + Vector2(cos(a) * w, sin(a) * w * 0.62 - 6.0 * hs))
-	ci.draw_colored_polygon(pts, Color("#6C5CE7").lerp(Color.WHITE, glow * 0.5))
-	ci.draw_arc(c + Vector2(0.0, -6.0 * hs), w, 0.0, PI, 14, Color(1, 1, 1, 0.7), 2.5 * hs, true)
+	FD.poly(ci, pts, Color("#6C5CE7").lerp(Color.WHITE, glow * 0.5))
+	FD.arc(ci, c + Vector2(0.0, -6.0 * hs), w, 0.0, PI, 14, Color(1, 1, 1, 0.7), 2.5 * hs, true)
 	ci.draw_rect(Rect2(c.x - w, c.y - 9.0 * hs, w * 2.0, 5.0 * hs), Color(gl, 0.95))
 
 

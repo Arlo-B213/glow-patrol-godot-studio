@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Alley Brawl touch/keyboard controls (Story 025). Covers the whole view but ignores the GUI
 ## mouse filter and reads raw input so several fingers work at once (hold move + press punch).
 ##   - Move: drag anywhere in the lower-left area (a virtual slider with a drawn thumb), hold the
@@ -152,14 +153,14 @@ func _draw() -> void:
 	var u := _u
 	if _stick_id != -2:
 		var off: Vector2 = (_stick_pos - _stick_origin).limit_length(STICK_RADIUS * u)
-		draw_circle(_stick_origin, STICK_RADIUS * u, Color(UiTheme.PANEL, 0.35))
-		draw_arc(_stick_origin, STICK_RADIUS * u, 0.0, TAU, 40, Color(UiTheme.TEXT, 0.35), 3.0 * u, true)
-		draw_circle(_stick_origin + Vector2(off.x, 0.0), 26.0 * u, Color(UiTheme.VIOLET, 0.85))
-		draw_arc(_stick_origin + Vector2(off.x, 0.0), 26.0 * u, 0.0, TAU, 28, Color(UiTheme.TEXT, 0.8), 2.5 * u, true)
+		FD.circle(self, _stick_origin, STICK_RADIUS * u, Color(UiTheme.PANEL, 0.35))
+		FD.arc(self, _stick_origin, STICK_RADIUS * u, 0.0, TAU, 40, Color(UiTheme.TEXT, 0.35), 3.0 * u, true)
+		FD.circle(self, _stick_origin + Vector2(off.x, 0.0), 26.0 * u, Color(UiTheme.VIOLET, 0.85))
+		FD.arc(self, _stick_origin + Vector2(off.x, 0.0), 26.0 * u, 0.0, TAU, 28, Color(UiTheme.TEXT, 0.8), 2.5 * u, true)
 	elif not _used_stick:
 		var hint := Vector2(size.x * 0.28, size.y - 190.0 * u)
-		draw_arc(hint, STICK_RADIUS * u, 0.0, TAU, 40, Color(UiTheme.TEXT, 0.22), 3.0 * u, true)
-		draw_circle(hint, 22.0 * u, Color(UiTheme.VIOLET, 0.3))
+		FD.arc(self, hint, STICK_RADIUS * u, 0.0, TAU, 40, Color(UiTheme.TEXT, 0.22), 3.0 * u, true)
+		FD.circle(self, hint, 22.0 * u, Color(UiTheme.VIOLET, 0.3))
 		draw_string(ThemeDB.fallback_font, hint + Vector2(-90.0 * u, -STICK_RADIUS * u - 8.0 * u), "drag to move", HORIZONTAL_ALIGNMENT_CENTER, 180.0 * u, int(14.0 * u), Color(UiTheme.TEXT, 0.5))
 	_round_button(lay["left"], "left", UiTheme.PANEL_LIGHT, "back", UiTheme.TEXT)
 	_round_button(lay["right"], "right", UiTheme.PANEL_LIGHT, "forward", UiTheme.TEXT)
@@ -175,20 +176,20 @@ func _round_button(d: Array, role: String, col: Color, icon: String, ink: Color,
 	var fill: Color = col.lerp(Color.WHITE, 0.18) if down else col
 	if dim:
 		fill = fill.lerp(UiTheme.LOCKED, 0.65)
-	draw_circle(c + Vector2(0, 3.0 * _u), rr, Color(0, 0, 0, 0.35))
-	draw_circle(c, rr, Color(fill, 0.92))
-	draw_arc(c, rr - 2.0 * _u, 0.0, TAU, 36, Color(1, 1, 1, 0.5), 2.5 * _u, true)
+	FD.circle(self, c + Vector2(0, 3.0 * _u), rr, Color(0, 0, 0, 0.35))
+	FD.circle(self, c, rr, Color(fill, 0.92))
+	FD.arc(self, c, rr - 2.0 * _u, 0.0, TAU, 36, Color(1, 1, 1, 0.5), 2.5 * _u, true)
 	var ir := Rect2(c - Vector2(rr, rr) * 0.55, Vector2(rr, rr) * 1.1)
 	if icon == "shield":
 		_shield(c, rr * 0.5, ink)
 	else:
 		UiIcons.draw(self, icon, ir, ink)
 	if role == "block":
-		draw_arc(c, rr + 5.0 * _u, -PI * 0.5, -PI * 0.5 + TAU * clampf(guard_ratio, 0.0, 1.0), 40, Color(UiTheme.GOLD, 0.9), 4.0 * _u, true)
+		FD.arc(self, c, rr + 5.0 * _u, -PI * 0.5, -PI * 0.5 + TAU * clampf(guard_ratio, 0.0, 1.0), 40, Color(UiTheme.GOLD, 0.9), 4.0 * _u, true)
 	if caption != "":
 		draw_string(ThemeDB.fallback_font, c + Vector2(-r, -r - 8.0 * _u), caption, HORIZONTAL_ALIGNMENT_CENTER, r * 2.0, int(13.0 * _u), Color(UiTheme.TEXT, 0.8))
 
 
 func _shield(c: Vector2, s: float, col: Color) -> void:
-	draw_colored_polygon(PackedVector2Array([c + Vector2(-s, -s), c + Vector2(s, -s), c + Vector2(s, s * 0.2), c + Vector2(0, s * 1.1), c + Vector2(-s, s * 0.2)]), col)
-	draw_colored_polygon(PackedVector2Array([c + Vector2(-s * 0.55, -s * 0.6), c + Vector2(s * 0.55, -s * 0.6), c + Vector2(s * 0.55, s * 0.1), c + Vector2(0, s * 0.62), c + Vector2(-s * 0.55, s * 0.1)]), Color(1, 1, 1, 0.35))
+	FD.poly(self, PackedVector2Array([c + Vector2(-s, -s), c + Vector2(s, -s), c + Vector2(s, s * 0.2), c + Vector2(0, s * 1.1), c + Vector2(-s, s * 0.2)]), col)
+	FD.poly(self, PackedVector2Array([c + Vector2(-s * 0.55, -s * 0.6), c + Vector2(s * 0.55, -s * 0.6), c + Vector2(s * 0.55, s * 0.1), c + Vector2(0, s * 0.62), c + Vector2(-s * 0.55, s * 0.1)]), Color(1, 1, 1, 0.35))

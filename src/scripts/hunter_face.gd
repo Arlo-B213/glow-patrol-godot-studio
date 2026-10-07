@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Head and face of the idol hunter (Story 015, upgraded in Story 032), side view (`_side`) and
 ## front (`_front`). Head geometry matches the original art so HunterAccessories still
 ## aligns: side head radius 13 * u, front head radius 24 * k, eyes at the same centres.
@@ -40,13 +41,13 @@ static func _skin(ci: CanvasItem, pts: PackedVector2Array, c: Vector2, r: float,
 	for p in pts:
 		var t: float = clampf((p.y - (c.y - r)) / (2.0 * r), 0.0, 1.0)
 		cols.append(lit.lerp(mid, clampf(t * 2.2, 0.0, 1.0)).lerp(low, clampf(t * 1.6 - 0.6, 0.0, 1.0)))
-	ci.draw_polygon(pts, cols)
+	FD.gpoly(ci, pts, cols)
 	var closed := PackedVector2Array(pts)
 	closed.append(pts[0])
-	ci.draw_polyline(closed, Shade.ink(Shade.fade(Shade.SKIN, alpha)), w, true)
+	FD.polyline(ci, closed, Shade.ink(Shade.fade(Shade.SKIN, alpha)), w, true)
 	if glow.a > 0.0:
 		var a0: float = -PI * 0.42 if rim_dir > 0.0 else PI * 1.42
-		ci.draw_arc(c, r - w * 0.7, a0 - 0.1, a0 + PI * 0.55 * (1.0 if rim_dir > 0.0 else -1.0), 12, Shade.fade(Shade.lighten(glow, 0.4), 0.7 * alpha), maxf(1.0, w * 1.1), true)
+		FD.arc(ci, c, r - w * 0.7, a0 - 0.1, a0 + PI * 0.55 * (1.0 if rim_dir > 0.0 else -1.0), 12, Shade.fade(Shade.lighten(glow, 0.4), 0.7 * alpha), maxf(1.0, w * 1.1), true)
 
 
 # ---------------- Side view ----------------
@@ -69,7 +70,7 @@ static func face_side(ci: CanvasItem, head: Vector2, u: float, f: float, hair: C
 	for i in range(pts.size()):
 		pts[i] = head + (pts[i] - head) * u
 	_skin(ci, pts, head, 13.0 * u, alpha, w, glow, float(f))
-	ci.draw_arc(head, 12.0 * u, PI * 0.2, PI * 0.8, 8, Shade.fade(Shade.SKIN_SHADOW, 0.5 * alpha), maxf(1.0, 1.6 * u))
+	FD.arc(ci, head, 12.0 * u, PI * 0.2, PI * 0.8, 8, Shade.fade(Shade.SKIN_SHADOW, 0.5 * alpha), maxf(1.0, 1.6 * u))
 	Hair.cap_side(ci, head, u, f, hair, alpha)
 	Expr.side(ci, head, u, f, hair, alpha, "hurt" if wince else expr, blink)
 
@@ -91,6 +92,6 @@ static func face_front(ci: CanvasItem, head: Vector2, k: float, hair: Color, alp
 	Shade.fill(ci, neck, Shade.fade(Shade.SKIN_SHADOW, alpha), maxf(1.0, w * 0.8), Shade.ink(Shade.fade(Shade.SKIN, alpha)))
 	var pts: PackedVector2Array = _head_pts(head, 24.0 * k, 32)
 	_skin(ci, pts, head, 24.0 * k, alpha, w, glow, -1.0)
-	ci.draw_arc(head, 22.5 * k, PI * 0.22, PI * 0.78, 10, Shade.fade(Shade.SKIN_SHADOW, 0.5 * alpha), maxf(1.0, 2.2 * k))
+	FD.arc(ci, head, 22.5 * k, PI * 0.22, PI * 0.78, 10, Shade.fade(Shade.SKIN_SHADOW, 0.5 * alpha), maxf(1.0, 2.2 * k))
 	Hair.cap_front(ci, head, k, hair, alpha)
 	Expr.front(ci, head, k, hair, alpha, expr, blink, gaze)

@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Draws the moving things of Alley Brawl in world space (Story 025, split out of the view):
 ## Gloomlings, defeat puffs, the boss and its health bar, the pet, the hunter with the block
 ## shield and dizzy stars, hit particles and rings. `v` is the AlleyBrawlView; it is read-only
@@ -55,12 +56,12 @@ static func draw(v: Variant) -> void:
 	for p in v.particles:
 		var col: Color = p["color"]
 		col.a = clampf(float(p["life"]) / 20.0, 0.0, 1.0)
-		v.draw_circle(p["pos"], 3.0 * u, col)
+		FD.circle(v, p["pos"], 3.0 * u, col)
 	for r in v.rings:
 		var k: float = float(r["t"]) / 14.0
 		var rc: Color = r["color"]
 		rc.a = 1.0 - k
-		v.draw_arc(r["pos"], (10.0 + 30.0 * k) * u, 0.0, TAU, 20, rc, 3.0 * u, true)
+		FD.arc(v, r["pos"], (10.0 + 30.0 * k) * u, 0.0, TAU, 20, rc, 3.0 * u, true)
 	v.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -106,9 +107,9 @@ static func _hunter(v: Variant, calm: bool) -> void:
 		var a0: float = -1.15 if f > 0.0 else PI - 1.15
 		var glow := Color("#7FF3FF")
 		var pulse: float = 1.0 if calm else 0.85 + 0.15 * sin(float(v.anim_t) * 0.4)
-		v.draw_arc(c, 58.0 * u, a0, a0 + 2.3, 18, Color(glow, 0.22 * v.block_t * pulse), 14.0 * u, true)
-		v.draw_arc(c, 58.0 * u, a0, a0 + 2.3, 18, Color(glow, 0.95 * v.block_t), 4.0 * u, true)
-		v.draw_arc(c, 52.0 * u, a0 + 0.2, a0 + 2.1, 14, Color(1, 1, 1, 0.45 * v.block_t), 2.0 * u, true)
+		FD.arc(v, c, 58.0 * u, a0, a0 + 2.3, 18, Color(glow, 0.22 * v.block_t * pulse), 14.0 * u, true)
+		FD.arc(v, c, 58.0 * u, a0, a0 + 2.3, 18, Color(glow, 0.95 * v.block_t), 4.0 * u, true)
+		FD.arc(v, c, 52.0 * u, a0 + 0.2, a0 + 2.1, 14, Color(1, 1, 1, 0.45 * v.block_t), 2.0 * u, true)
 	if v.guard_break_t > 0:
 		_stars(v, Vector2(v.player_x, v.ground_y - 150.0 * u), u, calm, 1.0)
 
@@ -119,5 +120,5 @@ static func _stars(v: Variant, c: Vector2, u: float, calm: bool, scale: float) -
 	for i in 3:
 		var a: float = spin + TAU * float(i) / 3.0
 		var p: Vector2 = c + Vector2(cos(a) * 22.0 * u * scale, sin(a) * 6.0 * u)
-		v.draw_circle(p, 6.0 * u * scale, Color("#FFD36E", 0.3))
-		v.draw_circle(p, 3.2 * u * scale, Color("#FFF3B0"))
+		FD.circle(v, p, 6.0 * u * scale, Color("#FFD36E", 0.3))
+		FD.circle(v, p, 3.2 * u * scale, Color("#FFF3B0"))

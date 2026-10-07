@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Shared shading helpers for the idol hunter art (Story 015): soft outlines, two-tone
 ## shading and colour utilities. All functions draw onto a CanvasItem and must be called
 ## from its _draw(). Colours passed in should already carry the view alpha.
@@ -80,8 +81,8 @@ static func taper_pts(a: Vector2, b: Vector2, ra: float, rb: float, seg: int = 6
 ## Tapered limb of widths `wa` -> `wb` with outline, a 3-tone body (base, shadow stripe,
 ## highlight stripe) and an optional rim light `rim` (alpha 0 = none) on the lit side.
 static func taper(ci: CanvasItem, a: Vector2, b: Vector2, wa: float, wb: float, col: Color, outline_w: float, light_side: float = -1.0, rim: Color = Color(0, 0, 0, 0)) -> void:
-	ci.draw_colored_polygon(taper_pts(a, b, wa * 0.5 + outline_w, wb * 0.5 + outline_w), ink(col))
-	ci.draw_colored_polygon(taper_pts(a, b, wa * 0.5, wb * 0.5), col)
+	FD.poly(ci, taper_pts(a, b, wa * 0.5 + outline_w, wb * 0.5 + outline_w), ink(col))
+	FD.poly(ci, taper_pts(a, b, wa * 0.5, wb * 0.5), col)
 	var n: Vector2 = (b - a).orthogonal().normalized()
 	if n.x * light_side < 0.0 or (absf(n.x) < 0.01 and n.y > 0.0):
 		n = -n
@@ -96,25 +97,25 @@ static func fill(ci: CanvasItem, pts, col: Color, outline_w: float, outline_col:
 	var poly := PackedVector2Array(pts)
 	if poly.size() < 3:
 		return
-	ci.draw_colored_polygon(poly, col)
+	FD.poly(ci, poly, col)
 	if outline_w > 0.0:
 		var closed := PackedVector2Array(poly)
 		closed.append(poly[0])
-		ci.draw_polyline(closed, outline_col, outline_w, true)
+		FD.polyline(ci, closed, outline_col, outline_w, true)
 
 
 ## Filled circle plus an arc outline.
 static func circle(ci: CanvasItem, center: Vector2, r: float, col: Color, outline_w: float, outline_col: Color) -> void:
-	ci.draw_circle(center, r, col)
+	FD.circle(ci, center, r, col)
 	if outline_w > 0.0:
-		ci.draw_arc(center, r, 0.0, TAU, 24, outline_col, outline_w, true)
+		FD.arc(ci, center, r, 0.0, TAU, 24, outline_col, outline_w, true)
 
 
 ## Limb: a capsule from `a` to `b` of width `w` with outline, a lit stripe on the
 ## `light_side` (-1 left, 1 right) and a shadow stripe on the other.
 static func limb(ci: CanvasItem, a: Vector2, b: Vector2, w: float, col: Color, outline_w: float, light_side: float = -1.0) -> void:
-	ci.draw_colored_polygon(capsule(a, b, w * 0.5 + outline_w), ink(col))
-	ci.draw_colored_polygon(capsule(a, b, w * 0.5), col)
+	FD.poly(ci, capsule(a, b, w * 0.5 + outline_w), ink(col))
+	FD.poly(ci, capsule(a, b, w * 0.5), col)
 	var n: Vector2 = (b - a).orthogonal().normalized()
 	if n.x * light_side < 0.0 or (absf(n.x) < 0.01 and n.y > 0.0):
 		n = -n
@@ -163,4 +164,4 @@ static func _draw_pieces(ci: CanvasItem, pieces: Array, col: Color) -> void:
 			area += poly[i].x * q.y - q.x * poly[i].y
 		if absf(area) * 0.5 < MIN_PIECE_AREA:
 			continue
-		ci.draw_colored_polygon(poly, col)
+		FD.poly(ci, poly, col)

@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Rhythm Tap mini-game (Story 026, Alley Brawl standard): notes fall down four lanes as glowing
 ## orbs; tap the round pad (or D/F/J/K) when an orb reaches the hit line. Perfect = 3, Good = 1,
 ## every 10 combo triggers a FEVER (bonus + harder backdrop pulse). Code-drawn, delta-time driven.
@@ -268,12 +269,12 @@ func _draw_notes(lay: Dictionary) -> void:
 		var lane: int = int(n["lane"])
 		var c: Color = LANE_COLORS[lane]
 		var p: Vector2 = _lane_center(lane, y)
-		draw_colored_polygon(PackedVector2Array([p + Vector2(-rad * 0.8, 0.0), p + Vector2(rad * 0.8, 0.0), p + Vector2(0.0, -rad * 3.2)]), Color(c, 0.22))
-		draw_circle(p, rad * 1.5, Color(c, 0.14))
-		draw_circle(p, rad * 1.15, Color(c, 0.25))
-		draw_circle(p, rad, c)
-		draw_circle(p - Vector2(rad * 0.25, rad * 0.3), rad * 0.45, Color(1, 1, 1, 0.55))
-		draw_arc(p, rad, 0.0, TAU, 28, Color(1, 1, 1, 0.8), 2.0 * _u, true)
+		FD.poly(self, PackedVector2Array([p + Vector2(-rad * 0.8, 0.0), p + Vector2(rad * 0.8, 0.0), p + Vector2(0.0, -rad * 3.2)]), Color(c, 0.22))
+		FD.circle(self, p, rad * 1.5, Color(c, 0.14))
+		FD.circle(self, p, rad * 1.15, Color(c, 0.25))
+		FD.circle(self, p, rad, c)
+		FD.circle(self, p - Vector2(rad * 0.25, rad * 0.3), rad * 0.45, Color(1, 1, 1, 0.55))
+		FD.arc(self, p, rad, 0.0, TAU, 28, Color(1, 1, 1, 0.8), 2.0 * _u, true)
 
 
 func _draw_pads(lay: Dictionary) -> void:
@@ -284,11 +285,11 @@ func _draw_pads(lay: Dictionary) -> void:
 		var g: float = float(pad_glow[l])
 		var p := _lane_center(l, cy)
 		var rr: float = r * (1.0 - 0.06 * g)
-		draw_circle(p + Vector2(0, 3.0 * _u), rr, Color(0, 0, 0, 0.35))
+		FD.circle(self, p + Vector2(0, 3.0 * _u), rr, Color(0, 0, 0, 0.35))
 		if g > 0.0:
-			draw_circle(p, rr + 14.0 * _u * g, Color(c, 0.25 * g))
-		draw_circle(p, rr, Color(c.lerp(Color.WHITE, 0.35 * g), 0.92))
-		draw_arc(p, rr - 2.0 * _u, 0.0, TAU, 36, Color(1, 1, 1, 0.5), 2.5 * _u, true)
+			FD.circle(self, p, rr + 14.0 * _u * g, Color(c, 0.25 * g))
+		FD.circle(self, p, rr, Color(c.lerp(Color.WHITE, 0.35 * g), 0.92))
+		FD.arc(self, p, rr - 2.0 * _u, 0.0, TAU, 36, Color(1, 1, 1, 0.5), 2.5 * _u, true)
 		Kit.text(self, LANE_KEYS[l], Rect2(p - Vector2(rr, rr), Vector2(rr, rr) * 2.0), rr * 0.7, UiTheme.TEXT_ON_ACCENT)
 
 

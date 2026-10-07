@@ -1,5 +1,6 @@
 class_name TutorialOverlay
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## First-run walkthrough (Story 022): dimmed screen, a spotlight ring and bobbing arrow
 ## on the relevant tab, a friendly card with Next / Skip. Skippable at any step.
 ## Usage: add under Main, then `start({"home": Rect2, ...})` with global tab rects.
@@ -167,4 +168,4 @@ func _draw() -> void:
 	var tip := Vector2(hole.get_center().x, hole.position.y - 10.0 + bob)
 	var arrow := PackedVector2Array([tip, tip + Vector2(-26, -34), tip + Vector2(-10, -34),
 		tip + Vector2(-10, -64), tip + Vector2(10, -64), tip + Vector2(10, -34), tip + Vector2(26, -34)])
-	draw_colored_polygon(arrow, UiTheme.GOLD)
+	FD.poly(self, arrow, UiTheme.GOLD)

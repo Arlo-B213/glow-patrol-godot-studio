@@ -47,3 +47,4 @@
 | 032 | Hunter and Lanternboys visual upgrade | UI/Feel | Ready | N/A |
 | 033 | Pets visual upgrade | UI/Feel | In Review | N/A |
 | 034 | Environment, lighting/FX toolkit and UI polish (Club perf open) | UI/Feel | In Review | [story-034](story-034-environment-lighting-and-ui-polish.md) |
+| 035 | Performance pass (benchmarked, fixes pending) | UI/Feel | Ready | [story-035](story-035-performance-pass.md) |

@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Shared code-drawn lighting toolkit (Story 034). Every helper draws onto any CanvasItem inside
 ## its _draw(). Glows use ONE cached radial-gradient mesh (a single draw_mesh call, tinted via
 ## modulate) so a halo costs about the same as one circle. `t` is seconds of ambient animation;
@@ -95,7 +96,7 @@ static func shaft(ci: CanvasItem, origin: Vector2, angle: float, length: float, 
 	var pts := PackedVector2Array([origin + side * narrow, origin - side * narrow, far - side * spread * 0.5, far + side * spread * 0.5])
 	var hot := Color(col.r, col.g, col.b, col.a * strength)
 	var cold := Color(col.r, col.g, col.b, 0.0)
-	ci.draw_polygon(pts, PackedColorArray([hot, hot, cold, cold]))
+	FD.gpoly(ci, pts, PackedColorArray([hot, hot, cold, cold]))
 
 
 ## Darkened screen edges. `strength` 0..1 is the alpha at the very edge; `depth` is px of falloff.
@@ -113,25 +114,25 @@ static func _edges(ci: CanvasItem, r: Rect2, edge: Color, d: float) -> void:
 	var clear := Color(edge.r, edge.g, edge.b, 0.0)
 	var p := r.position
 	var e := r.end
-	ci.draw_polygon(PackedVector2Array([p, Vector2(e.x, p.y), Vector2(e.x, p.y + d), Vector2(p.x, p.y + d)]), PackedColorArray([edge, edge, clear, clear]))
-	ci.draw_polygon(PackedVector2Array([Vector2(p.x, e.y), Vector2(e.x, e.y), Vector2(e.x, e.y - d), Vector2(p.x, e.y - d)]), PackedColorArray([edge, edge, clear, clear]))
-	ci.draw_polygon(PackedVector2Array([p, Vector2(p.x + d, p.y), Vector2(p.x + d, e.y), Vector2(p.x, e.y)]), PackedColorArray([edge, clear, clear, edge]))
-	ci.draw_polygon(PackedVector2Array([Vector2(e.x, p.y), Vector2(e.x - d, p.y), Vector2(e.x - d, e.y), e]), PackedColorArray([edge, clear, clear, edge]))
+	FD.gpoly(ci, PackedVector2Array([p, Vector2(e.x, p.y), Vector2(e.x, p.y + d), Vector2(p.x, p.y + d)]), PackedColorArray([edge, edge, clear, clear]))
+	FD.gpoly(ci, PackedVector2Array([Vector2(p.x, e.y), Vector2(e.x, e.y), Vector2(e.x, e.y - d), Vector2(p.x, e.y - d)]), PackedColorArray([edge, edge, clear, clear]))
+	FD.gpoly(ci, PackedVector2Array([p, Vector2(p.x + d, p.y), Vector2(p.x + d, e.y), Vector2(p.x, e.y)]), PackedColorArray([edge, clear, clear, edge]))
+	FD.gpoly(ci, PackedVector2Array([Vector2(e.x, p.y), Vector2(e.x - d, p.y), Vector2(e.x - d, e.y), e]), PackedColorArray([edge, clear, clear, edge]))
 
 
 ## Vertical two-colour gradient filling `rect` (one polygon).
 static func gradient_rect(ci: CanvasItem, rect: Rect2, top: Color, bottom: Color) -> void:
 	var p := rect.position
 	var e := rect.end
-	ci.draw_polygon(PackedVector2Array([p, Vector2(e.x, p.y), e, Vector2(p.x, e.y)]), PackedColorArray([top, top, bottom, bottom]))
+	FD.gpoly(ci, PackedVector2Array([p, Vector2(e.x, p.y), e, Vector2(p.x, e.y)]), PackedColorArray([top, top, bottom, bottom]))
 
 
 ## Soft horizontal band (fog / haze): transparent at both edges of `h`, `col` in the middle.
 static func fog_band(ci: CanvasItem, x0: float, x1: float, y: float, h: float, col: Color) -> void:
 	var clear := Color(col.r, col.g, col.b, 0.0)
 	var mid: float = y + h * 0.5
-	ci.draw_polygon(PackedVector2Array([Vector2(x0, y), Vector2(x1, y), Vector2(x1, mid), Vector2(x0, mid)]), PackedColorArray([clear, clear, col, col]))
-	ci.draw_polygon(PackedVector2Array([Vector2(x0, mid), Vector2(x1, mid), Vector2(x1, y + h), Vector2(x0, y + h)]), PackedColorArray([col, col, clear, clear]))
+	FD.gpoly(ci, PackedVector2Array([Vector2(x0, y), Vector2(x1, y), Vector2(x1, mid), Vector2(x0, mid)]), PackedColorArray([clear, clear, col, col]))
+	FD.gpoly(ci, PackedVector2Array([Vector2(x0, mid), Vector2(x1, mid), Vector2(x1, y + h), Vector2(x0, y + h)]), PackedColorArray([col, col, clear, clear]))
 
 
 ## Floating bokeh dust motes drifting upward inside `rect` (stateless; `count` capped at 40).
@@ -146,7 +147,7 @@ static func motes(ci: CanvasItem, rect: Rect2, t: float, count: int, col: Color,
 		var tw: float = 0.55 if t == 0.0 else 0.5 + 0.5 * sin(t * (0.8 + h3) + float(i))
 		var s: float = size * (0.6 + h3)
 		halo(ci, Vector2(x, y), s * 3.2, col, 0.35 * tw)
-		ci.draw_circle(Vector2(x, y), s * 0.45, Color(col.r, col.g, col.b, col.a * (0.4 + 0.5 * tw)))
+		FD.circle(ci, Vector2(x, y), s * 0.45, Color(col.r, col.g, col.b, col.a * (0.4 + 0.5 * tw)))
 
 
 ## Subtle film grain: a few faint specks that reshuffle ~8 times a second (static when t = 0).
@@ -164,8 +165,8 @@ static func shock_ring(ci: CanvasItem, c: Vector2, max_r: float, col: Color, p: 
 		return
 	var e: float = 1.0 - pow(1.0 - p, 3.0)
 	var a: float = (1.0 - p)
-	ci.draw_arc(c, max_r * e, 0.0, TAU, 28, Color(col.r, col.g, col.b, col.a * a * 0.9), width * (1.0 - p * 0.6), true)
-	ci.draw_arc(c, max_r * e * 0.82, 0.0, TAU, 24, Color(col.r, col.g, col.b, col.a * a * 0.3), width * 2.2 * (1.0 - p), true)
+	FD.arc(ci, c, max_r * e, 0.0, TAU, 28, Color(col.r, col.g, col.b, col.a * a * 0.9), width * (1.0 - p * 0.6), true)
+	FD.arc(ci, c, max_r * e * 0.82, 0.0, TAU, 24, Color(col.r, col.g, col.b, col.a * a * 0.3), width * 2.2 * (1.0 - p), true)
 
 
 ## Impact flash: bright burst star + halo; `p` progress 0..1.
@@ -179,7 +180,7 @@ static func impact_flash(ci: CanvasItem, c: Vector2, r: float, col: Color, p: fl
 		var ang: float = TAU * float(k) / 8.0 + p * 0.6
 		var rr: float = r * (0.9 if k % 2 == 0 else 0.28) * (1.0 - p * 0.5)
 		pts.append(c + Vector2(cos(ang), sin(ang)) * rr)
-	ci.draw_colored_polygon(pts, Color(1, 1, 1, 0.9 * a))
+	FD.poly(ci, pts, Color(1, 1, 1, 0.9 * a))
 
 
 ## Tapered glowing trail through `pts` (oldest first), fading toward the tail.
@@ -215,7 +216,7 @@ static func sheen(ci: CanvasItem, rect: Rect2, p: float, strength: float = 0.28)
 	var a: float = maxf(slant - (x - lo), 0.0)
 	var pts := PackedVector2Array([tp + Vector2(maxf(lo, x + slant), 0), tp + Vector2(minf(hi, x + w + slant), 0), b + Vector2(minf(hi, x + w), 0), b + Vector2(maxf(lo, x), 0)])
 	if a >= 0.0 and pts[0].x < pts[1].x and pts[3].x < pts[2].x:
-		ci.draw_colored_polygon(pts, c)
+		FD.poly(ci, pts, c)
 
 
 ## Deterministic 0..1 hash of (i, salt).

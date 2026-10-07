@@ -1,5 +1,6 @@
 class_name FinaleWinCard
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## "Lantern Hero!" celebration card (Story 020): code-drawn glow rays behind the hunter hero
 ## portrait, repeating sparkle bursts, the title and the rewards list. Build with
 ## FinaleWinCard.create(rewards, on_done); `rewards` is StoryRewards.grant_finale()'s result.
@@ -98,6 +99,6 @@ func _draw() -> void:
 	for i in RAY_COUNT:
 		var a := TAU * float(i) / RAY_COUNT + spin
 		var w := TAU / RAY_COUNT * 0.32
-		draw_colored_polygon(PackedVector2Array([c,
+		FD.poly(self, PackedVector2Array([c,
 			c + Vector2(cos(a - w), sin(a - w)) * reach, c + Vector2(cos(a + w), sin(a + w)) * reach]),
 			Color(UiTheme.GOLD.r, UiTheme.GOLD.g, UiTheme.GOLD.b, 0.08))

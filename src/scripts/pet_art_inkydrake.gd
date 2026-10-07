@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Inkydrake (tiny teal dragon) for PetArt. Soft translucent wing-fins that flap with a lag
 ## per finger, a curling spade-tipped tail, horns, head frills, belly plates and ink-spot
 ## markings. Baby: stub horns and tiny fins. Child: capped horns, bigger fins. Adult: large
@@ -28,14 +29,14 @@ static func _fin(ci: CanvasItem, p: Dictionary, side: float, base: Vector2, ws: 
 		pts.append(tips[i + 1])
 	pts.append(base + Vector2(side * 2.0, 6.0))
 	var poly := PetArt.poly(p, pts)
-	ci.draw_colored_polygon(poly, Shade.fade(PetArt.shade_of(col), 0.82))
+	FD.poly(ci, poly, Shade.fade(PetArt.shade_of(col), 0.82))
 	var inner: Array = []
 	for v in pts:
 		inner.append(base + ((v as Vector2) - base) * 0.84 + Vector2(0, -0.6))
-	ci.draw_colored_polygon(PetArt.poly(p, inner), Shade.fade(col, 0.82))
+	FD.poly(ci, PetArt.poly(p, inner), Shade.fade(col, 0.82))
 	var closed := PackedVector2Array(poly)
 	closed.append(poly[0])
-	ci.draw_polyline(closed, Shade.fade(PetArt.ol_of(col), 0.9), PetArt.lw(p, 1.3), true)
+	FD.polyline(ci, closed, Shade.fade(PetArt.ol_of(col), 0.9), PetArt.lw(p, 1.3), true)
 	for i in 3:
 		var vc := Shade.fade(Shade.lighten(col, 0.7), 0.9) if glow_veins else Shade.fade(PetArt.ol_of(col), 0.55)
 		ci.draw_line(PetArt.q(p, base.x, base.y), PetArt.q(p, (tips[i] as Vector2).x, (tips[i] as Vector2).y), vc, PetArt.lw(p, 1.0), true)
@@ -70,12 +71,12 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 		PetArt.cel(ci, p, lx, -4.8, 6.6, 5.0, col.darkened(0.04), 0.0, 14, false)
 		for j in 3:
 			var cx: float = lx + (float(j) - 1.0) * 3.0
-			ci.draw_colored_polygon(PetArt.poly(p, [Vector2(cx - 1.1, -1.8), Vector2(cx + 1.1, -1.8), Vector2(cx, 0.4)]), pale)
+			FD.poly(ci, PetArt.poly(p, [Vector2(cx - 1.1, -1.8), Vector2(cx + 1.1, -1.8), Vector2(cx, 0.4)]), pale)
 	# Body: belly plates and ink markings.
 	PetArt.cel(ci, p, 0.0, -21.0, 19.0 * bs, 17.0 * bs, col)
-	ci.draw_colored_polygon(PetArt.ell(p, 0.0, -17.0, 11.0 * bs, 11.5 * bs, 0.0, 18), pale)
+	FD.poly(ci, PetArt.ell(p, 0.0, -17.0, 11.0 * bs, 11.5 * bs, 0.0, 18), pale)
 	for j in 4:
-		ci.draw_arc(PetArt.q(p, 0.0, -25.0 + float(j) * 3.4), (9.0 - float(j) * 0.6) * bs * k, PI * 0.12, PI * 0.88, 8,
+		FD.arc(ci, PetArt.q(p, 0.0, -25.0 + float(j) * 3.4), (9.0 - float(j) * 0.6) * bs * k, PI * 0.12, PI * 0.88, 8,
 			Shade.fade(PetArt.shade_of(pale), 0.85), 1.0, true)
 	PetArt.speckles(ci, p, [Vector2(-13, -26), Vector2(-9, -30), Vector2(12, -27), Vector2(15, -21), Vector2(-15, -19)],
 		1.5, Shade.fade(Shade.darken(col, 0.45), 0.8))
@@ -84,7 +85,7 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 		for i in 14:
 			var a := float(i) * 0.5
 			sw.append(PetArt.q(p, -14.0 + cos(a) * (1.0 + a * 0.55), -16.0 + sin(a) * (1.0 + a * 0.55)))
-		ci.draw_polyline(sw, Shade.fade(acc, 0.9), PetArt.lw(p, 1.3), true)
+		FD.polyline(ci, sw, Shade.fade(acc, 0.9), PetArt.lw(p, 1.3), true)
 	# Horns.
 	var horn: float = [0.0, 5.0, 10.0, 15.0][stage]
 	for side in [-1.0, 1.0]:
@@ -110,8 +111,8 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 	PetArt.speckles(ci, p, [Vector2(-15, -55), Vector2(-11, -58), Vector2(14, -56), Vector2(18, -52)], 1.3, Shade.fade(Shade.darken(col, 0.45), 0.8))
 	PetArt.cel(ci, p, 0.0, -37.0, 10.5 * hs, 7.6 * hs, Shade.lighten(col, 0.3), 0.0, 16, false)
 	for sx in [-1.0, 1.0]:
-		ci.draw_circle(PetArt.q(p, sx * 3.4, -39.5), 0.85 * k, Face.INK)
-		ci.draw_circle(PetArt.q(p, sx * 3.6, -39.8), 0.35 * k, Color(1, 1, 1, 0.8))
+		FD.circle(ci, PetArt.q(p, sx * 3.4, -39.5), 0.85 * k, Face.INK)
+		FD.circle(ci, PetArt.q(p, sx * 3.6, -39.8), 0.35 * k, Color(1, 1, 1, 0.8))
 	Face.eyes(ci, p, -47.0, 11.0 * hs, 5.4)
 	Face.cheeks(ci, p, 17.5 * hs, -38.5, 4.2)
 	Face.mouth(ci, p, 0.0, -34.2, 8.5)
@@ -125,5 +126,5 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 		for i in 3:
 			var ph: float = fmod(t * 0.35 + float(i) * 0.33, 1.0) if anim else float(i) * 0.33
 			var bp := PetArt.q(p, 28.0 + float(i) * 4.0 + sin(ph * 5.0) * 2.0, -20.0 - ph * 38.0)
-			ci.draw_arc(bp, (2.6 + float(i)) * k, 0.0, TAU, 12, Shade.fade(Shade.lighten(acc, 0.4), 1.0 - ph), 1.1, true)
-			ci.draw_circle(bp + Vector2(-0.7, -0.7) * k, 0.7 * k, Color(1, 1, 1, 0.8 * (1.0 - ph)))
+			FD.arc(ci, bp, (2.6 + float(i)) * k, 0.0, TAU, 12, Shade.fade(Shade.lighten(acc, 0.4), 1.0 - ph), 1.1, true)
+			FD.circle(ci, bp + Vector2(-0.7, -0.7) * k, 0.7 * k, Color(1, 1, 1, 0.8 * (1.0 - ph)))

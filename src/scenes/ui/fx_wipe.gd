@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## One-shot glow wipe for screen transitions (Story 034): a bright slanted band with a soft
 ## glow sweeps left to right across the content in ~0.3 s, then frees itself.
 
@@ -35,4 +36,4 @@ func _draw() -> void:
 	var slant := 60.0
 	var col := UiTheme.ACCENT.lightened(0.2)
 	FxLight.halo(self, Vector2(x, size.y * 0.5), size.y * 0.5, col, 0.45 * a, size.y * 0.55)
-	draw_colored_polygon(PackedVector2Array([Vector2(x - 14 + slant, 0), Vector2(x + 14 + slant, 0), Vector2(x + 14 - slant, size.y), Vector2(x - 14 - slant, size.y)]), Color(1, 1, 1, 0.35 * a))
+	FD.poly(self, PackedVector2Array([Vector2(x - 14 + slant, 0), Vector2(x + 14 + slant, 0), Vector2(x + 14 - slant, size.y), Vector2(x - 14 - slant, size.y)]), Color(1, 1, 1, 0.35 * a))

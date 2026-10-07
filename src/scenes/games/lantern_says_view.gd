@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Lantern Says mini-game (Story 026, Alley Brawl standard): four big glowing lanterns light up in
 ## a pattern with a distinct tone each; repeat it back. The pattern grows by one every round.
 ## Forgiving rule: 3 hearts; a wrong tap costs a heart and replays the same pattern.
@@ -281,4 +282,4 @@ func _draw_hud(u: float) -> void:
 	for i in n:
 		var done: bool = (state == State.TURN or state == State.CORRECT) and i < input_i
 		var dc := Color(UiTheme.GOLD, 0.95) if done else Color(1, 1, 1, 0.3)
-		draw_circle(Vector2(x0 + float(i) * dot * 1.5, br.end.y + 16.0 * u), dot * 0.5, dc)
+		FD.circle(self, Vector2(x0 + float(i) * dot * 1.5, br.end.y + 16.0 * u), dot * 0.5, dc)

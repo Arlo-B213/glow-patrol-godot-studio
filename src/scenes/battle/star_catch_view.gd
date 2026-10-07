@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Star Catch mini-game (Story 027, Alley Brawl standard): the hunter (with their pet beside
 ## them) holds a lantern basket and catches falling stars on a dusk sky. Golden stars make every
 ## catch count double for a few seconds, magnet stars pull stars in, Gloomlings cost 3 points and
@@ -277,7 +278,7 @@ func _draw() -> void:
 	CatchArt.hero(self, maxf(hx, 0.0), gy, g["hs"], _look, facing, int(_clock * 60.0), absf(hv) > 25.0 * u, hurt, _glow, calm)
 	Kit.pet_cheer(self, Vector2(_pet_x, gy + 6.0 * u), 54.0 * u, t, 0.0 if calm else _cheer)
 	for q in particles:
-		draw_circle(q["pos"], 3.0 * u, Color(q["color"], 1.0 - float(q["t"]) * 2.0))
+		FD.circle(self, q["pos"], 3.0 * u, Color(q["color"], 1.0 - float(q["t"]) * 2.0))
 	for pp in popups:
 		var f: float = float(pp["t"]) / 0.9
 		var pos: Vector2 = pp["pos"] + Vector2(-60.0 * u, (0.0 if calm else -f * 40.0 * u))

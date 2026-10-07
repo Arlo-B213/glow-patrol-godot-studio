@@ -1,5 +1,6 @@
 class_name StickerBadge
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Round sticker badge drawn in code: coloured disc, scalloped rim and a UiIcon.
 ## Locked stickers are grey with a "?".
 
@@ -26,10 +27,10 @@ func _draw() -> void:
 	# Scalloped rim: 12 small discs around the edge.
 	for i in 12:
 		var a := TAU * float(i) / 12.0
-		draw_circle(c + Vector2(cos(a), sin(a)) * r * 0.86, r * 0.17, base.lightened(0.15))
-	draw_circle(c, r * 0.86, base.darkened(0.35))
-	draw_circle(c, r * 0.74, base)
-	draw_arc(c, r * 0.62, 0.0, TAU, 40, Color(1, 1, 1, 0.35 if earned else 0.15), 2.0, true)
+		FD.circle(self, c + Vector2(cos(a), sin(a)) * r * 0.86, r * 0.17, base.lightened(0.15))
+	FD.circle(self, c, r * 0.86, base.darkened(0.35))
+	FD.circle(self, c, r * 0.74, base)
+	FD.arc(self, c, r * 0.62, 0.0, TAU, 40, Color(1, 1, 1, 0.35 if earned else 0.15), 2.0, true)
 	var inner := Rect2(c - Vector2(r, r) * 0.46, Vector2(r, r) * 0.92)
 	if earned:
 		UiIcons.draw(self, icon_name, inner, UiTheme.TEXT_ON_ACCENT if base.get_luminance() > 0.5 else Color.WHITE)

@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Hae and Bit for the Lanternboy portraits (Story 009, upgraded in Story 032): shaped
 ## garments, tapered limbs, gradient hair with strand highlights, lantern rim light.
 ## Design space 100 x 130; called from LanternboyArt.draw(). Nun lives in lanternboy_nun.gd.
@@ -34,7 +35,7 @@ static func hae(ci: CanvasItem, pulse: float) -> void:
 	S.taper(ci, P.v(33, 69), P.v(28, 91), 9.5, 7.6, coat, OW)
 	S.limb(ci, P.v(28.4, 88.4), P.v(28, 91), 8.6, GOLD, 0.8)
 	P.hand(ci, P.v(28, 94))
-	ci.draw_colored_polygon(PackedVector2Array([P.v(45, 54), P.v(55, 54), P.v(56, 67), P.v(44, 67)]), S.SKIN_SHADOW)
+	FD.poly(ci, PackedVector2Array([P.v(45, 54), P.v(55, 54), P.v(56, 67), P.v(44, 67)]), S.SKIN_SHADOW)
 	var body: Array = [P.v(35, 64), P.v(65, 64), P.v(70, 72), P.v(68, 86), P.v(64, 97), P.v(74, 113), P.v(26, 113), P.v(36, 97), P.v(32, 86), P.v(30, 72)]
 	torso(ci, body, coat)
 	P.cast_light(ci, body, P.v(77, 104), GOLD, pulse, P.v(69.5, 72), P.v(73.5, 112))
@@ -88,7 +89,7 @@ static func bit(ci: CanvasItem, t: float, anim: bool, pulse: float) -> void:
 	S.taper(ci, P.v(68, 70), P.v(80, 92), 10.5, 8.2, jacket, OW)
 	ci.draw_line(P.v(74, 80), P.v(75, 82.5), CREAM, 2.6)
 	P.hand(ci, P.v(81, 95))
-	ci.draw_colored_polygon(PackedVector2Array([P.v(45, 54), P.v(55, 54), P.v(56, 67), P.v(44, 67)]), S.SKIN_SHADOW)
+	FD.poly(ci, PackedVector2Array([P.v(45, 54), P.v(55, 54), P.v(56, 67), P.v(44, 67)]), S.SKIN_SHADOW)
 	var body: Array = [P.v(33, 64), P.v(67, 64), P.v(72, 72), P.v(73, 90), P.v(77, 111), P.v(23, 111), P.v(27, 90), P.v(28, 72)]
 	torso(ci, body, jacket)
 	P.cast_light(ci, body, P.v(14, 70), CORAL, pulse, P.v(28.5, 72), P.v(27, 100))
@@ -99,7 +100,7 @@ static func bit(ci: CanvasItem, t: float, anim: bool, pulse: float) -> void:
 		S.fill(ci, [P.v(50 + sx * 6, 92), P.v(50 + sx * 13, 92), P.v(50 + sx * 13, 99), P.v(50 + sx * 6, 99)], S.darken(jacket, 0.15), 0.9, S.ink(jacket))
 	ci.draw_line(P.v(23.5, 109), P.v(76.5, 109), S.darken(jacket, 0.35), 2.2)
 	S.fill(ci, S.ellipse(P.v(36, 80), 4.6, 4.6, 10), CREAM, 0.8, S.ink(jacket))
-	ci.draw_circle(P.v(36, 80), 1.6, CORAL)
+	FD.circle(ci, P.v(36, 80), 1.6, CORAL)
 	P.face(ci, c, false, Color("#3E9AA8"), 0.4)
 	P.mouth(ci, c + P.v(0, 12), "grin")
 	var f: float = sw * 0.7
@@ -107,13 +108,13 @@ static func bit(ci: CanvasItem, t: float, anim: bool, pulse: float) -> void:
 		P.v(55, 19), P.v(66 + f * 0.5, 8), P.v(66, 22), P.v(79 + f * 0.8, 24), P.v(72, 34), P.v(75, 45),
 		P.v(68, 34), P.v(58, 28), P.v(46, 31), P.v(36, 36), P.v(31, 46)]
 	P.hair(ci, spikes, hair, [[P.v(36, 22), P.v(42, 14), P.v(48, 11)], [P.v(58, 22), P.v(64, 15), P.v(67, 11)], [P.v(30, 40), P.v(28, 31)]])
-	ci.draw_arc(c + P.v(0, -1), 26.0, PI * 1.02, PI * 1.98, 16, Color("#2A1F44"), 3.4, true)
-	ci.draw_arc(c + P.v(0, -3), 24.0, PI * 1.2, PI * 1.5, 8, S.fade(Color("#8A78C8"), 0.7), 1.2, true)
+	FD.arc(ci, c + P.v(0, -1), 26.0, PI * 1.02, PI * 1.98, 16, Color("#2A1F44"), 3.4, true)
+	FD.arc(ci, c + P.v(0, -3), 24.0, PI * 1.2, PI * 1.5, 8, S.fade(Color("#8A78C8"), 0.7), 1.2, true)
 	for sx in [-1.0, 1.0]:
 		var ear := c + P.v(sx * 25.0, 4.0)
 		S.fill(ci, S.ellipse(ear, 5.0, 7.0, 14), Color("#2A1F44"), OW, S.ink(Color("#2A1F44")))
-		ci.draw_circle(ear, 3.0, S.fade(CORAL, 0.5 + 0.3 * pulse))
-		ci.draw_circle(ear, 1.8, S.fade(S.lighten(CORAL, 0.5), 0.95))
+		FD.circle(ci, ear, 3.0, S.fade(CORAL, 0.5 + 0.3 * pulse))
+		FD.circle(ci, ear, 1.8, S.fade(S.lighten(CORAL, 0.5), 0.95))
 	var hand_p := P.v(14 + wave, 46)
 	S.taper(ci, P.v(31, 70), P.v(19 + wave * 0.6, 56), 10.5, 8.2, jacket, OW)
 	ci.draw_line(P.v(24 + wave * 0.4, 62), P.v(19 + wave * 0.6, 58), CREAM, 2.6)

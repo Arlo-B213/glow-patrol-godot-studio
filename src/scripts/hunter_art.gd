@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Shared procedural art for the idol hunter, used by Alley Brawl (side-view battle pose)
 ## and by the HQ / Clubhouse portrait. Every function draws onto a CanvasItem and must
 ## be called from its _draw(). Animation maths lives in hunter_motion.gd (Story 016),
@@ -80,7 +81,7 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 	elif expr == "neutral" and moving and bool(ps["trail"]) == false and walk_blend > 0.5:
 		expr = "happy"
 
-	ci.draw_colored_polygon(_ellipse(base + Vector2(0, -1) * u, 26.0 * u, 5.0 * u), Color(0, 0, 0, 0.35 * alpha))
+	FD.poly(ci, _ellipse(base + Vector2(0, -1) * u, 26.0 * u, 5.0 * u), Color(0, 0, 0, 0.35 * alpha))
 	if alpha > 0.5:
 		Fx.aura(ci, base + Vector2(lean * 0.4, -52.0 - bob) * u, 26.0 * u, 50.0 * u, glow, alpha, float(ps["pulse"]), 0.8)
 
@@ -114,7 +115,7 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 	if headwear == "none":
 		var clip: Vector2 = head + Vector2(-f * 10.0, -9.0) * u
 		Shade.circle(ci, clip, 3.0 * u, _c(GOLD, alpha), maxf(1.0, 0.7 * u), Shade.ink(_c(GOLD, alpha)))
-		ci.draw_circle(clip + Vector2(-0.8, -0.8) * u, 0.9 * u, _c(Color.WHITE, 0.8 * alpha))
+		FD.circle(ci, clip + Vector2(-0.8, -0.8) * u, 0.9 * u, _c(Color.WHITE, 0.8 * alpha))
 	Accessories.draw_face_side(ci, face_acc, head, u, f, alpha)
 	Accessories.draw_headwear_side(ci, headwear, head, u, f, hair, alpha)
 
@@ -132,15 +133,15 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 		var a_end: float = ang if f > 0.0 else PI - ang
 		var lo: float = minf(a_start, a_end)
 		var hi: float = maxf(a_start, a_end)
-		ci.draw_arc(shoulder, 54.0 * u, lo, hi, 14, _c(glow, 0.45 * alpha), 7.0 * u)
-		ci.draw_arc(shoulder, 54.0 * u, lo, hi, 14, _c(Shade.lighten(glow, 0.7), 0.6 * alpha), 2.2 * u)
-		ci.draw_arc(shoulder, 46.0 * u, lerpf(lo, hi, 0.35), hi, 10, _c(glow, 0.25 * alpha), 3.0 * u)
+		FD.arc(ci, shoulder, 54.0 * u, lo, hi, 14, _c(glow, 0.45 * alpha), 7.0 * u)
+		FD.arc(ci, shoulder, 54.0 * u, lo, hi, 14, _c(Shade.lighten(glow, 0.7), 0.6 * alpha), 2.2 * u)
+		FD.arc(ci, shoulder, 46.0 * u, lerpf(lo, hi, 0.35), hi, 10, _c(glow, 0.25 * alpha), 3.0 * u)
 	elif bool(ps["blink"] == 0.0) and animate and Motion.motion_on() and alpha > 0.5:
 		Fx.idle_trail(ci, hand + dir * (wlen + 2.0 * u), dir * 3.0 * u, glow, 2.6 * u, float(anim_t) / 60.0, alpha)
 	if hurt > 0.0:
 		var tint := Color(1.0, 0.85, 0.92, 0.42 * hurt * alpha)
-		ci.draw_colored_polygon(_ellipse(base + Vector2(lean * 0.6, -54.0 - bob) * u, 14.0 * u, 22.0 * u, 16), tint)
-		ci.draw_colored_polygon(_ellipse(head, 13.0 * u, 13.0 * u, 16), tint)
+		FD.poly(ci, _ellipse(base + Vector2(lean * 0.6, -54.0 - bob) * u, 14.0 * u, 22.0 * u, 16), tint)
+		FD.poly(ci, _ellipse(head, 13.0 * u, 13.0 * u, 16), tint)
 
 
 ## The idol hunter facing the viewer, scaled to fit `rect` (canvas pixels of `ci`). Rects
@@ -190,7 +191,7 @@ static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: floa
 	Outfits.draw_front(ci, String(look.get("outfit_style", "track")), o2, k, outfit, t if live else 0.0, alpha)
 	Fx.rim(ci, o2 + Vector2(-26.0, -50.0) * k, o2 + Vector2(-20.5, -26.0) * k, glow, 1.5 * k, alpha)
 	Fx.rim(ci, o2 + Vector2(-25.0, -52.0) * k, o2 + Vector2(-8.0, -53.0) * k, glow, 1.1 * k, alpha)
-	ci.draw_colored_polygon(PackedVector2Array([o2 + Vector2(21.0, -48.0) * k, o2 + Vector2(26.0, -49.0) * k, o2 + Vector2(20.0, -24.0) * k, o2 + Vector2(17.5, -24.0) * k]), Color(0.1, 0.04, 0.2, 0.16 * alpha))
+	FD.poly(ci, PackedVector2Array([o2 + Vector2(21.0, -48.0) * k, o2 + Vector2(26.0, -49.0) * k, o2 + Vector2(20.0, -24.0) * k, o2 + Vector2(17.5, -24.0) * k]), Color(0.1, 0.04, 0.2, 0.16 * alpha))
 
 	# Hair behind the head, then the face.
 	Face.hair_back_front(ci, head, k, hair, style == "twintails", alpha, hsway, style)
@@ -199,7 +200,7 @@ static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: floa
 	if headwear == "none":
 		var clip: Vector2 = head + Vector2(-16.0, -17.0) * k
 		Shade.circle(ci, clip, 3.8 * k, _c(GOLD, alpha), maxf(1.0, 0.8 * k), Shade.ink(_c(GOLD, alpha)))
-		ci.draw_circle(clip + Vector2(-1.2, -1.2) * k, 1.2 * k, _c(Color.WHITE, 0.8 * alpha))
+		FD.circle(ci, clip + Vector2(-1.2, -1.2) * k, 1.2 * k, _c(Color.WHITE, 0.8 * alpha))
 	Accessories.draw_face_front(ci, face_acc, head, k, alpha)
 	Accessories.draw_headwear_front(ci, headwear, head, k, hair, alpha)
 

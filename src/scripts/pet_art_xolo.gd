@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Xolo (axolotl-like xocoatl) for PetArt, stages baby / child / adult. Feathery gill fronds
 ## and the tail lag behind the body; the baby is a chibi head on a tiny body, the child gets
 ## glow beads and a forehead gem, the adult a gill crest, dorsal fins and floating glow orbs.
@@ -22,7 +23,7 @@ static func _frond(ci: CanvasItem, p: Dictionary, base: Vector2, ang: float, len
 	if glow_tip:
 		PetArt.glow(ci, p, tip.x, tip.y, 2.6, Color("#FFE08A"))
 	else:
-		ci.draw_circle(PetArt.q(p, tip.x, tip.y), 2.4 * float(p["k"]), tip_col)
+		FD.circle(ci, PetArt.q(p, tip.x, tip.y), 2.4 * float(p["k"]), tip_col)
 
 
 static func draw(ci: CanvasItem, p: Dictionary) -> void:
@@ -72,13 +73,13 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 		PetArt.cel(ci, p, lx, -5.0, 7.6, 5.2, col.darkened(0.04), 0.0, 16, false)
 		for j in 3:
 			var tx: float = lx + (float(j) - 1.0) * 3.8
-			ci.draw_circle(PetArt.q(p, tx, -1.4), 1.8 * k, PetArt.shade_of(col))
-			ci.draw_circle(PetArt.q(p, tx - 0.3, -1.8), 1.2 * k, belly)
+			FD.circle(ci, PetArt.q(p, tx, -1.4), 1.8 * k, PetArt.shade_of(col))
+			FD.circle(ci, PetArt.q(p, tx - 0.3, -1.8), 1.2 * k, belly)
 	# Body with belly, ribs and speckles.
 	PetArt.cel(ci, p, 0.0, -21.0, 21.0 * bs, 17.0 * bs, col)
-	ci.draw_colored_polygon(PetArt.ell(p, 0.0, -17.0, 12.0 * bs, 10.0 * bs, 0.0, 18), Shade.fade(belly, 0.9))
+	FD.poly(ci, PetArt.ell(p, 0.0, -17.0, 12.0 * bs, 10.0 * bs, 0.0, 18), Shade.fade(belly, 0.9))
 	for j in 3:
-		ci.draw_arc(PetArt.q(p, 0.0, -22.0 + float(j) * 4.0), (8.0 - float(j)) * bs * k, PI * 0.2, PI * 0.8, 8,
+		FD.arc(ci, PetArt.q(p, 0.0, -22.0 + float(j) * 4.0), (8.0 - float(j)) * bs * k, PI * 0.2, PI * 0.8, 8,
 			Shade.fade(PetArt.shade_of(belly), 0.6), 1.0, true)
 	PetArt.speckles(ci, p, [Vector2(-12, -27), Vector2(-8, -31), Vector2(10, -29), Vector2(14, -23), Vector2(6, -33)],
 		1.4, Shade.fade(PetArt.shade_of(col), 0.9))
@@ -92,8 +93,8 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 	Face.eyes(ci, p, ey, 11.5 * hs, 5.6)
 	Face.cheeks(ci, p, 19.0 * hs, ey + 8.0, 4.6)
 	Face.mouth(ci, p, 0.0, ey + 8.5, 12.0, true)
-	ci.draw_circle(PetArt.q(p, -2.2, ey + 4.5), 0.7 * k, PetArt.shade_of(col))
-	ci.draw_circle(PetArt.q(p, 2.2, ey + 4.5), 0.7 * k, PetArt.shade_of(col))
+	FD.circle(ci, PetArt.q(p, -2.2, ey + 4.5), 0.7 * k, PetArt.shade_of(col))
+	FD.circle(ci, PetArt.q(p, 2.2, ey + 4.5), 0.7 * k, PetArt.shade_of(col))
 	p["a_eye"] = Vector2(0.0, ey)
 	p["a_eyedx"] = 11.5 * hs
 	p["a_eyer"] = 5.6

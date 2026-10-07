@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Outfit bodies for the idol hunter (Story 007, detail pass Story 015). Each of the 8 styles
 ## has a side-view version (battle pose) and a front-view version (portrait). Everything is
 ## drawn with CanvasItem draw_* calls; `look["outfit"]` is the main colour, accents are derived.
@@ -69,7 +70,7 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 			K.ln(ci, o, s, Vector2(1, -42), Vector2(11.5, -42), lt, 1.0)
 			var pc := Vector2(f * 7, -72)
 			K.part(ci, o, s, K.ell(pc, 11.0, 7.0), m)
-			ci.draw_arc(o + pc * s, 9.0 * s, PI, TAU, 10, lt, maxf(1.0, 2.0 * s))
+			FD.arc(ci, o + pc * s, 9.0 * s, PI, TAU, 10, lt, maxf(1.0, 2.0 * s))
 			K.bead(ci, o, s, pc + Vector2(0, 1), 1.5, gold)
 		"robe":
 			var hem: float = -f * sway * 0.8
@@ -154,7 +155,7 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 			for side in [-1.0, 1.0]:
 				var pc := Vector2(side * 27, -50)
 				K.part(ci, o, s, K.ell(pc, 12.0, 8.0), m, side)
-				ci.draw_arc(o + pc * s, 10.0 * s, PI, TAU, 10, lt, maxf(1.0, 2.0 * s))
+				FD.arc(ci, o + pc * s, 10.0 * s, PI, TAU, 10, lt, maxf(1.0, 2.0 * s))
 				K.bead(ci, o, s, pc + Vector2(0, 1), 2.0, gold)
 		"robe":
 			K.part(ci, o, s, [Vector2(-27, -52), Vector2(27, -52), Vector2(24, -22), Vector2(34 + sw, 0), Vector2(-34 + sw, 0), Vector2(-24, -22)], m)

@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Glow Bubbles (Story 028): a bubble-pop shooter. Aim the glow cannon (drag + release, tap, A/D or
 ## arrows + Space), snap orbs onto a hex grid, match 3+ to pop, orphans fall, the ceiling creeps down
 ## after a few misses. Stage 1..8, procedurally seeded; the run ends when orbs cross the deadline
@@ -439,7 +440,7 @@ func _draw() -> void:
 	for pop in _pops:
 		var f: float = float(pop["t"]) / POP_TIME
 		Art.draw_orb(self, pop["p"], _r * (1.0 + 0.5 * f), int(pop["c"]), t, 1.0 - f)
-		draw_arc(pop["p"], _r * (1.0 + 1.2 * f), 0.0, TAU, 20, Color(1, 1, 1, 0.7 * (1.0 - f)), 2.5, true)
+		FD.arc(self, pop["p"], _r * (1.0 + 1.2 * f), 0.0, TAU, 20, Color(1, 1, 1, 0.7 * (1.0 - f)), 2.5, true)
 	for fl in _falls:
 		Art.draw_orb(self, fl["p"], _r, int(fl["c"]), t)
 	_draw_launcher(t)
@@ -479,8 +480,8 @@ func _draw_guide() -> void:
 		_guide_key = Vector2(aim, float(loaded))
 	var col: Color = Color.WHITE if loaded >= Grid.SPECIAL_RAINBOW else Art.COLORS[clampi(loaded, 0, 4)].lightened(0.35)
 	for i in _guide.size():
-		draw_circle(_guide[i], _r * 0.16, Color(col, 0.85 - 0.5 * float(i) / float(maxi(1, _guide.size()))))
-	draw_arc(_guide_end, _r * 0.95, 0.0, TAU, 24, Color(col, 0.55), 2.0, true)
+		FD.circle(self, _guide[i], _r * 0.16, Color(col, 0.85 - 0.5 * float(i) / float(maxi(1, _guide.size()))))
+	FD.arc(self, _guide_end, _r * 0.95, 0.0, TAU, 24, Color(col, 0.55), 2.0, true)
 
 
 func _draw_launcher(t: float) -> void:
@@ -488,17 +489,17 @@ func _draw_launcher(t: float) -> void:
 	var n := Vector2(-d.y, d.x)
 	var w: float = _r * 0.55
 	var tip: Vector2 = _cannon + d * _r * 2.2
-	draw_colored_polygon(PackedVector2Array([_cannon + n * w, tip + n * w * 0.8, tip - n * w * 0.8, _cannon - n * w]), UiTheme.VIOLET)
-	draw_colored_polygon(PackedVector2Array([tip - d * _r * 0.5 + n * w * 0.85, tip + n * w * 0.8, tip - n * w * 0.8, tip - d * _r * 0.5 - n * w * 0.85]), UiTheme.TEAL)
-	draw_circle(_cannon + Vector2(0.0, 4.0), _r * 1.55, Color(0, 0, 0, 0.35))
-	draw_circle(_cannon, _r * 1.5, UiTheme.PANEL_LIGHT)
-	draw_arc(_cannon, _r * 1.5, 0.0, TAU, 36, Color(1, 1, 1, 0.45), 3.0, true)
+	FD.poly(self, PackedVector2Array([_cannon + n * w, tip + n * w * 0.8, tip - n * w * 0.8, _cannon - n * w]), UiTheme.VIOLET)
+	FD.poly(self, PackedVector2Array([tip - d * _r * 0.5 + n * w * 0.85, tip + n * w * 0.8, tip - n * w * 0.8, tip - d * _r * 0.5 - n * w * 0.85]), UiTheme.TEAL)
+	FD.circle(self, _cannon + Vector2(0.0, 4.0), _r * 1.55, Color(0, 0, 0, 0.35))
+	FD.circle(self, _cannon, _r * 1.5, UiTheme.PANEL_LIGHT)
+	FD.arc(self, _cannon, _r * 1.5, 0.0, TAU, 36, Color(1, 1, 1, 0.45), 3.0, true)
 	if loaded >= 0 and state != State.FLYING:
 		Art.draw_orb(self, _cannon, _r, loaded, t)
 	# next orb (tap to swap)
 	var np: Vector2 = _next_pos()
-	draw_circle(np, _r * 1.15, Color(UiTheme.PANEL, 0.7))
-	draw_arc(np, _r * 1.15, 0.0, TAU, 28, Color(1, 1, 1, 0.3), 2.0, true)
+	FD.circle(self, np, _r * 1.15, Color(UiTheme.PANEL, 0.7))
+	FD.arc(self, np, _r * 1.15, 0.0, TAU, 28, Color(1, 1, 1, 0.3), 2.0, true)
 	if next_orb >= 0:
 		Art.draw_orb(self, np, _r * 0.8, next_orb, t)
 	Kit.text(self, "NEXT - tap to swap", Rect2(np + Vector2(-70.0 * _u, _r * 1.2), Vector2(140.0 * _u, 20.0 * _u)), 11.0 * _u, Color(UiTheme.TEXT, 0.75))

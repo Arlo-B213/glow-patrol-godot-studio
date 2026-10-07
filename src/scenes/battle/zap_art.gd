@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Procedural art for Zap Patrol (Story 027): floating neon signs, a rooftop edge, floating
 ## Gloomling demons (bobbing + blinking), zap bolts and ripples. Every function draws onto a
 ## CanvasItem from its _draw(); `t` is animation seconds (0 = still pose when reduced motion).
@@ -78,14 +79,14 @@ static func bolt(ci: CanvasItem, a: Vector2, b: Vector2, k: float, col: Color, w
 		var off: float = sin(float(seed_v * 31 + i * 17)) * d.length() * 0.05
 		pts.append(a + d * f + nrm * off)
 	pts.append(b)
-	ci.draw_polyline(pts, Color(col, 0.28 * k), width * 3.2, true)
-	ci.draw_polyline(pts, Color(col.lightened(0.3), 0.8 * k), width * 1.5, true)
-	ci.draw_polyline(pts, Color(1, 1, 1, k), width * 0.6, true)
+	FD.polyline(ci, pts, Color(col, 0.28 * k), width * 3.2, true)
+	FD.polyline(ci, pts, Color(col.lightened(0.3), 0.8 * k), width * 1.5, true)
+	FD.polyline(ci, pts, Color(1, 1, 1, k), width * 0.6, true)
 
 
 ## Expanding tap ripple; `k` 0 -> 1 over its life. `hit` = bright, else a dim "miss" ring.
 static func ripple(ci: CanvasItem, p: Vector2, radius: float, k: float, col: Color, hit: bool) -> void:
 	var c: Color = col if hit else Color(UiTheme.TEXT_MUTED, 0.8)
-	ci.draw_arc(p, radius * (0.4 + k * 0.9), 0.0, TAU, 28, Color(c, (1.0 - k) * (0.9 if hit else 0.5)), 3.5 * (1.0 - k) + 1.0, true)
+	FD.arc(ci, p, radius * (0.4 + k * 0.9), 0.0, TAU, 28, Color(c, (1.0 - k) * (0.9 if hit else 0.5)), 3.5 * (1.0 - k) + 1.0, true)
 	if hit:
-		ci.draw_circle(p, radius * 0.35 * (1.0 - k), Color(1, 1, 1, 0.5 * (1.0 - k)))
+		FD.circle(ci, p, radius * 0.35 * (1.0 - k), Color(1, 1, 1, 0.5 * (1.0 - k)))

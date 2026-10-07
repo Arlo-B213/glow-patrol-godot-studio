@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Stateless, code-drawn particle emitters (Story 034). Each call recomputes every particle from
 ## a hash of its index and the time `t`, so there is no node, no array and no per-frame
 ## allocation to manage. Counts are hard-capped (MAX_COUNT). Pass t = 0.0 (or FxLight.time(t))
@@ -50,7 +51,7 @@ static func sparkle(ci: CanvasItem, c: Vector2, r: float, col: Color) -> void:
 		var a: float = TAU * float(k) / 8.0 - PI * 0.5
 		var rr: float = r if k % 2 == 0 else r * 0.22
 		pts.append(c + Vector2(cos(a), sin(a)) * rr)
-	ci.draw_colored_polygon(pts, Color(1, 1, 1, 0.92).lerp(col, 0.25))
+	FD.poly(ci, pts, Color(1, 1, 1, 0.92).lerp(col, 0.25))
 
 
 ## Falling petals / leaves with sideways sway. `wind` pushes them sideways (px/s), `fall` is px/s.
@@ -64,7 +65,7 @@ static func petals(ci: CanvasItem, rect: Rect2, t: float, count: int, col: Color
 		var d := Vector2(cos(ang), sin(ang))
 		var n := Vector2(-d.y, d.x) * s * 0.5 * (0.3 + 0.7 * absf(sin(ang * 1.3)))
 		var c := Vector2(x, y)
-		ci.draw_colored_polygon(PackedVector2Array([c - d * s, c + n, c + d * s, c - n]), Color(col.r, col.g, col.b, col.a * (0.55 + 0.4 * _h(i, 17))))
+		FD.poly(ci, PackedVector2Array([c - d * s, c + n, c + d * s, c - n]), Color(col.r, col.g, col.b, col.a * (0.55 + 0.4 * _h(i, 17))))
 
 
 ## Slanted rain streaks across `rect` (drift_x shifts them with a scrolling camera).
@@ -85,7 +86,7 @@ static func embers(ci: CanvasItem, rect: Rect2, t: float, count: int, col: Color
 		var y: float = rect.end.y - life * rect.size.y
 		var a: float = sin(life * PI)
 		FxLight.halo(ci, Vector2(x, y), size * 3.5, col, 0.4 * a)
-		ci.draw_circle(Vector2(x, y), size * 0.6, Color(1, 1, 1, 0.8 * a))
+		FD.circle(ci, Vector2(x, y), size * 0.6, Color(1, 1, 1, 0.8 * a))
 
 
 ## Firework bursts above `rect` (each one cycles on its own timer). Static frame when t = 0.
@@ -106,4 +107,4 @@ static func fireworks(ci: CanvasItem, rect: Rect2, t: float, shells: int = 3, sp
 			var rad: float = 58.0 * (1.0 - pow(1.0 - e, 2.0))
 			var p := c + d * rad + Vector2(0, 16.0 * e * e)
 			ci.draw_line(p - d * 7.0 * (1.0 - e), p, Color(col.r, col.g, col.b, a), 2.0)
-			ci.draw_circle(p, 1.8, Color(1, 1, 1, a))
+			FD.circle(ci, p, 1.8, Color(1, 1, 1, a))

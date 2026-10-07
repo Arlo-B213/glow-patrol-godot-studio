@@ -1,5 +1,6 @@
 class_name PetArt
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Code-drawn pets (Story 024, upgraded in Story 033): shared drawing context, cel-shading
 ## helpers, aura and shadow. Species bodies live in pet_art_<species>.gd, faces in
 ## pet_art_face.gd, eggs in pet_art_egg.gd, accessories in pet_art_acc.gd and effects in
@@ -215,9 +216,9 @@ static func rim_of(p: Dictionary) -> Color:
 static func cel(ci: CanvasItem, p: Dictionary, cx: float, cy: float, rx: float, ry: float,
 		col: Color, rot: float = 0.0, n: int = 24, rim: bool = true) -> void:
 	var outer := ell(p, cx, cy, rx, ry, rot, n)
-	ci.draw_colored_polygon(outer, shade_of(col))
-	ci.draw_colored_polygon(ell(p, cx - rx * 0.07, cy - ry * 0.1, rx * 0.9, ry * 0.88, rot, n), col)
-	ci.draw_colored_polygon(ell(p, cx - rx * 0.22, cy - ry * 0.46, rx * 0.4, ry * 0.15, rot - 0.25, 12),
+	FD.poly(ci, outer, shade_of(col))
+	FD.poly(ci, ell(p, cx - rx * 0.07, cy - ry * 0.1, rx * 0.9, ry * 0.88, rot, n), col)
+	FD.poly(ci, ell(p, cx - rx * 0.22, cy - ry * 0.46, rx * 0.4, ry * 0.15, rot - 0.25, 12),
 		Shade.fade(light_of(col), 0.75))
 	_outline(ci, p, outer, col, rim, n)
 
@@ -227,12 +228,12 @@ static func _outline(ci: CanvasItem, p: Dictionary, outer: PackedVector2Array, c
 	var ol := ol_of(col)
 	var closed := PackedVector2Array(outer)
 	closed.append(outer[0])
-	ci.draw_polyline(closed, ol, lw(p, 1.2), true)
+	FD.polyline(ci, closed, ol, lw(p, 1.2), true)
 	var low := PackedVector2Array()
 	for i in range(int(n * 0.06), int(n * 0.46) + 1):
 		low.append(outer[i % n])
 	if low.size() > 1:
-		ci.draw_polyline(low, ol, lw(p, 2.5), true)
+		FD.polyline(ci, low, ol, lw(p, 2.5), true)
 	if rim:
 		var rl := PackedVector2Array()
 		var cen := Vector2.ZERO
@@ -242,7 +243,7 @@ static func _outline(ci: CanvasItem, p: Dictionary, outer: PackedVector2Array, c
 		for i in range(int(n * 0.03), int(n * 0.3) + 1):
 			rl.append(cen + (outer[i % n] - cen) * 0.93)
 		if rl.size() > 1:
-			ci.draw_polyline(rl, rim_of(p), lw(p, 1.3), true)
+			FD.polyline(ci, rl, rim_of(p), lw(p, 1.3), true)
 
 
 ## Outlined 3-tone polygon given in pet space (must be simple and star-shaped around its centroid).
@@ -255,13 +256,13 @@ static func cel_poly(ci: CanvasItem, p: Dictionary, pts: Array, col: Color, rim:
 	for v in pts:
 		inner.append(cen + ((v as Vector2) - cen) * 0.78 + Vector2(-0.9, -1.3))
 	var outer := poly(p, pts)
-	ci.draw_colored_polygon(outer, shade_of(col))
-	ci.draw_colored_polygon(poly(p, inner), col)
+	FD.poly(ci, outer, shade_of(col))
+	FD.poly(ci, poly(p, inner), col)
 	var closed := PackedVector2Array(outer)
 	closed.append(outer[0])
-	ci.draw_polyline(closed, ol_of(col), lw(p, 1.4), true)
+	FD.polyline(ci, closed, ol_of(col), lw(p, 1.4), true)
 	if rim and outer.size() > 2:
-		ci.draw_polyline(PackedVector2Array([outer[1], outer[2]]), rim_of(p), lw(p, 1.2), true)
+		FD.polyline(ci, PackedVector2Array([outer[1], outer[2]]), rim_of(p), lw(p, 1.2), true)
 
 
 ## Tapered capsule polygon in design-box space (convex).
@@ -286,10 +287,10 @@ static func tube(ci: CanvasItem, p: Dictionary, a: Vector2, b: Vector2, r0: floa
 	var qa := q(p, a.x, a.y)
 	var qb := q(p, b.x, b.y)
 	var ow := lw(p, 1.1)
-	ci.draw_colored_polygon(taper_poly(qa, qb, r0 * k + ow, r1 * k + ow), ol_of(col))
-	ci.draw_colored_polygon(taper_poly(qa, qb, r0 * k, r1 * k), shade_of(col))
+	FD.poly(ci, taper_poly(qa, qb, r0 * k + ow, r1 * k + ow), ol_of(col))
+	FD.poly(ci, taper_poly(qa, qb, r0 * k, r1 * k), shade_of(col))
 	var sh := Vector2(-0.2, -0.28) * minf(r0, r1) * k
-	ci.draw_colored_polygon(taper_poly(qa + sh, qb + sh, r0 * k * 0.8, r1 * k * 0.78), col)
+	FD.poly(ci, taper_poly(qa + sh, qb + sh, r0 * k * 0.8, r1 * k * 0.78), col)
 
 
 ## A chain of tapered segments that curls and lags behind the body (tails, gills, ears,
@@ -311,7 +312,7 @@ static func chain(ci: CanvasItem, p: Dictionary, base: Vector2, ang: float, seg_
 	var k: float = p["k"]
 	var ow := lw(p, 1.1)
 	for i in n:
-		ci.draw_colored_polygon(taper_poly(q(p, pts[i].x, pts[i].y), q(p, pts[i + 1].x, pts[i + 1].y),
+		FD.poly(ci, taper_poly(q(p, pts[i].x, pts[i].y), q(p, pts[i + 1].x, pts[i + 1].y),
 			float(radii[i]) * k + ow, float(radii[i + 1]) * k + ow), ol_of(col))
 	for i in n:
 		var c2 := col
@@ -319,9 +320,9 @@ static func chain(ci: CanvasItem, p: Dictionary, base: Vector2, ang: float, seg_
 			c2 = col.lerp(col_end, float(i) / float(maxi(1, n - 1)))
 		var qa := q(p, pts[i].x, pts[i].y)
 		var qb := q(p, pts[i + 1].x, pts[i + 1].y)
-		ci.draw_colored_polygon(taper_poly(qa, qb, float(radii[i]) * k, float(radii[i + 1]) * k), shade_of(c2))
+		FD.poly(ci, taper_poly(qa, qb, float(radii[i]) * k, float(radii[i + 1]) * k), shade_of(c2))
 		var sh := Vector2(-0.2, -0.3) * float(radii[i]) * k
-		ci.draw_colored_polygon(taper_poly(qa + sh, qb + sh, float(radii[i]) * k * 0.78,
+		FD.poly(ci, taper_poly(qa + sh, qb + sh, float(radii[i]) * k * 0.78,
 			float(radii[i + 1]) * k * 0.74), c2)
 	return pts
 
@@ -339,7 +340,7 @@ static func strands(ci: CanvasItem, p: Dictionary, from: Vector2, dir: Vector2, 
 ## Speckle dots (pet-space positions) in a colour.
 static func speckles(ci: CanvasItem, p: Dictionary, pts: Array, r: float, col: Color) -> void:
 	for v in pts:
-		ci.draw_circle(q(p, (v as Vector2).x, (v as Vector2).y), r * float(p["k"]), col)
+		FD.circle(ci, q(p, (v as Vector2).x, (v as Vector2).y), r * float(p["k"]), col)
 
 
 ## Soft glow dot (halo + core + white centre) at a pet-space point.
@@ -347,10 +348,10 @@ static func glow(ci: CanvasItem, p: Dictionary, x: float, y: float, r: float, co
 	var c := q(p, x, y)
 	var k: float = p["k"]
 	var pulse: float = 1.0 + (sin(float(p["t"]) * 4.0 + x) * 0.1 if p["anim"] else 0.0)
-	ci.draw_circle(c, r * k * 2.4 * pulse, Shade.fade(col, 0.16))
-	ci.draw_circle(c, r * k * 1.6 * pulse, Shade.fade(col, 0.32))
-	ci.draw_circle(c, r * k, Shade.lighten(col, 0.4))
-	ci.draw_circle(c, r * k * 0.45, Color(1.0, 1.0, 1.0, 0.9))
+	FD.circle(ci, c, r * k * 2.4 * pulse, Shade.fade(col, 0.16))
+	FD.circle(ci, c, r * k * 1.6 * pulse, Shade.fade(col, 0.32))
+	FD.circle(ci, c, r * k, Shade.lighten(col, 0.4))
+	FD.circle(ci, c, r * k * 0.45, Color(1.0, 1.0, 1.0, 0.9))
 
 
 ## Four-point sparkle star at a design-box point.
@@ -360,7 +361,7 @@ static func star4(ci: CanvasItem, c: Vector2, r: float, col: Color) -> void:
 		var an := -PI * 0.5 + TAU * float(i) / 8.0
 		var rr := r if i % 2 == 0 else r * 0.3
 		pts.append(c + Vector2(cos(an), sin(an)) * rr)
-	ci.draw_colored_polygon(pts, col)
+	FD.poly(ci, pts, col)
 
 
 ## Heart at a design-box point (`sz` is half-width).
@@ -371,7 +372,7 @@ static func heart(ci: CanvasItem, c: Vector2, sz: float, col: Color) -> void:
 		var x := 16.0 * pow(sin(a), 3.0)
 		var y := -(13.0 * cos(a) - 5.0 * cos(2.0 * a) - 2.0 * cos(3.0 * a) - cos(4.0 * a))
 		pts.append(c + Vector2(x, y) * sz / 16.0)
-	ci.draw_colored_polygon(pts, col)
+	FD.poly(ci, pts, col)
 
 
 # ---------------------------------------------------------------- ambience
@@ -385,7 +386,7 @@ static func _shadow(ci: CanvasItem, p: Dictionary) -> void:
 		for i in 20:
 			var a := TAU * float(i) / 20.0
 			pts.append(c + Vector2(cos(a) * 32.0 * k * squish * float(pair[0]), sin(a) * 5.5 * k * float(pair[0])))
-		ci.draw_colored_polygon(pts, Color(0.05, 0.0, 0.15, float(pair[1])))
+		FD.poly(ci, pts, Color(0.05, 0.0, 0.15, float(pair[1])))
 
 
 static func _aura(ci: CanvasItem, p: Dictionary) -> void:
@@ -397,4 +398,4 @@ static func _aura(ci: CanvasItem, p: Dictionary) -> void:
 	var c: Vector2 = (p["o"] as Vector2) + Vector2(0.0, -34.0 * k - float(p["lift"]))
 	for i in 4:
 		var f := float(i) / 3.0
-		ci.draw_circle(c, (base + 20.0 * (1.0 - f)) * k * pulse * 1.05, Shade.fade(acc, 0.045 + 0.025 * f))
+		FD.circle(ci, c, (base + 20.0 * (1.0 - f)) * k * pulse * 1.05, Shade.fade(acc, 0.045 + 0.025 * f))

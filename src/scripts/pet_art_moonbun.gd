@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Moonbun (round moon-rabbit) for PetArt. Long glowing ears that swing and trail behind
 ## hops, a pompom tail, big bunny feet and a crescent forehead mark. Baby: short floppy ears.
 ## Child: longer ears and a moon pendant. Adult: very long ears with star tips, a crescent
@@ -34,9 +35,9 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 	# Adult crescent halo behind the head.
 	if stage >= 3:
 		var halo := crescent(Vector2(0, hy - 2.0), 35.0, PI * 1.08, PI * 1.92, 0.0)
-		ci.draw_colored_polygon(PetArt.poly(p, halo), Shade.fade(moon, 0.22))
+		FD.poly(ci, PetArt.poly(p, halo), Shade.fade(moon, 0.22))
 		var cres := crescent(Vector2(0, hy - 4.0), 32.0, PI * 1.12, PI * 1.88, 0.0)
-		ci.draw_colored_polygon(PetArt.poly(p, cres), Shade.fade(Shade.lighten(acc, 0.7), 0.85))
+		FD.poly(ci, PetArt.poly(p, cres), Shade.fade(Shade.lighten(acc, 0.7), 0.85))
 	# Pompom tail.
 	var tw: float = sin(t * 3.0) * 1.0 if anim else 0.0
 	PetArt.cel(ci, p, 17.0 * bs + tw * 0.4, -12.0, 6.6, 6.2, Shade.lighten(col, 0.25), 0.0, 14, false)
@@ -62,10 +63,10 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 		for j in 3:
 			ci.draw_line(PetArt.q(p, sx * bs + (float(j) - 1.0) * 3.0, -1.6), PetArt.q(p, sx * bs + (float(j) - 1.0) * 3.0, -4.4),
 				PetArt.ol_of(col), PetArt.lw(p, 0.9), true)
-		ci.draw_colored_polygon(PetArt.ell(p, sx * bs, -2.5, 3.4, 1.8, 0.0, 10), Shade.fade(Shade.lighten(Color("#FF9FC0"), 0.2), 0.8))
+		FD.poly(ci, PetArt.ell(p, sx * bs, -2.5, 3.4, 1.8, 0.0, 10), Shade.fade(Shade.lighten(Color("#FF9FC0"), 0.2), 0.8))
 	# Body, belly, fluff.
 	PetArt.cel(ci, p, 0.0, -21.0, 20.0 * bs, 18.0 * bs, col)
-	ci.draw_colored_polygon(PetArt.ell(p, 0.0, -17.0, 12.0 * bs, 11.0 * bs, 0.0, 18), Shade.fade(Color.WHITE, 0.75))
+	FD.poly(ci, PetArt.ell(p, 0.0, -17.0, 12.0 * bs, 11.0 * bs, 0.0, 18), Shade.fade(Color.WHITE, 0.75))
 	PetArt.strands(ci, p, Vector2(-6, -27), Vector2(0.1, 1.0), 5, 4.0, 1.8, Shade.fade(PetArt.shade_of(col), 0.7))
 	for sx in [-1.0, 1.0]:
 		PetArt.cel(ci, p, sx * 13.0 * bs, -14.0, 5.0, 6.4, col, 0.2 * sx, 12, false)
@@ -75,14 +76,14 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 	PetArt.strands(ci, p, Vector2(-7, hy - 18), Vector2(-0.2, -1.0), 4, 3.2, 1.0, Shade.fade(Color.WHITE, 0.8))
 	# Crescent mark.
 	var mk := crescent(Vector2(0, hy - 13.0 * hs), 3.8, PI * 0.62, PI * 1.38, 2.0)
-	ci.draw_colored_polygon(PetArt.poly(p, mk), Shade.fade(acc, 0.95))
+	FD.poly(ci, PetArt.poly(p, mk), Shade.fade(acc, 0.95))
 	# Puffy cheeks, muzzle, nose.
 	for sx in [-1.0, 1.0]:
 		PetArt.cel(ci, p, sx * 15.0 * hs, hy + 7.0, 8.0, 6.0, Shade.lighten(col, 0.2), 0.0, 14, false)
 	var ey: float = hy - 2.5
 	Face.eyes(ci, p, ey, 11.0 * hs, 5.6)
 	Face.cheeks(ci, p, 18.0 * hs, ey + 8.5, 4.4)
-	ci.draw_colored_polygon(PetArt.poly(p, [Vector2(-2.3, ey + 6.0), Vector2(2.3, ey + 6.0), Vector2(0, ey + 8.6)]), Color("#FF7FA8"))
+	FD.poly(ci, PetArt.poly(p, [Vector2(-2.3, ey + 6.0), Vector2(2.3, ey + 6.0), Vector2(0, ey + 8.6)]), Color("#FF7FA8"))
 	ci.draw_line(PetArt.q(p, 0, ey + 8.4), PetArt.q(p, 0, ey + 10.4), Face.INK, PetArt.lw(p, 1.0), true)
 	Face.mouth(ci, p, 0.0, ey + 12.0, 8.5)
 	for sx in [-1.0, 1.0]:
@@ -101,9 +102,9 @@ static func draw(ci: CanvasItem, p: Dictionary) -> void:
 		for i in 9:
 			var a := PI * 0.12 + PI * 0.76 * float(i) / 8.0
 			str_pts.append(PetArt.q(p, cos(a) * 12.0, -28.0 + sin(a) * 3.5))
-		ci.draw_polyline(str_pts, Shade.fade(PetArt.ol_of(acc), 0.9), 1.4, true)
+		FD.polyline(ci, str_pts, Shade.fade(PetArt.ol_of(acc), 0.9), 1.4, true)
 		var pc := Vector2(0, -22.0)
-		ci.draw_colored_polygon(PetArt.poly(p, crescent(pc, 4.2, -PI * 0.5, PI * 0.5, -2.2)),
+		FD.poly(ci, PetArt.poly(p, crescent(pc, 4.2, -PI * 0.5, PI * 0.5, -2.2)),
 			Shade.lighten(acc, 0.35))
 	if stage >= 3:
 		for i in 4:

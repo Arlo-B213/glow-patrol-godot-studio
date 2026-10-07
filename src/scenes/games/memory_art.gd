@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Art for Memory Match (Story 027): card back with a glowing lantern emblem, card faces drawn as
 ## UiIcons, the cosy lantern-lit board and the hanging lantern. Every function draws onto a
 ## CanvasItem from its _draw(); `t` is animation seconds (0 = still when reduced motion).
@@ -23,7 +24,7 @@ static func board(ci: CanvasItem, r: Rect2, t: float, u: float) -> void:
 	sb.draw(ci.get_canvas_item(), r)
 	var flick: float = 1.0 if t == 0.0 else 1.0 + 0.08 * sin(t * 5.0) + 0.04 * sin(t * 11.0)
 	for i in 4:
-		ci.draw_circle(Vector2(r.get_center().x, r.position.y - 20.0 * u), (r.size.x * (0.25 + 0.17 * float(i))) * flick, Color(UiTheme.GOLD, 0.045))
+		FD.circle(ci, Vector2(r.get_center().x, r.position.y - 20.0 * u), (r.size.x * (0.25 + 0.17 * float(i))) * flick, Color(UiTheme.GOLD, 0.045))
 
 
 ## Lantern hanging from the top edge at `x` (string, glow, icon).
@@ -32,8 +33,8 @@ static func hanging_lantern(ci: CanvasItem, x: float, hang_y: float, t: float, u
 	var c := Vector2(x + sway, hang_y)
 	ci.draw_line(Vector2(x, 0.0), c + Vector2(0.0, -16.0 * u), Color(1, 1, 1, 0.35), 2.0 * u, true)
 	var flick: float = 0.8 if t == 0.0 else 0.8 + 0.2 * sin(t * 5.0)
-	ci.draw_circle(c, 34.0 * u * flick, Color(UiTheme.GOLD, 0.12))
-	ci.draw_circle(c, 22.0 * u * flick, Color(UiTheme.GOLD, 0.18))
+	FD.circle(ci, c, 34.0 * u * flick, Color(UiTheme.GOLD, 0.12))
+	FD.circle(ci, c, 22.0 * u * flick, Color(UiTheme.GOLD, 0.18))
 	UiIcons.draw(ci, "lantern", Rect2(c - Vector2(16.0, 16.0) * u, Vector2(32.0, 32.0) * u), UiTheme.GOLD)
 
 
@@ -48,8 +49,8 @@ static func card_back(ci: CanvasItem, r: Rect2, t: float, seed_v: float) -> void
 	if r.size.x < r.size.y * 0.3:
 		return  # squeezed mid-flip: the emblem would be a degenerate polygon
 	var pulse: float = 0.5 if t == 0.0 else 0.5 + 0.5 * sin(t * 2.2 + seed_v)
-	ci.draw_circle(c, side * (0.36 + 0.05 * pulse), Color(UiTheme.GOLD, 0.10 + 0.08 * pulse))
-	ci.draw_circle(c, side * 0.26, Color(UiTheme.GOLD, 0.12))
+	FD.circle(ci, c, side * (0.36 + 0.05 * pulse), Color(UiTheme.GOLD, 0.10 + 0.08 * pulse))
+	FD.circle(ci, c, side * 0.26, Color(UiTheme.GOLD, 0.12))
 	UiIcons.draw(ci, "lantern", Rect2(c - Vector2(side, side) * 0.24, Vector2(side, side) * 0.48), UiTheme.GOLD)
 
 
@@ -61,7 +62,7 @@ static func card_face(ci: CanvasItem, r: Rect2, idx: int, matched: bool, t: floa
 	var side: float = minf(r.size.x, r.size.y)
 	if matched:
 		var pulse: float = 0.5 if t == 0.0 else 0.5 + 0.5 * sin(t * 3.0 + seed_v)
-		ci.draw_circle(c, side * (0.62 + 0.05 * pulse), Color(UiTheme.GOLD, 0.14))
+		FD.circle(ci, c, side * (0.62 + 0.05 * pulse), Color(UiTheme.GOLD, 0.14))
 	if r.size.x < r.size.y * 0.3:
 		return
 	var border: Color = UiTheme.GOLD if matched else col

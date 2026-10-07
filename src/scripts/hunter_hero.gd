@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Stage backdrop + full-body hunter ("hero portrait") used on the HQ card and the Club
 ## preview. Everything is code-drawn (no shaders) and every polygon is simple/convex or a
 ## simple star so triangulation never fails.
@@ -63,7 +64,7 @@ static func _draw_backdrop(ci: CanvasItem, rect: Rect2, t: float, live: bool) ->
 		Vector2(rect.end.x - 2.0, y1), Vector2(rect.position.x + 2.0, y1)])
 	var top_c: Color = BG_TOP.lerp(BG_BOTTOM, 0.25)
 	var bot_c: Color = BG_BOTTOM
-	ci.draw_polygon(pts, PackedColorArray([top_c, top_c, bot_c, bot_c]))
+	FD.gpoly(ci, pts, PackedColorArray([top_c, top_c, bot_c, bot_c]))
 
 
 static func _draw_spotlight(ci: CanvasItem, rect: Rect2, cx: float, floor_y: float, t: float, live: bool) -> void:
@@ -77,14 +78,14 @@ static func _draw_spotlight(ci: CanvasItem, rect: Rect2, cx: float, floor_y: flo
 	var pts := PackedVector2Array([
 		Vector2(cx - tw, top_y), Vector2(cx + tw, top_y),
 		Vector2(cx + bw, floor_y), Vector2(cx - bw, floor_y)])
-	ci.draw_polygon(pts, PackedColorArray([warm_top, warm_top, warm_bot, warm_bot]))
+	FD.gpoly(ci, pts, PackedColorArray([warm_top, warm_top, warm_bot, warm_bot]))
 	# Narrower bright core.
 	var core := PackedVector2Array([
 		Vector2(cx - tw * 0.5, top_y), Vector2(cx + tw * 0.5, top_y),
 		Vector2(cx + bw * 0.5, floor_y), Vector2(cx - bw * 0.5, floor_y)])
 	var core_top := Color(1.0, 0.97, 0.88, a * 1.2)
 	var core_bot := Color(1.0, 0.97, 0.88, 0.0)
-	ci.draw_polygon(core, PackedColorArray([core_top, core_top, core_bot, core_bot]))
+	FD.gpoly(ci, core, PackedColorArray([core_top, core_top, core_bot, core_bot]))
 
 
 static func _draw_halo(ci: CanvasItem, c: Vector2, radius: float, col: Color, t: float, live: bool) -> void:
@@ -92,8 +93,8 @@ static func _draw_halo(ci: CanvasItem, c: Vector2, radius: float, col: Color, t:
 	for i in 7:
 		var f: float = float(i) / 6.0
 		var rr: float = radius * pulse * (1.0 - f * 0.75)
-		ci.draw_circle(c, rr, Color(col.r, col.g, col.b, 0.07 + 0.03 * f))
-	ci.draw_arc(c, radius * pulse * 0.9, 0.0, TAU, 48, Color(col.r, col.g, col.b, 0.35), 2.0)
+		FD.circle(ci, c, rr, Color(col.r, col.g, col.b, 0.07 + 0.03 * f))
+	FD.arc(ci, c, radius * pulse * 0.9, 0.0, TAU, 48, Color(col.r, col.g, col.b, 0.35), 2.0)
 
 
 static func _ellipse(c: Vector2, rx: float, ry: float, n: int = 40) -> PackedVector2Array:
@@ -105,15 +106,15 @@ static func _ellipse(c: Vector2, rx: float, ry: float, n: int = 40) -> PackedVec
 
 
 static func _draw_floor(ci: CanvasItem, c: Vector2, rx: float, ry: float, glow: Color) -> void:
-	ci.draw_colored_polygon(_ellipse(c + Vector2(0.0, ry * 0.5), rx * 1.08, ry * 1.2), Color(0.0, 0.0, 0.0, 0.35))
-	ci.draw_colored_polygon(_ellipse(c, rx, ry), Color("#3A1C6B"))
-	ci.draw_colored_polygon(_ellipse(c, rx * 0.72, ry * 0.7), Color("#4D2A8A"))
+	FD.poly(ci, _ellipse(c + Vector2(0.0, ry * 0.5), rx * 1.08, ry * 1.2), Color(0.0, 0.0, 0.0, 0.35))
+	FD.poly(ci, _ellipse(c, rx, ry), Color("#3A1C6B"))
+	FD.poly(ci, _ellipse(c, rx * 0.72, ry * 0.7), Color("#4D2A8A"))
 	var rim := _ellipse(c, rx, ry, 48)
 	rim.append(rim[0])
-	ci.draw_polyline(rim, Color(glow.r, glow.g, glow.b, 0.9), 2.5, true)
+	FD.polyline(ci, rim, Color(glow.r, glow.g, glow.b, 0.9), 2.5, true)
 	var inner_rim := _ellipse(c, rx * 0.72, ry * 0.7, 40)
 	inner_rim.append(inner_rim[0])
-	ci.draw_polyline(inner_rim, Color(glow.r, glow.g, glow.b, 0.35), 1.5, true)
+	FD.polyline(ci, inner_rim, Color(glow.r, glow.g, glow.b, 0.35), 1.5, true)
 
 
 static func _draw_sparkles(ci: CanvasItem, rect: Rect2, t: float, live: bool) -> void:
@@ -133,4 +134,4 @@ static func _star(ci: CanvasItem, c: Vector2, r: float, col: Color) -> void:
 	var pts := PackedVector2Array([
 		c + Vector2(0, -r), c + Vector2(k, -k), c + Vector2(r, 0), c + Vector2(k, k),
 		c + Vector2(0, r), c + Vector2(-k, k), c + Vector2(-r, 0), c + Vector2(-k, -k)])
-	ci.draw_colored_polygon(pts, col)
+	FD.poly(ci, pts, col)

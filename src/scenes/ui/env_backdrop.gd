@@ -1,4 +1,5 @@
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## Themed animated screen backdrop (Story 034): sits behind each tab screen in main.gd. Drawn
 ## code-only with FxLight/FxParticles at ~24 fps; static when reduce motion is on. Themes:
 ## home (dusk skyline + stage lights), club (cosy lounge string lights), study (library glow),
@@ -125,7 +126,7 @@ func _games(r: Rect2, t: float, a: Color, b: Color) -> void:
 func _pets(r: Rect2, t: float, a: Color, b: Color) -> void:
 	var w := Rect2(r.size.x * 0.58, r.size.y * 0.1, r.size.x * 0.32, r.size.y * 0.22)
 	draw_rect(w, Color("#2B2060"))
-	draw_circle(w.position + Vector2(w.size.x * 0.65, w.size.y * 0.35), 16.0, Color("#FFF3D0"))
+	FD.circle(self, w.position + Vector2(w.size.x * 0.65, w.size.y * 0.35), 16.0, Color("#FFF3D0"))
 	draw_rect(w, Color("#7A4A5A"), false, 5.0)
 	FxLight.shaft(self, w.get_center(), PI * 0.5 - 0.5, r.size.y * 0.7, 200.0, Color("#FFE9B0"), 0.12, t)
 	for i in 8:

@@ -1,5 +1,6 @@
 class_name SparkleBurst
 extends Control
+const FD := preload("res://scripts/fast_draw.gd")
 ## One-shot burst of ~24 diamond sparkles in palette colours. Frees itself after
 ## ~1 s. Never intercepts input. Not spawned at all when motion is disabled.
 
@@ -55,6 +56,6 @@ func _draw() -> void:
 		c.a = fade
 		var s: float = (p["size"] as float) * (0.6 + 0.4 * fade)
 		var o: Vector2 = p["pos"]
-		draw_colored_polygon(PackedVector2Array([
+		FD.poly(self, PackedVector2Array([
 			o + Vector2(0, -s * 1.5), o + Vector2(s, 0), o + Vector2(0, s * 1.5), o + Vector2(-s, 0),
 		]), c)

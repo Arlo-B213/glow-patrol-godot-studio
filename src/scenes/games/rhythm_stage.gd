@@ -1,4 +1,5 @@
 extends RefCounted
+const FD := preload("res://scripts/fast_draw.gd")
 ## Rhythm Tap stage scenery (Story 026): the 'neon' GameKit backdrop plus sweeping spotlights,
 ## a beat-pulsing floor glow and glowing screen edges. Pure drawing helpers, no state.
 
@@ -30,8 +31,8 @@ static func _spotlights(ci: CanvasItem, size: Vector2, t: float, beat: float, fe
 		var far: Vector2 = o + dir * size.y * 0.95
 		var hw: float = size.x * (0.10 + 0.05 * fever)
 		var a: float = 0.07 + 0.07 * beat + 0.10 * fever
-		ci.draw_colored_polygon(PackedVector2Array([o - perp * 5.0, o + perp * 5.0, far + perp * hw, far - perp * hw]), Color(cols[i], a))
-		ci.draw_circle(o + Vector2(0, 8), 7.0, Color(cols[i], 0.7))
+		FD.poly(ci, PackedVector2Array([o - perp * 5.0, o + perp * 5.0, far + perp * hw, far - perp * hw]), Color(cols[i], a))
+		FD.circle(ci, o + Vector2(0, 8), 7.0, Color(cols[i], 0.7))
 
 
 static func _floor(ci: CanvasItem, size: Vector2, beat: float, fever: float, floor_y: float) -> void:
