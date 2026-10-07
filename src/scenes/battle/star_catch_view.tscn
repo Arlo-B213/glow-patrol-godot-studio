@@ -1,7 +1,6 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" uid="uid://babb8lcx4v24h" path="res://scenes/battle/star_catch_view.gd" id="1_catch"]
-[ext_resource type="StyleBox" uid="uid://c24hwbsi0yadc" path="res://theme/card_panel.tres" id="2_card"]
 
 [node name="StarCatchView" type="Control"]
 layout_mode = 3
@@ -9,60 +8,3 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_catch")
-
-[node name="Root" type="Control" parent="."]
-anchors_preset = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-
-[node name="HudBar" type="PanelContainer" parent="Root"]
-layout_mode = 0
-anchor_right = 1.0
-mouse_filter = 2
-theme_override_styles/panel = ExtResource("2_card")
-
-[node name="HudRow" type="HBoxContainer" parent="Root/HudBar"]
-layout_mode = 2
-
-[node name="ScoreLabel" type="Label" parent="Root/HudBar/HudRow"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Score 0"
-
-[node name="Spacer" type="Control" parent="Root/HudBar/HudRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="TimeLabel" type="Label" parent="Root/HudBar/HudRow"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "40s"
-
-[node name="CountdownTimer" type="Timer" parent="Root"]
-unique_name_in_owner = true
-
-[node name="ControlsRow" type="HBoxContainer" parent="Root"]
-layout_mode = 0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = -52.0
-offset_right = -8.0
-offset_bottom = -6.0
-theme_override_constants/separation = 8
-
-[node name="LeftButton" type="Button" parent="Root/ControlsRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 0
-text = "◀"
-
-[node name="RightButton" type="Button" parent="Root/ControlsRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 0
-text = "▶"

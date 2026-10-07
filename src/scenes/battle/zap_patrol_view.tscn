@@ -1,41 +1,10 @@
 [gd_scene format=3 uid="uid://rr3bc15i5w0f"]
 
 [ext_resource type="Script" uid="uid://igm0tgbsifah" path="res://scenes/battle/zap_patrol_view.gd" id="1_kfcce"]
-[ext_resource type="StyleBox" uid="uid://c24hwbsi0yadc" path="res://theme/card_panel.tres" id="2_oydyj"]
 
-[node name="ZapPatrolView" type="Control" unique_id=1585595613]
+[node name="ZapPatrolView" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_kfcce")
-
-[node name="Root" type="Control" parent="." unique_id=482735005]
-anchors_preset = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="HudBar" type="PanelContainer" parent="Root" unique_id=354613241]
-layout_mode = 0
-anchor_right = 1.0
-theme_override_styles/panel = ExtResource("2_oydyj")
-
-[node name="HudRow" type="HBoxContainer" parent="Root/HudBar" unique_id=998333295]
-layout_mode = 2
-
-[node name="ScoreLabel" type="Label" parent="Root/HudBar/HudRow" unique_id=1899547876]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Score 0"
-
-[node name="Spacer" type="Control" parent="Root/HudBar/HudRow" unique_id=1733787753]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="TimeLabel" type="Label" parent="Root/HudBar/HudRow" unique_id=1513219098]
-unique_name_in_owner = true
-layout_mode = 2
-text = "45s"
-
-[node name="CountdownTimer" type="Timer" parent="Root" unique_id=1537884057]
-unique_name_in_owner = true

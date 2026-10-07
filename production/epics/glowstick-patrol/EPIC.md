@@ -38,3 +38,8 @@
 | 023 | Export and project hygiene | Config/Data | In Review | N/A |
 | 024 | Pets: companions, home and care | UI | In Review | N/A |
 | 025 | Battle arena exploration, blocking and movement | UI/Feel | In Review | N/A |
+| 026 | Rhythm Tap and Lantern Says upgrade | UI/Feel | In Review | N/A |
+| 027 | Star Catch, Zap Patrol and Memory Match upgrade | UI/Feel | In Review | N/A |
+| 028 | Glow Bubbles (bubble pop) | UI/Feel | In Review | N/A |
+| 029 | Word Scramble | UI/Feel | In Review | N/A |
+| 030 | Games hub integration and polish | UI | In Review | N/A |
