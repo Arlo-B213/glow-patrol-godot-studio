@@ -1,0 +1,217 @@
+[gd_scene format=3 uid="uid://bqibxuuy1ilv5"]
+
+[ext_resource type="Script" uid="uid://div1mtteql3e1" path="res://scenes/screens/hq_screen.gd" id="1_son6p"]
+[ext_resource type="StyleBox" uid="uid://vat55wesfc4n" path="res://theme/avatar_placeholder.tres" id="2_e4mg8"]
+[ext_resource type="StyleBox" uid="uid://c24hwbsi0yadc" path="res://theme/card_panel.tres" id="3_jvt7o"]
+
+[node name="HqScreen" type="Control" unique_id=1077431462]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_son6p")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=2084761786]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 14
+
+[node name="HeroRow" type="HBoxContainer" parent="VBox" unique_id=79497094]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="AvatarPanel" type="PanelContainer" parent="VBox/HeroRow" unique_id=1736364778]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 420)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("2_e4mg8")
+
+[node name="GreetingVBox" type="VBoxContainer" parent="VBox/HeroRow" unique_id=1685459581]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="GreetingLabel" type="Label" parent="VBox/HeroRow/GreetingVBox" unique_id=1015561771]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9607843, 0.9372549, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Welcome back, hunter."
+
+[node name="SubLabel" type="Label" parent="VBox/HeroRow/GreetingVBox" unique_id=20285427]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7254902, 0.6627451, 0.8784314, 1)
+theme_override_font_sizes/font_size = 12
+text = "Your lightstick is charged and the Lanternboys already saved you a seat."
+autowrap_mode = 3
+
+[node name="ForecastPanel" type="PanelContainer" parent="VBox" unique_id=1843048942]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("3_jvt7o")
+
+[node name="ForecastLabel" type="Label" parent="VBox/ForecastPanel" unique_id=1711331586]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9607843, 0.9372549, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Tonight's forecast: light fog, three Gloomlings spotted near the noodle cart."
+autowrap_mode = 3
+
+[node name="XPPanel" type="PanelContainer" parent="VBox" unique_id=313842534]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("3_jvt7o")
+
+[node name="XPVBox" type="VBoxContainer" parent="VBox/XPPanel" unique_id=1009583549]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="XPHeader" type="HBoxContainer" parent="VBox/XPPanel/XPVBox" unique_id=2032509671]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="VBox/XPPanel/XPVBox/XPHeader" unique_id=44639593]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7254902, 0.6627451, 0.8784314, 1)
+theme_override_font_sizes/font_size = 12
+text = "Trainee Level 1"
+
+[node name="XPSpacer" type="Control" parent="VBox/XPPanel/XPVBox/XPHeader" unique_id=33383584]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="XpAmountLabel" type="Label" parent="VBox/XPPanel/XPVBox/XPHeader" unique_id=1154235590]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7254902, 0.6627451, 0.8784314, 1)
+theme_override_font_sizes/font_size = 12
+text = "0/50 XP"
+
+[node name="XpBar" type="ProgressBar" parent="VBox/XPPanel/XPVBox" unique_id=1881166409]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+max_value = 50.0
+show_percentage = false
+
+[node name="StatRow" type="HBoxContainer" parent="VBox" unique_id=1636553357]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StatPanel1" type="PanelContainer" parent="VBox/StatRow" unique_id=1671743272]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("3_jvt7o")
+
+[node name="V1" type="VBoxContainer" parent="VBox/StatRow/StatPanel1" unique_id=1289244000]
+layout_mode = 2
+
+[node name="StatPoints" type="Label" parent="VBox/StatRow/StatPanel1/V1" unique_id=2090526633]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.75686276, 0.36862746, 1)
+theme_override_font_sizes/font_size = 18
+text = "20"
+horizontal_alignment = 1
+
+[node name="Cap1" type="Label" parent="VBox/StatRow/StatPanel1/V1" unique_id=1851490375]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7254902, 0.6627451, 0.8784314, 1)
+theme_override_font_sizes/font_size = 10
+text = "Star Points"
+horizontal_alignment = 1
+
+[node name="StatPanel2" type="PanelContainer" parent="VBox/StatRow" unique_id=15808777]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("3_jvt7o")
+
+[node name="V2" type="VBoxContainer" parent="VBox/StatRow/StatPanel2" unique_id=1837040438]
+layout_mode = 2
+
+[node name="StatOutfits" type="Label" parent="VBox/StatRow/StatPanel2/V2" unique_id=1522171534]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.75686276, 0.36862746, 1)
+theme_override_font_sizes/font_size = 18
+text = "1/8"
+horizontal_alignment = 1
+
+[node name="Cap2" type="Label" parent="VBox/StatRow/StatPanel2/V2" unique_id=404691132]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7254902, 0.6627451, 0.8784314, 1)
+theme_override_font_sizes/font_size = 10
+text = "Outfits"
+horizontal_alignment = 1
+
+[node name="StatPanel3" type="PanelContainer" parent="VBox/StatRow" unique_id=913107685]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("3_jvt7o")
+
+[node name="V3" type="VBoxContainer" parent="VBox/StatRow/StatPanel3" unique_id=1133841626]
+layout_mode = 2
+
+[node name="StatFriend" type="Label" parent="VBox/StatRow/StatPanel3/V3" unique_id=535528041]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.75686276, 0.36862746, 1)
+theme_override_font_sizes/font_size = 18
+text = "0%"
+horizontal_alignment = 1
+
+[node name="Cap3" type="Label" parent="VBox/StatRow/StatPanel3/V3" unique_id=542799332]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7254902, 0.6627451, 0.8784314, 1)
+theme_override_font_sizes/font_size = 10
+text = "Friendship"
+horizontal_alignment = 1
+
+[node name="NavGrid" type="GridContainer" parent="VBox" unique_id=1892759354]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="NavClub" type="Button" parent="VBox/NavGrid" unique_id=929606283]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+theme_type_variation = &"ModeCard"
+
+[node name="NavBattle" type="Button" parent="VBox/NavGrid" unique_id=250549640]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+theme_type_variation = &"ModeCard"
+
+[node name="NavGames" type="Button" parent="VBox/NavGrid" unique_id=805340552]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+theme_type_variation = &"ModeCard"
+
+[node name="NavLounge" type="Button" parent="VBox/NavGrid" unique_id=524880789]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+theme_type_variation = &"ModeCard"
+
+[node name="NavStudy" type="Button" parent="VBox" unique_id=20485586]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"ModeCard"

@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://dcl8oebb445f4"]
+
+[ext_resource type="Script" uid="uid://bs4ktsc6dsyfj" path="res://scenes/screens/games_screen.gd" id="1_games"]
+
+[node name="GamesScreen" type="Control" unique_id=74346391]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_games")
+
+[node name="Content" type="Control" parent="." unique_id=1471255900]
+unique_name_in_owner = true
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0

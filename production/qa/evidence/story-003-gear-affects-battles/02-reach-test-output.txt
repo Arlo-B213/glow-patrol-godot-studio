@@ -1,0 +1,7 @@
+Throwaway headless-windowed check run 2026-10-07 (not an automated test in the repo):
+reach_glowstick=1.0
+brawl dist 50u: base(1.0)=0 hit, galaxy(1.4)=1 hit
+brawl dist 62u: base(1.0)=0 hit, galaxy(1.4)=1 hit
+zap offset 40px: base(1.0)=0 hit, galaxy(1.4)=1 hit
+zap offset 60px: base=0 hit, galaxy=0 hit (beyond 30*sqrt(1.4)*1.4 = 49.7px)
+(SCRIPT ERROR 'wobble' lines in the raw output came from the test's hand-built demon dictionary lacking a field; not from the game.)

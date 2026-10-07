@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://ckg7lvde3yyyp"]
+
+[ext_resource type="Script" uid="uid://b4j3xhoftsfaq" path="res://scenes/screens/club_screen.gd" id="1_yqpye"]
+
+[node name="ClubScreen" type="Control" unique_id=1076711996]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_yqpye")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=696111759]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 12
+
+[node name="SubTabs" type="HBoxContainer" parent="VBox" unique_id=2048260944]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SubTabCloset" type="Button" parent="VBox/SubTabs" unique_id=643267864]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+toggle_mode = true
+button_pressed = true
+text = "Closet"
+
+[node name="SubTabStyle" type="Button" parent="VBox/SubTabs" unique_id=233436681]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+toggle_mode = true
+text = "Style"
+
+[node name="SubTabWeapons" type="Button" parent="VBox/SubTabs" unique_id=348130703]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+toggle_mode = true
+text = "Weapons"
+
+[node name="SubTabLounge" type="Button" parent="VBox/SubTabs" unique_id=771091477]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+toggle_mode = true
+text = "Lounge"
+
+[node name="ScrollArea" type="ScrollContainer" parent="VBox" unique_id=1093903972]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SubContent" type="VBoxContainer" parent="VBox/ScrollArea" unique_id=2008468407]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
