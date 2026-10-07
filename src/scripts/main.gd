@@ -21,6 +21,9 @@ const TAB_VISUALS := {
 	"pets": ["paw", "Pets"],
 }
 
+const FxShine := preload("res://scenes/ui/fx_shine.gd")
+const FxWipe := preload("res://scenes/ui/fx_wipe.gd")
+
 const TAB_HEIGHT := 68
 const TAB_ICON_PX := 28
 
@@ -48,6 +51,7 @@ var _tabs_ready := false
 var _sound_icon: UiIcon
 var _top: TopBar
 var _screen_tween: Tween
+var _backdrop: Control
 
 
 func _ready() -> void:
@@ -83,11 +87,22 @@ func _ready() -> void:
 	_startup_flow.call_deferred()
 
 
+## Adds the gloss/shine overlay to primary buttons and mode cards (after their variation is set).
+func _decorate(btn: Button) -> void:
+	if not is_instance_valid(btn) or btn.has_node("FxShine") or btn.theme_type_variation == &"TabButton":
+		return
+	if btn.theme_type_variation == &"PrimaryButton":
+		FxShine.attach(btn, "shine", 14.0)
+	elif btn.theme_type_variation == &"ModeCard":
+		FxShine.attach(btn, "gloss", 18.0)
+
+
 ## Wires press feedback on buttons added later anywhere in the tree.
 func _on_node_added(node: Node) -> void:
 	if node is BaseButton:
 		UiMotion.wire_press_feedback(node as BaseButton)
 	if node is Button:
+		_decorate.call_deferred(node as Button)
 		# Deferred so the creator's own size assignments land first.
 		UiTheme.ensure_touch.call_deferred(node as Button)
 
@@ -121,6 +136,7 @@ func _build_tab_content(screen_name: String, btn: Button) -> void:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_size_override("font_size", UiTheme.CAPTION)
 	box.add_child(label)
+	FxShine.attach(btn, "tab", 10.0)
 	_tab_parts[screen_name] = {"icon": icon, "label": label, "box": box}
 
 
@@ -133,6 +149,7 @@ func _refresh_tab_visuals() -> void:
 		(parts["icon"] as UiIcon).set_tint(UiTheme.ACCENT if selected else UiTheme.TEXT_MUTED)
 		(parts["label"] as Label).add_theme_color_override(
 			"font_color", UiTheme.TEXT if selected else UiTheme.TEXT_MUTED)
+		(btn.get_node("FxShine") as Control).call("set_lit", selected)
 		if _tabs_ready and selected and not _tab_was_selected.get(screen_name, false):
 			UiMotion.pop(parts["box"] as Control)
 		_tab_was_selected[screen_name] = selected
@@ -173,6 +190,8 @@ func _update_sound_button() -> void:
 
 
 func _on_points_earned(amount: int) -> void:
+	UiMotion.pop(_top.pill, 1.18, 0.24)
+	SparkleBurst.spawn(self, _top.pill.get_global_rect().get_center())
 	UiMotion.float_text(self, _top.pill_pop_origin(), amount)
 
 
@@ -203,10 +222,12 @@ func set_screen(screen_name: String) -> void:
 	if packed == null:
 		return
 	_check_stickers()
+	_set_backdrop(screen_name)
 	var instance: Control = packed.instantiate()
 	instance.set_anchors_preset(Control.PRESET_FULL_RECT)
 	content_area.add_child(instance)
-	_screen_tween = UiMotion.fade_slide_in(instance)
+	_screen_tween = UiMotion.swipe_in(instance)
+	FxWipe.play(content_area)
 
 	# Screens that expose a screen_requested signal can navigate other tabs
 	# (e.g. HQ's nav cards). "club_lounge" opens the club tab; deeper
@@ -214,6 +235,15 @@ func set_screen(screen_name: String) -> void:
 	# once the club screen itself is built out.
 	if instance.has_signal("screen_requested"):
 		instance.screen_requested.connect(_on_child_screen_requested)
+
+
+## Shows the themed animated backdrop (env_backdrop.gd) behind the current screen.
+func _set_backdrop(screen_name: String) -> void:
+	if _backdrop == null:
+		_backdrop = preload("res://scenes/ui/env_backdrop.gd").new()
+		add_child(_backdrop)
+		move_child(_backdrop, $Background.get_index() + 1)
+	_backdrop.set_theme_name(screen_name if screen_name != "battle" else "home")
 
 
 func _on_child_screen_requested(requested: String) -> void:

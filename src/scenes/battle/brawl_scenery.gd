@@ -6,6 +6,8 @@ extends RefCounted
 
 const World := preload("res://scenes/battle/brawl_world.gd")
 const Props := preload("res://scenes/battle/brawl_props.gd")
+const FxLight := preload("res://scripts/fx_light.gd")
+const Env := preload("res://scenes/battle/env_brawl.gd")
 
 const FAR_PARALLAX := 0.3
 const MID_PARALLAX := 0.6
@@ -30,9 +32,12 @@ static func draw_back(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: flo
 		PackedColorArray([top, top, bot, bot]))
 	_stars(ci, cam_x, size, ground_y, u, t)
 	_moon(ci, cam_x, size, ground_y, u, float(pal["moon"]))
-	_skyline(ci, cam_x, size, ground_y, u, pal)
+	Env.sky_extras(ci, cam_x, size, ground_y, u, t, pal)
+	_skyline(ci, cam_x, size, ground_y, u, pal, t)
 	_mid_row(ci, cam_x, size, ground_y, u, t)
+	Env.mid_extras(ci, cam_x, size, ground_y, u, t, pal)
 	_floor(ci, cam_x, size, ground_y, u, pal)
+	Env.ground_extras(ci, cam_x, size, ground_y, u, t, pal)
 	Props.draw(ci, cam_x, size, ground_y, u, t, found)
 
 
@@ -55,7 +60,7 @@ static func _moon(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float, 
 	ci.draw_circle(c + Vector2(14.0, 12.0) * u, 5.0 * u, Color(0.78, 0.84, 0.95, 0.5 * strength))
 
 
-static func _skyline(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float, u: float, pal: Dictionary) -> void:
+static func _skyline(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float, u: float, pal: Dictionary, t: float = 0.0) -> void:
 	var slot: float = 104.0 * u
 	var off: float = cam_x * FAR_PARALLAX
 	var first: int = int(floor(off / slot))
@@ -76,7 +81,10 @@ static func _skyline(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: floa
 				if hash01(i * 31 + r * 7 + c, 9) < 0.5:
 					continue
 				var col: Color = win if hash01(i + r, c) > 0.35 else win2
-				ci.draw_rect(Rect2(x + 10.0 * u + float(c) * 26.0 * u, ground_y - h + 10.0 * u + float(r) * 30.0 * u, 9.0 * u, 13.0 * u), _c(col, 0.62))
+				var flick: float = 1.0
+				if t != 0.0 and hash01(i * 17 + r * 3 + c, 33) > 0.72:
+					flick = 0.45 + 0.55 * maxf(0.0, sin(t * (1.5 + hash01(i + c, 34) * 2.0) + float(i + r)))
+				ci.draw_rect(Rect2(x + 10.0 * u + float(c) * 26.0 * u, ground_y - h + 10.0 * u + float(r) * 30.0 * u, 9.0 * u, 13.0 * u), _c(col, 0.62 * flick))
 
 
 static func _mid_row(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: float, u: float, t: float) -> void:
@@ -188,5 +196,6 @@ static func draw_fore(ci: CanvasItem, cam_x: float, size: Vector2, ground_y: flo
 		var y: float = ground_y * (0.3 + 0.62 * hash01(i, 22)) + sin(t * 0.9 + float(i) * 1.7) * 14.0 * u
 		var a: float = 0.6 + 0.4 * sin(t * 2.2 + float(i) * 2.7)
 		var col: Color = pal["a"] if i % 2 == 0 else pal["b"]
-		ci.draw_circle(Vector2(x, y), 7.0 * u, _c(col, 0.14 * a))
+		FxLight.halo(ci, Vector2(x, y), 13.0 * u, col, 0.55 * a)
 		ci.draw_circle(Vector2(x, y), 2.4 * u, _c(Color.WHITE.lerp(col, 0.3), 0.9 * a))
+	Env.fore_extras(ci, cam_x, size, ground_y, u, t, pal)

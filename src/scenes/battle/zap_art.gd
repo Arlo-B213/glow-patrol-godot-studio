@@ -52,37 +52,19 @@ static func rooftop(ci: CanvasItem, size: Vector2, t: float, u: float) -> void:
 	ci.draw_rect(Rect2(0.0, y, size.x, 3.0 * u), Color(UiTheme.TEAL, pulse))
 
 
-## A floating Gloomling demon at `p` (radius `r`): bobs, blinks, flashes white when `flash` > 0.
+## A floating Gloomling demon at `p` (radius `r`): the gloom imp bobbing in the air, blinking
+## and flashing white when `flash` > 0. `t` = 0 gives a still pose.
 static func demon(ci: CanvasItem, p: Vector2, r: float, col: Color, t: float, seed_v: float, flash: float = 0.0) -> void:
 	var bob: float = 0.0 if t == 0.0 else sin(t * 2.4 + seed_v) * r * 0.1
-	var c: Vector2 = p + Vector2(0.0, bob)
-	var body: Color = col.lerp(Color("#150C2B"), 0.6).lerp(Color.WHITE, flash)
-	var rim: Color = col.lerp(Color.WHITE, flash)
-	ci.draw_circle(c, r * 1.35, Color(col, 0.16))
-	for i in 3:
-		var f: float = float(i)
-		var w: float = 0.0 if t == 0.0 else sin(t * 3.0 + seed_v + f * 1.4) * r * 0.12
-		ci.draw_circle(c + Vector2((f - 1.0) * r * 0.42 + w, r * 0.82 + f * 0.0), r * 0.17, body)
-	for side in [-1.0, 1.0]:
-		ci.draw_colored_polygon(PackedVector2Array([c + Vector2(side * r * 0.22, -r * 0.7), c + Vector2(side * r * 0.62, -r * 0.55), c + Vector2(side * r * 0.52, -r * 1.12)]), rim)
-	var pts: PackedVector2Array = _ellipse(c, r, r * 0.9, 22)
-	ci.draw_colored_polygon(pts, body)
-	ci.draw_polyline(pts + PackedVector2Array([pts[0]]), Color(rim, 0.85), maxf(1.5, r * 0.07), true)
-	var blink: bool = t > 0.0 and fposmod(t * 0.7 + seed_v, 3.0) < 0.14
-	for side in [-1.0, 1.0]:
-		var e: Vector2 = c + Vector2(side * r * 0.36, -r * 0.12)
-		if blink:
-			ci.draw_line(e + Vector2(-r * 0.2, 0.0), e + Vector2(r * 0.2, 0.0), Color("#F1EAFF"), maxf(1.5, r * 0.07), true)
-		else:
-			ci.draw_circle(e, r * 0.23, Color("#F1EAFF"))
-			ci.draw_circle(e + Vector2(0.0, r * 0.03), r * 0.11, INK)
-	ci.draw_arc(c + Vector2(0.0, r * 0.28), r * 0.22, 0.15, PI - 0.15, 8, Color("#F1EAFF"), maxf(1.5, r * 0.06), true)
+	var sz: float = r * 1.9
+	var age: int = 0 if t == 0.0 else int((t + seed_v) * 60.0)
+	BrawlArt.draw_gloomling(ci, p.x, p.y + bob + sz * 0.58, sz, col, age, 0.0, 1.0, {"air": true, "flash": flash})
 
 
 ## The Grumble King (Alley Brawl art) floating at `p` with radius `r`.
 static func boss(ci: CanvasItem, p: Vector2, r: float, flash: bool, age: int, u: float) -> void:
-	var s: float = r * 2.2
-	BrawlArt.draw_boss_kind(ci, "king", p.x, p.y + s * 0.5, s, flash, age, 0.0, u)
+	var s: float = r * 2.0
+	BrawlArt.draw_boss_kind(ci, "king", p.x, p.y + s * 0.62, s, flash, age, 0.0, u)
 
 
 ## A jagged lightning bolt between `a` and `b`; `k` 1 -> 0 fades it, `col` is the weapon glow.

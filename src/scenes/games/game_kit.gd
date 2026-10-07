@@ -5,6 +5,8 @@ extends RefCounted
 ## All helpers draw onto a CanvasItem; they never touch GameState except to read reduce_motion/pet.
 
 ## Themes: sky gradient top/bottom, glow accent, skyline silhouette colour, star colour.
+const FxLight := preload("res://scripts/fx_light.gd")
+
 const THEMES := {
 	"neon": {"top": Color("#1A0F3D"), "bot": Color("#5B2A86"), "glow": Color("#FF5FA2"), "sil": Color("#241552"), "star": Color("#FFE9F5")},
 	"lantern": {"top": Color("#0E1B3D"), "bot": Color("#2B3F7A"), "glow": Color("#FFC15E"), "sil": Color("#16244F"), "star": Color("#FFF3C9")},
@@ -42,6 +44,17 @@ static func draw_backdrop(ci: CanvasItem, size: Vector2, theme: String, t: float
 		var by: float = size.y * (0.15 + rng.randf() * 0.7) + sin(t * 1.3 + float(i)) * 8.0
 		ci.draw_circle(Vector2(bx, by), 5.0, Color(th["glow"], 0.07))
 		ci.draw_circle(Vector2(bx, by), 2.0, Color(th["glow"], 0.55))
+	_light_pass(ci, size, th, t)
+
+
+## Cheap lighting pass: two drifting light shafts, a horizon halo and a vignette.
+static func _light_pass(ci: CanvasItem, size: Vector2, th: Dictionary, t: float) -> void:
+	var fl: float = 0.0 if calm() else t
+	var g: Color = th["glow"]
+	FxLight.halo(ci, Vector2(size.x * 0.5, size.y * 0.92), size.x * 0.7, g, 0.3, size.y * 0.16)
+	FxLight.shaft(ci, Vector2(size.x * 0.2, -8.0), PI * 0.5 + 0.3, size.y * 0.8, size.x * 0.3, g, 0.09, fl, 1.0)
+	FxLight.shaft(ci, Vector2(size.x * 0.75, -8.0), PI * 0.5 - 0.25, size.y * 0.75, size.x * 0.26, Color(th["star"]), 0.07, fl, 2.0)
+	FxLight.vignette(ci, Rect2(Vector2.ZERO, size), 0.35)
 
 
 static func _skyline(ci: CanvasItem, size: Vector2, col: Color, top_frac: float, hmax_frac: float, shift: float, seed_v: int) -> void:

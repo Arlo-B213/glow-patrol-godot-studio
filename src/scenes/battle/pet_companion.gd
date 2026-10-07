@@ -81,7 +81,15 @@ func draw(ci: CanvasItem, ground_y: float, u: float, facing: int) -> void:
 	if UiMotion.enabled():
 		hop = absf(sin(_t * (9.0 if _moving > 0.3 else 3.0))) * (0.3 if _moving > 0.3 else 0.12)
 	var mood: int = PetArt.MOOD_HAPPY if _spark_life > 0.0 else PetArt.MOOD_NORMAL
-	PetArt.draw(ci, species, stage, rect, _t, UiMotion.enabled(), mood, hop, -float(facing))
+	var ex := {"ready": _ready_to_zap}
+	if _spark_life > 0.0:
+		# Attack: lunge toward the target with a lean and a determined face.
+		ex["react"] = "attack"
+		ex["rt"] = 0.35 - _spark_life
+		rect.position.x += float(facing) * sin((1.0 - _spark_life / 0.35) * PI) * 10.0 * u
+	elif _moving > 0.3:
+		mood = PetArt.MOOD_EXCITED
+	PetArt.draw(ci, species, stage, rect, _t, UiMotion.enabled(), mood, hop, -float(facing), ex)
 	if _spark_life > 0.0:
 		_draw_spark(ci, u)
 

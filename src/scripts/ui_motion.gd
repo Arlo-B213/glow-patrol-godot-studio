@@ -67,6 +67,18 @@ static func fade_slide_in(c: Control, distance: float = 12.0, duration: float = 
 	return tw
 
 
+## Fades `c` in while sliding it sideways (`dx` px, from the right) with a cubic ease.
+static func swipe_in(c: Control, dx: float = 36.0, duration: float = 0.22) -> Tween:
+	if not enabled() or not c.is_inside_tree():
+		return null
+	c.modulate.a = 0.0
+	c.position.x = dx
+	var tw := c.create_tween().set_parallel(true)
+	tw.tween_property(c, "modulate:a", 1.0, duration).set_ease(Tween.EASE_OUT)
+	tw.tween_property(c, "position:x", 0.0, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	return tw
+
+
 ## Connects a scale 0.96 + slight dim feedback to a button's button_down/up.
 ## Safe to call more than once; toggle state and theme styles are untouched.
 static func wire_press_feedback(btn: BaseButton) -> void:

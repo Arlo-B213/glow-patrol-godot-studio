@@ -113,6 +113,21 @@ const PETS := [
 	{"id": "sparkfox", "name": "Sparkfox", "cost": 50, "color": Color("#FF9A5E"), "accent": Color("#FFD36E"),
 		"blurb": "A small fox with a tail that glows like a lantern.",
 		"growth": [6.0, 20.0, 45.0], "zap_every": [0.0, 9.0, 8.0, 7.0], "zap_boss": [0, 0, 1, 1]},
+	{"id": "moonbun", "name": "Moonbun", "cost": 45, "color": Color("#F2EAFF"), "accent": Color("#9CC8FF"),
+		"blurb": "A round moon-rabbit whose long ears glow like little lanterns.",
+		"growth": [6.0, 22.0, 48.0], "zap_every": [0.0, 9.0, 8.0, 7.0], "zap_boss": [0, 0, 1, 1]},
+	{"id": "inkydrake", "name": "Inkydrake", "cost": 55, "color": Color("#3FD0C0"), "accent": Color("#FF7FC8"),
+		"blurb": "A tiny teal dragon with soft wing-fins and ink-spot freckles.",
+		"growth": [7.0, 24.0, 52.0], "zap_every": [0.0, 9.0, 8.0, 7.0], "zap_boss": [0, 0, 1, 1]},
+]
+## Cosmetic pet accessories (Story 033). A pet may wear one it has unlocked: free once the
+## pet reaches `stage` (9 = never by growth), or bought early for `cost` stars (per pet).
+const PET_ACCESSORIES := [
+	{"id": "bow", "name": "Bow", "color": Color("#FF5FA2"), "stage": 1, "cost": 6},
+	{"id": "scarf", "name": "Scarf", "color": Color("#FF8A4C"), "stage": 2, "cost": 9},
+	{"id": "crown", "name": "Star Crown", "color": Color("#FFD36E"), "stage": 3, "cost": 15},
+	{"id": "headphones", "name": "Headphones", "color": Color("#6B5BFF"), "stage": 9, "cost": 12},
+	{"id": "sunglasses", "name": "Sunglasses", "color": Color("#2A1260"), "stage": 9, "cost": 18},
 ]
 const PET_STAGE_NAMES := ["Egg", "Baby", "Child", "Adult"]
 const PET_FEED_COST := 3
@@ -294,6 +309,58 @@ func pet_def(id: String) -> Dictionary:
 	return {}
 
 
+## Accessory definition for `id` (empty dictionary when unknown).
+func accessory_def(id: String) -> Dictionary:
+	for d in PET_ACCESSORIES:
+		if d["id"] == id:
+			return d
+	return {}
+
+
+## True when pet `pet_id` may wear `acc_id`: its stage reached the free stage, or it was bought.
+func accessory_unlocked(pet_id: String, acc_id: String) -> bool:
+	var def := accessory_def(acc_id)
+	if def.is_empty() or not owned_pets.has(pet_id):
+		return false
+	if pet_stage(pet_id) >= int(def["stage"]):
+		return true
+	return (owned_pets[pet_id].get("acc_own", []) as Array).has(acc_id)
+
+
+## Accessory id the pet currently wears ("" = none).
+func pet_accessory(pet_id: String) -> String:
+	if not owned_pets.has(pet_id):
+		return ""
+	return str(owned_pets[pet_id].get("acc", ""))
+
+
+## Buys an accessory for one pet with stars. False when unknown, unlocked already or too few stars.
+func buy_accessory(pet_id: String, acc_id: String) -> bool:
+	var def := accessory_def(acc_id)
+	if def.is_empty() or not owned_pets.has(pet_id) or accessory_unlocked(pet_id, acc_id):
+		return false
+	if star_points < int(def["cost"]):
+		return false
+	star_points -= int(def["cost"])
+	points_changed.emit(star_points)
+	var own: Array = owned_pets[pet_id].get("acc_own", [])
+	own.append(acc_id)
+	owned_pets[pet_id]["acc_own"] = own
+	_persist()
+	pet_changed.emit(pet_id)
+	return true
+
+
+## Puts an unlocked accessory on the pet ("" takes it off). False when not allowed.
+func equip_accessory(pet_id: String, acc_id: String) -> bool:
+	if not owned_pets.has(pet_id) or (acc_id != "" and not accessory_unlocked(pet_id, acc_id)):
+		return false
+	owned_pets[pet_id]["acc"] = acc_id
+	_persist()
+	pet_changed.emit(pet_id)
+	return true
+
+
 func has_pet(id: String) -> bool:
 	return owned_pets.has(id)
 
@@ -366,7 +433,7 @@ func give_pet(id: String) -> bool:
 	if def.is_empty() or owned_pets.has(id):
 		return false
 	owned_pets[id] = {"name": def["name"], "growth": 0.0, "hunger": 80.0, "happiness": 80.0,
-		"last_ts": Time.get_unix_time_from_system()}
+		"last_ts": Time.get_unix_time_from_system(), "acc": "", "acc_own": []}
 	if active_pet_id() == "":
 		active_pet = id
 		active_pet_changed.emit(id)
@@ -568,6 +635,20 @@ func load_game() -> void:
 	_load_pets(parsed)
 
 
+## Known accessory id or "" (old or hand-edited saves).
+func _clean_acc(v) -> String:
+	return str(v) if not accessory_def(str(v)).is_empty() else ""
+
+
+func _clean_acc_list(v) -> Array:
+	var out: Array = []
+	if typeof(v) == TYPE_ARRAY:
+		for x in v:
+			if not accessory_def(str(x)).is_empty() and not out.has(str(x)):
+				out.append(str(x))
+	return out
+
+
 ## Reads pets from a parsed save with defaults for every field (old saves have none),
 ## then applies the gentle offline decay.
 func _load_pets(parsed: Dictionary) -> void:
@@ -586,6 +667,8 @@ func _load_pets(parsed: Dictionary) -> void:
 				"hunger": clampf(float(p.get("hunger", 80.0)), 0.0, 100.0),
 				"happiness": clampf(float(p.get("happiness", 80.0)), 0.0, 100.0),
 				"last_ts": float(p.get("last_ts", now)),
+					"acc": _clean_acc(p.get("acc", "")),
+					"acc_own": _clean_acc_list(p.get("acc_own", [])),
 			}, now)
 	active_pet = str(parsed.get("active_pet", ""))
 	if not owned_pets.has(active_pet):

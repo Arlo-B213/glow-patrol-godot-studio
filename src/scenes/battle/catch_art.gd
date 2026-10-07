@@ -91,4 +91,6 @@ static func hero(ci: CanvasItem, x: float, ground_y: float, hs: float, look: Dic
 
 ## A Gloomling hazard centred at `p` with radius `r` (uses the Alley Brawl art).
 static func gloomling(ci: CanvasItem, p: Vector2, r: float, col: Color, age: int, u: float) -> void:
-	BrawlArt.draw_gloomling(ci, p.x, p.y + r, r * 2.0, col, age, 0.0, u, {})
+	# Dangling gloom imp, centred on `p`; bold outline and big eyes keep it readable at 40-60 px.
+	var sz: float = r * 1.9
+	BrawlArt.draw_gloomling(ci, p.x, p.y + sz * 0.58, sz, col, age, 0.0, u, {"air": true})

@@ -64,6 +64,33 @@ static func capsule(a: Vector2, b: Vector2, r: float, seg: int = 7) -> PackedVec
 	return pts
 
 
+## Tapered capsule (convex): radius `ra` at `a` and `rb` at `b`, `seg` points per end cap.
+static func taper_pts(a: Vector2, b: Vector2, ra: float, rb: float, seg: int = 6) -> PackedVector2Array:
+	var d: float = (b - a).angle() if a != b else 0.0
+	var pts := PackedVector2Array()
+	for i in range(seg + 1):
+		var an: float = d - PI * 0.5 + PI * float(i) / float(seg)
+		pts.append(b + Vector2(cos(an), sin(an)) * rb)
+	for i in range(seg + 1):
+		var an: float = d + PI * 0.5 + PI * float(i) / float(seg)
+		pts.append(a + Vector2(cos(an), sin(an)) * ra)
+	return pts
+
+
+## Tapered limb of widths `wa` -> `wb` with outline, a 3-tone body (base, shadow stripe,
+## highlight stripe) and an optional rim light `rim` (alpha 0 = none) on the lit side.
+static func taper(ci: CanvasItem, a: Vector2, b: Vector2, wa: float, wb: float, col: Color, outline_w: float, light_side: float = -1.0, rim: Color = Color(0, 0, 0, 0)) -> void:
+	ci.draw_colored_polygon(taper_pts(a, b, wa * 0.5 + outline_w, wb * 0.5 + outline_w), ink(col))
+	ci.draw_colored_polygon(taper_pts(a, b, wa * 0.5, wb * 0.5), col)
+	var n: Vector2 = (b - a).orthogonal().normalized()
+	if n.x * light_side < 0.0 or (absf(n.x) < 0.01 and n.y > 0.0):
+		n = -n
+	ci.draw_line(a + n * wa * 0.24, b + n * wb * 0.24, fade(lighten(col, 0.35), 0.6), maxf(1.0, wb * 0.2))
+	ci.draw_line(a - n * wa * 0.3, b - n * wb * 0.3, fade(darken(col, 0.3), 0.45), maxf(1.0, wb * 0.28))
+	if rim.a > 0.0:
+		ci.draw_line(a + n * wa * 0.46, b + n * wb * 0.46, rim, maxf(1.0, wb * 0.12), true)
+
+
 ## Filled simple polygon plus a closed soft outline of width `outline_w`.
 static func fill(ci: CanvasItem, pts, col: Color, outline_w: float, outline_col: Color) -> void:
 	var poly := PackedVector2Array(pts)

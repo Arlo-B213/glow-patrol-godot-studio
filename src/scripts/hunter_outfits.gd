@@ -11,6 +11,7 @@ extends RefCounted
 
 const K := preload("res://scripts/hunter_outfit_kit.gd")
 const B := preload("res://scripts/hunter_outfits_b.gd")
+const D := preload("res://scripts/hunter_outfit_detail.gd")
 
 ## Style ids understood by draw_side / draw_front (unknown ids fall back to "track").
 const STYLES: Array[String] = ["track", "sequin", "armor", "robe", "hanbok", "tailcoat", "cape", "galaxy"]
@@ -26,6 +27,7 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 	var st: String = _norm(style)
 	if st in ["hanbok", "tailcoat", "cape", "galaxy"]:
 		B.draw_side(ci, st, o, s, f, sway, moving, outfit, tw, alpha)
+		D.side(ci, st, o, s, f, sway, outfit, tw, alpha)
 		return
 	var lt: Color = K.c(outfit.lerp(Color.WHITE, 0.4), alpha)
 	var dk: Color = K.c(outfit.lerp(K.INK, 0.45), alpha)
@@ -33,7 +35,7 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 	var gold: Color = K.c(K.GOLD, alpha)
 	var wh: Color = K.c(Color.WHITE, alpha)
 	var run: float = 8.0 if moving else 0.0
-	var torso: Array = [Vector2(-17, -74), Vector2(17, -74), Vector2(13, -40), Vector2(-13, -40)]
+	var torso: Array = K.TORSO_S
 	match st:
 		"sequin":
 			K.part(ci, o, s, [Vector2(-f * 8, -50), Vector2(-f * 8, -38), Vector2(-f * (18.0 + run), -34 + sway)], dk)
@@ -97,6 +99,7 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 			K.pl(ci, o, s, [Vector2(-f * 2, -77), Vector2(f * 10, -77), Vector2(f * 9, -72), Vector2(-f * 1, -72)], lt)
 			K.rc(ci, o, s, Vector2(-13, -45), Vector2(26, 4), gold)
 			K.ln(ci, o, s, Vector2(-12.5, -42), Vector2(12.5, -42), K.c(dk, 0.8), 1.0)
+	D.side(ci, st, o, s, f, sway, outfit, tw, alpha)
 
 
 ## Front-view outfit body for the portrait. `o` = feet origin (bob already applied),
@@ -105,6 +108,7 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 	var st: String = _norm(style)
 	if st in ["hanbok", "tailcoat", "cape", "galaxy"]:
 		B.draw_front(ci, st, o, s, outfit, tw, alpha)
+		D.front(ci, st, o, s, outfit, tw, alpha)
 		return
 	var lt: Color = K.c(outfit.lerp(Color.WHITE, 0.4), alpha)
 	var dk: Color = K.c(outfit.lerp(K.INK, 0.45), alpha)
@@ -112,7 +116,7 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 	var gold: Color = K.c(K.GOLD, alpha)
 	var wh: Color = K.c(Color.WHITE, alpha)
 	var sw: float = sin(tw * 2.0) * 2.0
-	var torso: Array = [Vector2(-27, -52), Vector2(27, -52), Vector2(21, -22), Vector2(-21, -22)]
+	var torso: Array = K.TORSO_F
 	match st:
 		"sequin":
 			K.part(ci, o, s, torso, m)
@@ -187,3 +191,4 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 			K.stitch(ci, o, s, Vector2(16.5, -39), Vector2(7.5, -39), lt, 3)
 			K.rc(ci, o, s, Vector2(-21, -29), Vector2(42, 5), gold)
 			K.ln(ci, o, s, Vector2(-20, -23), Vector2(20, -23), K.c(dk, 0.8), 1.0)
+	D.front(ci, st, o, s, outfit, tw, alpha)

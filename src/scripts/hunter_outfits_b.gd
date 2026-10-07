@@ -14,7 +14,7 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 	var wh: Color = K.c(Color.WHITE, alpha)
 	var ik: Color = K.c(K.INK, alpha)
 	var run: float = 8.0 if moving else 0.0
-	var torso: Array = [Vector2(-17, -74), Vector2(17, -74), Vector2(13, -40), Vector2(-13, -40)]
+	var torso: Array = K.TORSO_S
 	match style:
 		"hanbok":
 			var sk: Color = K.c(outfit.lerp(Color.WHITE, 0.18), alpha)
@@ -94,7 +94,7 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 	var wh: Color = K.c(Color.WHITE, alpha)
 	var ik: Color = K.c(K.INK, alpha)
 	var sw: float = sin(tw * 2.0) * 2.0
-	var torso: Array = [Vector2(-27, -52), Vector2(27, -52), Vector2(21, -22), Vector2(-21, -22)]
+	var torso: Array = K.TORSO_F
 	match style:
 		"hanbok":
 			var sk: Color = K.c(outfit.lerp(Color.WHITE, 0.18), alpha)

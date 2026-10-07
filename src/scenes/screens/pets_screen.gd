@@ -5,6 +5,7 @@ extends Control
 const SUB_DEN := "den"
 const SUB_SHOP := "shop"
 const BTN_H := 60.0
+const AccPicker := preload("res://scenes/ui/pet_acc_picker.gd")
 
 @onready var game_state: Node = get_node("/root/GameState")
 @onready var toast: Node = get_node("/root/Toast")
@@ -190,6 +191,10 @@ func _build_den() -> void:
 	row.add_child(_ui["feed"])
 	row.add_child(_button("Pet", "SecondaryButton", _on_pet_pressed))
 	box.add_child(_button("Switch pet", "SecondaryButton", _open_picker, BTN_H - 4.0))
+	var picker: HFlowContainer = AccPicker.new().setup(id)
+	box.add_child(picker)
+	picker.changed.connect(den.pet_view.queue_redraw)
+	box.move_child(picker, box.get_child_count() - 2)
 	_refresh_den(true)
 
 
@@ -203,6 +208,8 @@ func _refresh_den(instant: bool = false) -> void:
 	var den: PetDen = _ui["den"]
 	den.pet_view.pet(id, stage)
 	den.pet_view.set_mood(game_state.pet_mood(id))
+	den.pet_view.progress = game_state.pet_progress(id) if stage == 0 else 0.0
+	den.pet_view.accessory = "-"
 	den.bowl_fill = float(pet["hunger"]) / 100.0
 	(_ui["name"] as Label).text = _pet_name(id)
 	(_ui["stage"] as Label).text = game_state.PET_STAGE_NAMES[stage]

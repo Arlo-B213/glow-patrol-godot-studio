@@ -100,3 +100,21 @@ static func lantern(ci: CanvasItem, ctr: Vector2, s: float, body: Color, line: C
 	ci.draw_line(ctr + Vector2(-2.5, -5) * s, ctr + Vector2(-2.5, 5) * s, line, w)
 	ci.draw_line(ctr + Vector2(2.5, -5) * s, ctr + Vector2(2.5, 5) * s, line, w)
 	ci.draw_line(ctr + Vector2(0, 6.5) * s, ctr + Vector2(0, 10) * s, line, maxf(1.0, s))
+
+
+## Shaped torso silhouettes (Story 032): rounded shoulders, waist cinch, hip flare.
+const TORSO_F: Array = [Vector2(-23, -53), Vector2(23, -53), Vector2(27.5, -49), Vector2(27, -41), Vector2(22, -33), Vector2(19.5, -26),
+	Vector2(22, -22), Vector2(-22, -22), Vector2(-19.5, -26), Vector2(-22, -33), Vector2(-27, -41), Vector2(-27.5, -49)]
+const TORSO_S: Array = [Vector2(-14, -75), Vector2(14, -75), Vector2(17, -71), Vector2(16, -62), Vector2(12.5, -52), Vector2(11, -46),
+	Vector2(14, -40), Vector2(-14, -40), Vector2(-11, -46), Vector2(-12.5, -52), Vector2(-16, -62), Vector2(-17, -71)]
+
+
+## Vertical sheen over a polygon of figure points: light at the top-left fading to shade.
+static func sheen(ci: CanvasItem, o: Vector2, s: float, pts: Array, a: float) -> void:
+	var poly := _pts(o, s, pts)
+	var cols := PackedColorArray()
+	for p in pts:
+		var v: Vector2 = p
+		var t: float = clampf((v.y + 75.0) / 55.0 + (v.x + 28.0) / 140.0, 0.0, 1.0)
+		cols.append(Color(1, 1, 1, 0.2 * a * (1.0 - t)).lerp(Color(0.1, 0.04, 0.2, 0.28 * a), t))
+	ci.draw_polygon(poly, cols)

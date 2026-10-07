@@ -43,3 +43,7 @@
 | 028 | Glow Bubbles (bubble pop) | UI/Feel | In Review | N/A |
 | 029 | Word Scramble | UI/Feel | In Review | N/A |
 | 030 | Games hub integration and polish | UI | In Review | N/A |
+| 031 | Humanoid enemies and bosses (gloom characters) | UI/Feel | Ready | [story-031](story-031-humanoid-enemies-and-bosses.md) |
+| 032 | Hunter and Lanternboys visual upgrade | UI/Feel | Ready | N/A |
+| 033 | Pets visual upgrade | UI/Feel | In Review | N/A |
+| 034 | Environment, lighting/FX toolkit and UI polish (Club perf open) | UI/Feel | In Review | [story-034](story-034-environment-lighting-and-ui-polish.md) |

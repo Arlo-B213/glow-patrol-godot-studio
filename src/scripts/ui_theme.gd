@@ -62,8 +62,9 @@ static func box(bg: Color, border: Color = Color(0, 0, 0, 0), border_w: int = 0,
 	sb.anti_aliasing = true
 	if shadow > 0:
 		sb.shadow_size = shadow
-		sb.shadow_color = Color(0, 0, 0, 0.35)
-		sb.shadow_offset = Vector2(0, 2)
+		sb.shadow_color = Color(0.02, 0.0, 0.08, 0.3)
+		sb.shadow_size = shadow + 3
+		sb.shadow_offset = Vector2(0, 3)
 	return sb
 
 
@@ -125,7 +126,11 @@ static func _build_buttons(t: Theme) -> void:
 	# Primary (pink accent, dark text, lighter border = top highlight).
 	var hi := ACCENT.lightened(0.35)
 	var pri_n := box(ACCENT, hi, 2, RADIUS, 18, BUTTON_PAD_V, BUTTON_PAD_V, 4)
+	pri_n.shadow_color = Color(ACCENT, 0.42)
+	pri_n.shadow_size = 9
 	var pri_h := box(ACCENT.lightened(0.12), hi, 2, RADIUS, 18, BUTTON_PAD_V, BUTTON_PAD_V, 4)
+	pri_h.shadow_color = Color(ACCENT, 0.6)
+	pri_h.shadow_size = 12
 	var pri_p := box(ACCENT_DARK, ACCENT, 2, RADIUS, 18, BUTTON_PAD_V + 1, BUTTON_PAD_V - 1)
 	var gray_pink := ACCENT.lerp(LOCKED, 0.75)
 	var pri_d := box(gray_pink.darkened(0.3), LOCKED, 2, RADIUS, 18, BUTTON_PAD_V, BUTTON_PAD_V)
@@ -139,6 +144,9 @@ static func _build_buttons(t: Theme) -> void:
 	var tab_h := box(PANEL, Color(0, 0, 0, 0), 0, 10, 4, 12, 12)
 	var sel := box(ACCENT.darkened(0.55), ACCENT, 2, 10, 4, 12, 12, 3)
 	sel.border_width_bottom = 4
+	sel.shadow_color = Color(ACCENT, 0.5)
+	sel.shadow_size = 10
+	sel.shadow_offset = Vector2(0, 0)
 	var tab_d := box(BG, Color(0, 0, 0, 0), 0, 10, 4, 12, 12)
 	t.add_type("TabButton")
 	t.set_type_variation("TabButton", &"Button")
@@ -165,7 +173,8 @@ static func _panel_variation(t: Theme, vname: String, sb: StyleBox) -> void:
 
 
 static func _build_panels(t: Theme) -> void:
-	var card := box(PANEL, PANEL_LIGHT, 1, 18, 14, 14, 14, 4)
+	var card := box(PANEL, PANEL_LIGHT, 2, 18, 14, 14, 14, 4)
+	card.border_color = PANEL_LIGHT.lightened(0.12)
 	_panel_variation(t, "CardPanel", card)
 	_panel_variation(t, "CardPanelEquipped", box(PANEL.lightened(0.05), TEAL, 2, 18, 14, 14, 14, 6))
 	_panel_variation(t, "CardPanelLocked", box(PANEL.darkened(0.3), LOCKED.darkened(0.3), 1, 18, 14, 14, 14))
@@ -174,7 +183,12 @@ static func _build_panels(t: Theme) -> void:
 
 static func _build_bars(t: Theme) -> void:
 	t.set_stylebox("background", "ProgressBar", box(BG.darkened(0.2), PANEL_LIGHT, 1, 10, 0, 0, 0))
-	t.set_stylebox("fill", "ProgressBar", box(ACCENT, ACCENT.lightened(0.3), 1, 10, 0, 0, 0))
+	var fill := box(ACCENT, ACCENT.lightened(0.45), 2, 10, 0, 0, 0)
+	fill.border_width_bottom = 0
+	fill.shadow_color = Color(ACCENT, 0.5)
+	fill.shadow_size = 6
+	fill.shadow_offset = Vector2.ZERO
+	t.set_stylebox("fill", "ProgressBar", fill)
 	t.set_color("font_color", "ProgressBar", TEXT)
 	t.set_font_size("font_size", "ProgressBar", CAPTION)
 
