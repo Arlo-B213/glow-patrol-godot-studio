@@ -216,9 +216,9 @@ func generate(seed_v: int, row_count: int, colors: int) -> void:
 	for r in row_count:
 		for c in cols_in_row(r):
 			var v: int = rng.randi() % colors
-			if c > 0 and rng.randf() < 0.55:
+			if c > 0 and rng.randf() < 0.38:
 				v = get_cell(r, c - 1)
-			elif r > 0 and rng.randf() < 0.4:
+			elif r > 0 and rng.randf() < 0.22:
 				var ups: Array[Vector2i] = []
 				for n in neighbors(r, c):
 					if n.x == r - 1:

@@ -26,9 +26,9 @@ const PTS_POP := 10
 const PTS_DROP := 20
 const PTS_STAGE := 100
 const COMBO_CAP := 4
-const BASE_MISSES := 8
-const MIN_MISSES := 4
-const SPECIAL_CHANCE := 0.09
+const BASE_MISSES := 7
+const MIN_MISSES := 3
+const SPECIAL_CHANCE := 0.06
 const POP_TIME := 0.3
 const SHAKE_TIME := 0.18
 const END_DELAY := 2.0
@@ -157,10 +157,10 @@ func _layout() -> void:
 func _start_stage(s: int) -> void:
 	stage = s
 	_layout()
-	var cols: int = 4 if s <= 2 else 5
-	grid.generate(seed_base + s * 7919, 4 + s / 2, cols)
+	var cols: int = 4 if s <= 1 else 5
+	grid.generate(seed_base + s * 7919, mini(5 + s / 2, MAX_ROWS - 4), cols)
 	misses = 0
-	misses_limit = maxi(MIN_MISSES, BASE_MISSES - (s - 1) / 2)
+	misses_limit = maxi(MIN_MISSES, BASE_MISSES - (s - 1))
 	combo = 0
 	_falls.clear()
 	_pops.clear()
@@ -240,7 +240,7 @@ func _land(local: Vector2) -> void:
 		Snd.play("hit")
 		if misses >= misses_limit:
 			misses = 0
-			grid.add_row_top(_rng, 4 if stage <= 2 else 5)
+			grid.add_row_top(_rng, 4 if stage <= 1 else 5)
 			_grid_dy = -_r * Grid.ROW_H
 			_shake = SHAKE_TIME
 			Snd.play("whoosh")
