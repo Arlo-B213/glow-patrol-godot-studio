@@ -26,9 +26,13 @@ const PTS_POP := 10
 const PTS_DROP := 20
 const PTS_STAGE := 100
 const COMBO_CAP := 4
-const BASE_MISSES := 7
-const MIN_MISSES := 3
-const SPECIAL_CHANCE := 0.06
+const BASE_MISSES := 5
+const MIN_MISSES := 2
+const SPECIAL_CHANCE := 0.04
+## Time pressure: the ceiling also creeps down every CREEP_BASE s (minus CREEP_STEP per stage, min CREEP_MIN).
+const CREEP_BASE := 20.0
+const CREEP_STEP := 2.0
+const CREEP_MIN := 9.0
 const POP_TIME := 0.3
 const SHAKE_TIME := 0.18
 const END_DELAY := 2.0
@@ -42,6 +46,8 @@ var score := 0
 var combo := 0
 var misses := 0
 var misses_limit := BASE_MISSES
+var _creep := 0.0
+var _creep_limit := CREEP_BASE
 var aim := PI * 0.5
 var loaded := 0
 var next_orb := 0
@@ -101,6 +107,9 @@ func advance(dt: float) -> void:
 	match state:
 		State.AIM:
 			_keyboard_aim(dt)
+			_creep += dt
+			if _creep >= _creep_limit:
+				_drop_row()
 		State.FLYING:
 			_acc += dt
 			while _acc >= STEP and state == State.FLYING:
@@ -157,8 +166,10 @@ func _layout() -> void:
 func _start_stage(s: int) -> void:
 	stage = s
 	_layout()
-	var cols: int = 4 if s <= 1 else 5
-	grid.generate(seed_base + s * 7919, mini(5 + s / 2, MAX_ROWS - 4), cols)
+	var cols: int = 5
+	grid.generate(seed_base + s * 7919, mini(6 + s / 2, MAX_ROWS - 3), cols)
+	_creep = 0.0
+	_creep_limit = maxf(CREEP_MIN, CREEP_BASE - CREEP_STEP * float(s - 1))
 	misses = 0
 	misses_limit = maxi(MIN_MISSES, BASE_MISSES - (s - 1))
 	combo = 0
@@ -172,6 +183,16 @@ func _start_stage(s: int) -> void:
 	_banner_t = 1.6
 	if s > 1:
 		Snd.play("chapter")
+
+
+## Adds a new row at the top (ceiling creeps down), resetting the miss and creep counters.
+func _drop_row() -> void:
+	misses = 0
+	_creep = 0.0
+	grid.add_row_top(_rng, 5)
+	_grid_dy = -_r * Grid.ROW_H
+	_shake = SHAKE_TIME
+	Snd.play("whoosh")
 
 
 func _roll() -> int:
@@ -239,11 +260,7 @@ func _land(local: Vector2) -> void:
 		misses += 1
 		Snd.play("hit")
 		if misses >= misses_limit:
-			misses = 0
-			grid.add_row_top(_rng, 4 if stage <= 1 else 5)
-			_grid_dy = -_r * Grid.ROW_H
-			_shake = SHAKE_TIME
-			Snd.play("whoosh")
+			_drop_row()
 	else:
 		_resolve_pops(removed)
 	_fix_queue()
@@ -508,6 +525,9 @@ func _draw_hud(_t: float) -> void:
 		var filled: bool = i < misses
 		var fc: Color = Color("#FF5F6D") if (hot and filled) else (UiTheme.GOLD if filled else Color(1, 1, 1, 0.18))
 		draw_rect(pr, fc)
+	var cw: float = w * clampf(1.0 - _creep / _creep_limit, 0.0, 1.0)
+	draw_rect(Rect2(_ox, by + 12.0 * _u, w, 4.0 * _u), Color(1, 1, 1, 0.12))
+	draw_rect(Rect2(_ox, by + 12.0 * _u, cw, 4.0 * _u), Color("#FF5F6D") if _creep_limit - _creep < 4.0 else UiTheme.TEAL)
 	var msg: String = "Ceiling drops next miss!" if hot else "Ceiling drops in %d misses" % (misses_limit - misses)
 	Kit.text(self, msg, Rect2(_ox, by - 22.0 * _u, w, 18.0 * _u), 12.0 * _u, Color("#FF9AA5") if hot else Color(UiTheme.TEXT, 0.75))
 	if _banner_t > 0.0:
