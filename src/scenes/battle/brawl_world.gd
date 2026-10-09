@@ -49,7 +49,7 @@ const PUNCH_LUNGE := 1.5
 ## Guard meter tuning: full 100, drain per frame while blocking, regen per frame, cost per blocked hit.
 const GUARD_MAX := 100.0
 const GUARD_DRAIN := 0.4
-const GUARD_REGEN := 0.7
+const GUARD_REGEN := 0.91
 const GUARD_HIT_COST := 6.0
 const GUARD_BREAK_FRAMES := 60
 const GUARD_AFTER_BREAK := 35.0
@@ -132,3 +132,52 @@ func step(player_x: float, facing: int, view_w: float, u: float) -> void:
 	if absf(target - cam_x) < DEADZONE * u:
 		target = cam_x
 	cam_x = clampf(lerpf(cam_x, target, FOLLOW), 0.0, max_cam)
+
+
+# --- Story 036: classic beat-'em-up tuning (lanes, combo, enemy AI, pickups, easy-mode aids) ---
+## Walking in depth is slower than walking sideways, like the old games.
+const DEPTH_MULT := 0.62
+const ENEMY_DEPTH_MULT := 0.55
+## Punch box (px at u = 1): forward reach (+20% over the old 46), a little behind, depth tolerance.
+const PUNCH_REACH := 55.0
+const PUNCH_BACK := 10.0
+const PUNCH_DEPTH_TOL := 28.0
+const BOSS_REACH := 70.0
+const BOSS_DEPTH_TOL := 34.0
+## Combo chain: cooldown per step (frames), extra frames to press the next hit, combo counter reset.
+const COMBO_COOLDOWN := [13, 13, 24]
+const COMBO_WINDOW := 22
+const COMBO_RESET := 100
+const PUNCH_BUFFER := 10
+const AUTO_FACE_RANGE := 170.0
+const HITSTOP_FINISHER := 3
+const HITSTOP_BOSS := 3
+const SHAKE_FINISHER := 4.0
+const SHAKE_SLAM := 7.0
+## Enemy attack rhythm (frames): telegraph, strike, cooldown. At most MAX_ATTACKERS act at once.
+const MAX_ATTACKERS := 2
+const ENEMY_STRIKE := 8
+const ENEMY_RECOVER := 60
+const DOWN_FRAMES := 46
+const DOWN_FALL := 8
+const DOWN_GETUP := 14
+## Boss patterns (frames / px per frame at u = 1).
+const BOSS_WALK_SPEED := 0.7
+const BOSS_TELE_CHARGE := 44
+const BOSS_CHARGE_SPEED := 6.5
+const BOSS_CHARGE_FRAMES := 42
+const BOSS_TELE_SLAM := 54
+const BOSS_WAVE_SPEED := 6.0
+const BOSS_WAVE_RANGE := 250.0
+const BOSS_TELE_SNEEZE := 46
+const BOSS_SNEEZE_SPEED := 5.0
+const BOSS_RECOVER := 62
+## Pickups: drop chances per defeated enemy (heart first, then coin), magnet range, lifetime.
+const DROP_HEART := 0.12
+const DROP_COIN := 0.30
+const COIN_SCORE := 2
+const MAGNET_RANGE := 90.0
+const PICKUP_LIFE := 720
+## Second Wind: once per run when the last heart is lost.
+const SECOND_WIND_HEARTS := 2
+const SECOND_WIND_INVULN := 130
