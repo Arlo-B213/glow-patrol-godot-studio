@@ -175,3 +175,9 @@ $RECYCLE.BIN/
 # Godot editor cache
 .godot/
 *.tmp
+
+# === Third-party AI media skill (installed locally, not project code) ===
+.agents/
+agent/
+.claude/skills/ultimate-ai-media-generator-skill/
+skills-lock.json
