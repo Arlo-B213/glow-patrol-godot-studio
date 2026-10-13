@@ -36,5 +36,26 @@ func _init() -> void:
 	for o in GS.OUTFITS:
 		check(not ids.has(o["id"]), "unique outfit id " + String(o["id"]))
 		ids[o["id"]] = true
+	_check_save_round_trip()
 	print("DONE fails=", fails)
 	quit(1 if fails > 0 else 0)
+
+
+## In-memory JSON round trip, mirroring save_game/load_game without touching user://.
+func _check_save_round_trip() -> void:
+	var src = GS.new()
+	src.persist_saves = false
+	src.tutorial_done = true
+	src.streak = 4
+	src.last_login_date = "2026-10-12"
+	src.stickers = ["first_zap", "combo_10"]
+	var parsed = JSON.parse_string(JSON.stringify(src.to_save_dict()))
+	var dst = GS.new()
+	dst.persist_saves = false
+	dst.apply_save_dict(parsed)
+	check(dst.tutorial_done == true, "save keeps tutorial_done")
+	check(dst.streak == 4, "save keeps streak")
+	check(dst.last_login_date == "2026-10-12", "save keeps last_login_date")
+	check(dst.stickers == ["first_zap", "combo_10"], "save keeps stickers")
+	src.free()
+	dst.free()
