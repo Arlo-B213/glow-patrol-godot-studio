@@ -18,6 +18,7 @@ const EXPRS := ["neutral", "happy", "cheer", "determined", "hurt", "surprised", 
 
 class Sheet extends Control:
 	var heads := false
+	var poses := false
 
 	func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO, size), Color("#1E1238"))
@@ -28,6 +29,14 @@ class Sheet extends Control:
 				HunterArt.draw_portrait(self, Rect2(i * 500, -60, 500, 600), look)
 			for i in 3:
 				HunterArt.draw_hunter(self, 250 + i * 500, 1500, 9.0, 1, 0, false, 1.0, 0, LOOKS[[0, 1, 3][i]], -1, false)
+			return
+		if poses:
+			var ids: Array = ["idle", "cheer", "victory", "sit", "fever"]
+			for i in ids.size():
+				var look: Dictionary = LOOKS[i].duplicate()
+				look["pose"] = ids[i]
+				HunterArt.draw_portrait(self, Rect2(20 + i * 296, 20, 270, 520), look, 0.4)
+				HunterArt.draw_portrait(self, Rect2(20 + i * 296, 600, 120, 120), look, 0.4)
 			return
 		var font: Font = ThemeDB.fallback_font
 		for i in LOOKS.size():
@@ -56,6 +65,7 @@ func _init() -> void:
 	root.add_child(vp)
 	var sheet := Sheet.new()
 	sheet.heads = heads
+	sheet.poses = args.size() > 1 and args[1] == "poses"
 	sheet.size = Vector2(W, H)
 	vp.add_child(sheet)
 	for i in range(4):

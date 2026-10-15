@@ -8,7 +8,7 @@ const BrawlArt := preload("res://scenes/battle/brawl_art.gd")
 const HunterArt := preload("res://scripts/hunter_art.gd")
 
 ## Basket centre height above the hero's feet, in hero-scale units (multiply by the hero scale).
-const BASKET_UP := 128.0
+const BASKET_UP := 128.0 + HunterArt.LEG_EXTRA_SIDE
 const GOLD := Color("#FFD36E")
 const STAR_COL := Color("#FFC15E")
 
