@@ -5,6 +5,7 @@ const FD := preload("res://scripts/fast_draw.gd")
 ## CanvasItem and must be called from its _draw(). Ids match GameState.HEADWEAR and
 ## GameState.FACE_ACC; "none" (or any unknown id) draws nothing.
 
+const Expr := preload("res://scripts/hunter_expr.gd")
 const INK := Color("#1A0B33")
 const GOLD := Color("#FFD36E")
 const PINK := Color("#FF5FA2")
@@ -155,20 +156,20 @@ static func draw_face_front(ci: CanvasItem, id: String, head: Vector2, k: float,
 	match id:
 		"blush":
 			for side in [-1.0, 1.0]:
-				FD.circle(ci, _pt(head, k, side * 15.0, 10.5), 6.0 * k, _c(BLUSH, 0.65 * alpha))
+				FD.circle(ci, _pt(head, k, side * 16.0, 13.0), 6.0 * k, _c(BLUSH, 0.65 * alpha))
 		"glasses":
 			var gold: Color = _c(GOLD, alpha)
 			var lw: float = maxf(1.0, 1.5 * k)
 			for side in [-1.0, 1.0]:
-				var pts: PackedVector2Array = _star_points(_pt(head, k, side * 9.5, 3.0), 9.0 * k, 5.2 * k)
+				var pts: PackedVector2Array = _star_points(head + Expr.EYE_FRONT * Vector2(side, 1.0) * k, 10.0 * k, 5.8 * k)
 				FD.poly(ci, pts, _c(Color.WHITE, 0.2 * alpha))
 				pts.append(pts[0])
 				FD.polyline(ci, pts, gold, lw)
-			ci.draw_line(_pt(head, k, -1.5, 1.5), _pt(head, k, 1.5, 1.5), gold, lw)
+			ci.draw_line(_pt(head, k, -1.5, 3.5), _pt(head, k, 1.5, 3.5), gold, lw)
 			for side in [-1.0, 1.0]:
-				ci.draw_line(_pt(head, k, side * 18.0, 1.5), _pt(head, k, side * 24.0, -1.0), gold, lw)
+				ci.draw_line(_pt(head, k, side * 19.5, 3.5), _pt(head, k, side * 24.0, 1.0), gold, lw)
 		"freckles":
 			for side in [-1.0, 1.0]:
-				var c: Vector2 = _pt(head, k, side * 15.0, 9.0)
+				var c: Vector2 = _pt(head, k, side * 16.0, 12.0)
 				for d in [Vector2(-3.5, -1.0), Vector2(0.0, -3.0), Vector2(3.5, -0.5), Vector2(-1.5, 2.5), Vector2(2.0, 3.0)]:
 					FD.circle(ci, c + d * k, 1.15 * k, _c(FRECKLE, alpha))
