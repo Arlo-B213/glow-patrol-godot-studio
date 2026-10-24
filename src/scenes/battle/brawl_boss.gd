@@ -63,10 +63,9 @@ static func _punch(v: Variant, b: Dictionary) -> void:
 	var at := Vector2(float(b["x"]), Lanes.feet_y(v, float(b["y"])) - 50.0 * v.u)
 	v.spawn_particles(at, Color("#7C3AED"))
 	Fx.spark(v, at, Color("#FFD36E"), true)
-	Fx.hit_stop(v, World.HITSTOP_BOSS)
+	Fx.hit_feedback(v, 1)  # the boss always loses 1 health per punch
 	v.register_combo_hit(at + Vector2(0.0, -60.0 * v.u))
 	if fin:
-		Fx.shake_screen(v, World.SHAKE_FINISHER)
 		if String(b["mode"]) != "slam":
 			b["mode"] = "recover"
 			b["mt"] = int(World.BOSS_RECOVER * 0.6)
@@ -141,7 +140,7 @@ static func _ai(v: Variant, b: Dictionary) -> void:
 				b["done"] = false
 				b["bump_cooldown"] = 60
 				Snd.play("boss_hit")
-				Fx.shake_screen(v, World.SHAKE_SLAM)
+				Fx.shake_screen(v, v.feel.slam_shake)
 		"slam":
 			b["wave"] = float(b["wave"]) + World.BOSS_WAVE_SPEED * u
 			if not bool(b["done"]) and absf(absf(px - float(b["x"])) - float(b["wave"])) < 20.0 * u:

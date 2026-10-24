@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/hit_feel.gd" id="1_feel"]
+
+[resource]
+script = ExtResource("1_feel")
+pause_ms = 70.0
+calm_pause_ms = 40.0
+shake_per_damage = 2.5
+shake_max = 6.0
+shake_time = 0.15
+slam_shake = 7.0
