@@ -64,7 +64,7 @@ static func draw(v: Variant) -> void:
 				var pd: float = v.companion.d
 				var psc: float = Lanes.scale_at(pd)
 				Lanes.shadow(v, v.companion.x, Lanes.feet_y(v, pd), 44.0 * u * psc, pd)
-				v.companion.draw(v, Lanes.feet_y(v, pd), u * psc, v.player_facing)
+				v.companion.draw(v, Lanes.feet_y(v, pd), u * psc, v.player_facing, cam)
 			_: _hunter(v, calm)
 	for p in v.particles:
 		var col: Color = p["color"]

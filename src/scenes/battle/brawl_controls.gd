@@ -51,6 +51,23 @@ func read_axis() -> float:
 	return digital if absf(digital) > absf(a) else a
 
 
+## Current 2D movement input: x is `read_axis()`, y is lane depth, -1 (up/back) .. 1
+## (down/front), from the stick's vertical travel or W/S/Up/Down.
+func read_move() -> Vector2:
+	var y := 0.0
+	if _stick_id != -2:
+		var dy: float = (_stick_pos.y - _stick_origin.y) / (STICK_RADIUS * _u)
+		var m: float = clampf(absf(dy), 0.0, 1.0)
+		if m > STICK_DEADZONE:
+			y = signf(dy) * (m - STICK_DEADZONE) / (1.0 - STICK_DEADZONE)
+	var digital := 0.0
+	if Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP):
+		digital -= 1.0
+	if Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN):
+		digital += 1.0
+	return Vector2(read_axis(), digital if absf(digital) > absf(y) else y)
+
+
 ## Refreshes `block_held` (block button or K / Shift); call once per frame before reading it.
 func poll_block() -> bool:
 	block_held = active and (_held("block") or Input.is_physical_key_pressed(KEY_K) or Input.is_physical_key_pressed(KEY_SHIFT))
