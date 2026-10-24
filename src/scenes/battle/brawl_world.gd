@@ -150,10 +150,6 @@ const COMBO_WINDOW := 22
 const COMBO_RESET := 100
 const PUNCH_BUFFER := 10
 const AUTO_FACE_RANGE := 170.0
-const HITSTOP_FINISHER := 3
-const HITSTOP_BOSS := 3
-const SHAKE_FINISHER := 4.0
-const SHAKE_SLAM := 7.0
 ## Enemy attack rhythm (frames): telegraph, strike, cooldown. At most MAX_ATTACKERS act at once.
 const MAX_ATTACKERS := 2
 const ENEMY_STRIKE := 8

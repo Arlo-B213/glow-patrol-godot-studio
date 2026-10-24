@@ -2,8 +2,10 @@ extends RefCounted
 const FD := preload("res://scripts/fast_draw.gd")
 ## Alley Brawl hit feedback (Story 036): hit sparks, floating text popups (combo, pickups, Second
 ## Wind), hit-stop and screen shake. State lives on the view (`sparks`, `popups`, `hitstop`,
-## `shake`); everything here is VISUAL. Reduce motion keeps popups but drops shake, hit-stop and
-## spark spin. World positions are world-space px (x) and screen px (y), like the other actors.
+## `shake`, `shake_t`) and tuning in `v.feel` (hit_feel.gd / brawl_hit_feel.tres); everything here
+## is VISUAL. Reduce motion keeps popups, drops shake and caps the hit pause. Pause and shake take
+## the max of overlapping requests, so several hits in one frame never stack into a long freeze.
+## World positions are world-space px (x) and screen px (y), like the other actors.
 
 
 ## Burst of radiating lines at `pos`; `big` is for finishers and boss hits.
@@ -16,16 +18,23 @@ static func popup(v: Variant, text: String, pos: Vector2, color: Color, size: fl
 	v.popups.append({"text": text, "pos": pos, "t": 0, "life": life, "color": color, "size": size})
 
 
-## Freezes the simulation for `frames` ticks (never when reduce motion is on).
-static func hit_stop(v: Variant, frames: int) -> void:
-	if not v.calm():
-		v.hitstop = maxi(v.hitstop, frames)
+## Feedback for a landed hit of `damage`: a short hit pause (attacker and target freeze) and a
+## shake that scales with damage, both from `v.feel`.
+static func hit_feedback(v: Variant, damage: int) -> void:
+	var calm: bool = v.calm()
+	v.hitstop = maxi(v.hitstop, v.feel.pause_frames(calm))
+	shake_screen(v, v.feel.shake_px(damage, calm))
 
 
-## Screen shake of `amount` px (at u = 1), decaying; ignored when reduce motion is on.
+## Screen shake of `amount` px (at u = 1), easing to rest over the tuned shake time; ignored when
+## reduce motion is on. A weaker request during a stronger shake does not cut it short.
 static func shake_screen(v: Variant, amount: float) -> void:
-	if not v.calm():
-		v.shake = maxf(v.shake, amount * v.u)
+	if v.calm() or amount <= 0.0:
+		return
+	var px: float = amount * v.u
+	if px >= v.shake * float(v.shake_t) / float(v.feel.shake_frames()):
+		v.shake = maxf(px, 0.0)
+		v.shake_t = v.feel.shake_frames()
 
 
 ## Advances sparks and popups one tick and decays the shake.
@@ -40,9 +49,10 @@ static func update(v: Variant) -> void:
 		p["pos"] = Vector2(p["pos"]) + Vector2(0.0, -0.9 * v.u)
 		if int(p["t"]) >= int(p["life"]):
 			v.popups.remove_at(i)
-	v.shake *= 0.82
-	if v.shake < 0.2:
-		v.shake = 0.0
+	if v.shake_t > 0:
+		v.shake_t -= 1
+		if v.shake_t == 0:
+			v.shake = 0.0
 
 
 ## Draws sparks and popups (call with the camera transform set).

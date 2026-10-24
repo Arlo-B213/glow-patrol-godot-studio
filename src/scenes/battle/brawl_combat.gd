@@ -33,9 +33,7 @@ static func update_enemies(v: Variant) -> void:
 			Fx.spark(v, Vector2(e["x"], Lanes.feet_y(v, float(e["y"])) - 32.0 * v.u * s), e["color"], fin)
 			v.spawn_particles(Vector2(e["x"], Lanes.feet_y(v, float(e["y"])) - 24.0 * v.u * s), e["color"])
 			v.register_combo_hit(Vector2(e["x"], Lanes.feet_y(v, float(e["y"])) - 70.0 * v.u * s))
-			if fin:
-				Fx.hit_stop(v, World.HITSTOP_FINISHER)
-				Fx.shake_screen(v, World.SHAKE_FINISHER)
+			Fx.hit_feedback(v, 2 if fin else 1)
 			v.hit_enemy(i, false, v.player_x, fin)
 
 

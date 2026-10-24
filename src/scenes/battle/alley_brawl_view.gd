@@ -130,11 +130,13 @@ var dying: Array = []
 var walk_phase := 0.0
 var walk_blend := 0.0
 
-## Heart/coin drops (brawl_pickups.gd), and the brawl_fx.gd state: hit-stop frames, shake amount
-## and this frame's shake offset, sparks and popups.
+## Heart/coin drops (brawl_pickups.gd), and the brawl_fx.gd state: hit-stop frames, shake strength
+## and ticks left, this frame's shake offset, sparks and popups. `feel` holds the pause/shake tuning.
 var pickups: Array = []
+var feel: Resource = preload("res://scenes/battle/brawl_hit_feel.tres")
 var hitstop := 0
 var shake := 0.0
+var shake_t := 0
 var shake_off := Vector2.ZERO
 var sparks: Array = []
 var popups: Array = []
@@ -203,7 +205,8 @@ func _process(delta: float) -> void:
 			Fx.update(self)
 		else:
 			_tick()
-	shake_off = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * shake if shake > 0.0 else Vector2.ZERO
+	var shake_k: float = float(shake_t) / float(feel.shake_frames())
+	shake_off = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * shake * shake_k if shake_t > 0 else Vector2.ZERO
 	_sync_ui()
 	queue_redraw()
 
