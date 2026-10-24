@@ -3,7 +3,10 @@ extends Control
 ## Gloomling encounter zones (the camera locks to each arena), then defeat the boss at the far end.
 ## Story 025 added the world/camera (brawl_world.gd), scenery (brawl_scenery.gd, brawl_props.gd),
 ## controls (brawl_controls.gd), HUD (brawl_hud.gd), actor drawing (brawl_actors.gd) and the block
-## mechanic with its guard meter. Movement, hit distances and enemy speeds keep their `u` scaling.
+## mechanic with its guard meter. Story 036 split the fight into modules this view wires together:
+## lane depth (brawl_lanes.gd), hunter movement/combo/hurt (brawl_player.gd), enemy AI (brawl_ai.gd,
+## driven by brawl_combat.gd), the boss (brawl_boss.gd), pickups (brawl_pickups.gd) and hit-stop,
+## shake, sparks and popups (brawl_fx.gd). Movement, hit distances and speeds keep their `u` scaling.
 ##
 ## Debug builds only (never active in an exported release build), launch args after `--`:
 ##   --brawl-boss             skip the 3 waves and start at the boss zone
@@ -37,6 +40,11 @@ const STEP := 1.0 / 60.0
 const World := preload("res://scenes/battle/brawl_world.gd")
 const Scenery := preload("res://scenes/battle/brawl_scenery.gd")
 const Combat := preload("res://scenes/battle/brawl_combat.gd")
+const Player := preload("res://scenes/battle/brawl_player.gd")
+const Lanes := preload("res://scenes/battle/brawl_lanes.gd")
+const Boss := preload("res://scenes/battle/brawl_boss.gd")
+const Pickups := preload("res://scenes/battle/brawl_pickups.gd")
+const Fx := preload("res://scenes/battle/brawl_fx.gd")
 const Actors := preload("res://scenes/battle/brawl_actors.gd")
 const Controls := preload("res://scenes/battle/brawl_controls.gd")
 const Hud := preload("res://scenes/battle/brawl_hud.gd")
@@ -76,13 +84,29 @@ var secrets_found: Array = [false, false, false]
 var u: float = 1.0
 var player_x := 0.0
 var player_vx := 0.0
+## Lane depth, 0 (back) .. 1 (front), and its velocity; see brawl_lanes.gd.
+var player_y: float = Lanes.START_D
+var player_vy := 0.0
 var player_facing := 1
 var player_invincible := 0
 var ground_y := 0.0
+## Lane band top/height in px, refreshed on layout (Lanes.top_y / Lanes.height).
+var lane_top := 0.0
+var lane_h := 0.0
 
 var punch_active := 0
 var punch_cooldown := 0
 var punch_id := 0
+## Combo: `punch_step` is the next jab/jab/finisher index, `combo_window` the frames left to chain,
+## `punch_buffer` a queued tap; `combo_count`/`combo_timer` drive the "N hits!" counter.
+var punch_step := 0
+var combo_window := 0
+var punch_buffer := 0
+var combo_count := 0
+var combo_timer := 0
+## Second Wind (once per run): `wind_t` counts down the comeback glow.
+var second_wind_used := false
+var wind_t := 0
 ## Block state: `block_t` eases 0..1 for the pose/shield, `block_age` counts frames since the press.
 var blocking := false
 var block_t := 0.0
@@ -106,6 +130,15 @@ var dying: Array = []
 var walk_phase := 0.0
 var walk_blend := 0.0
 
+## Heart/coin drops (brawl_pickups.gd), and the brawl_fx.gd state: hit-stop frames, shake amount
+## and this frame's shake offset, sparks and popups.
+var pickups: Array = []
+var hitstop := 0
+var shake := 0.0
+var shake_off := Vector2.ZERO
+var sparks: Array = []
+var popups: Array = []
+
 var spawn_queue: Array = []
 var spawn_timer := 0
 var particles: Array = []
@@ -124,7 +157,7 @@ func _ready() -> void:
 	add_child(hud)
 	controls = Controls.new()
 	add_child(controls)
-	controls.punch_pressed.connect(_trigger_punch)
+	controls.punch_pressed.connect(_on_punch)
 	look = game_state.hunter_look()
 	reach = game_state.weapon_reach()
 	companion = PetCompanion.create(game_state)
@@ -150,19 +183,27 @@ func _process(delta: float) -> void:
 		return
 	u = clampf(size.x / REF_WIDTH, 1.0, MAX_LAYOUT_SCALE)
 	ground_y = size.y * GROUND_FRACTION
+	lane_top = Lanes.top_y(ground_y, size.y)
+	lane_h = Lanes.height(size.y)
 	if not _laid_out:
 		_first_layout()
 	elif absf(size.x - _view_w) > 1.0:
 		_rescale(size.x / _view_w)
 	if companion != null:
 		var moving: bool = absf(player_vx) > 0.1
-		companion.update(delta, player_x, player_facing, moving, u)
+		companion.update(delta, player_x, player_facing, moving, u, player_y)
 		Combat.update_companion(self)
 	_clock += delta
 	_acc = minf(_acc + delta, STEP * 4.0)
 	while _acc >= STEP and running:
 		_acc -= STEP
-		_tick()
+		if hitstop > 0:
+			# Hit-stop freezes the fight for a few frames; effects keep settling.
+			hitstop -= 1
+			Fx.update(self)
+		else:
+			_tick()
+	shake_off = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * shake if shake > 0.0 else Vector2.ZERO
 	_sync_ui()
 	queue_redraw()
 
@@ -198,7 +239,7 @@ func _rescale(k: float) -> void:
 ## One fixed 60 Hz simulation step.
 func _tick() -> void:
 	anim_t += 1
-	_update_player()
+	Player.update(self)
 	if not ended and not in_fight and zone_i < World.ZONES.size() and player_x >= World.zone_trigger_px(zone_i, size.x):
 		_enter_zone(zone_i)
 	if in_fight and not boss_phase and not ended:
@@ -211,66 +252,28 @@ func _tick() -> void:
 			_zone_cleared()
 	Combat.update_enemies(self)
 	_update_dying()
-	Combat.update_boss(self)
+	if not boss.is_empty():
+		Boss.update(self)
+	Pickups.update(self)
 	_update_secrets()
 	world.step(player_x, player_facing, size.x, u)
 	_update_fx()
+	Fx.update(self)
 	var d: int = World.district_at(player_x, size.x)
 	if d != _district:
 		_district = d
 		toast.show_message(String(World.DISTRICTS[d]["name"]))
 
 
-func _bounds() -> Vector2:
+## Walkable x range: the locked fight screen, else the whole street (px).
+func bounds() -> Vector2:
 	if world.lock_x >= 0.0:
 		return Vector2(world.lock_x + 24.0 * u, world.lock_x + size.x - 24.0 * u)
 	return Vector2(24.0 * u, World.world_w(size.x) - 24.0 * u)
 
 
-func _update_player() -> void:
-	var can_block: bool = controls.poll_block() and guard_break_t == 0 and punch_active == 0 and not ended
-	if can_block and not blocking:
-		block_age = 0
-	elif can_block:
-		block_age += 1
-	blocking = can_block
-	if blocking:
-		guard -= World.GUARD_DRAIN
-		if guard <= 0.0:
-			_break_guard()
-	elif guard_break_t > 0:
-		guard_break_t -= 1
-		if guard_break_t == 0:
-			guard = World.GUARD_AFTER_BREAK
-	else:
-		guard = minf(World.GUARD_MAX, guard + World.GUARD_REGEN)
-	block_t = move_toward(block_t, 1.0 if blocking else 0.0, 0.25)
-
-	var axis: float = clampf(controls.read_axis(), -1.0, 1.0) if not ended else 0.0
-	var target: float = axis * World.MAX_SPEED * u * (World.BLOCK_SPEED_MULT if blocking else 1.0)
-	var speeding_up: bool = absf(target) > absf(player_vx) and (signf(target) == signf(player_vx) or player_vx == 0.0)
-	var rate: float = World.ACCEL if speeding_up else World.DECEL
-	player_vx = move_toward(player_vx, target, rate * u)
-	if absf(axis) > 0.05:
-		player_facing = 1 if axis > 0.0 else -1
-	var lunge: float = float(player_facing) * World.PUNCH_LUNGE * u if punch_active > 6 else 0.0
-	player_x += player_vx + lunge
-	var b: Vector2 = _bounds()
-	if player_x < b.x or player_x > b.y:
-		player_x = clampf(player_x, b.x, b.y)
-		player_vx = 0.0
-	var moved: float = absf(player_vx)
-	walk_phase = fposmod(walk_phase + moved / (STRIDE_PX * u), 1.0)
-	walk_blend = move_toward(walk_blend, 1.0 if moved > 0.4 * u else 0.0, WALK_BLEND_RATE)
-	if player_invincible > 0:
-		player_invincible -= 1
-	if punch_cooldown > 0:
-		punch_cooldown -= 1
-	if punch_active > 0:
-		punch_active -= 1
-
-
-func _break_guard() -> void:
+## Guard ran dry: drop the block and stagger (called by brawl_player.gd).
+func break_guard() -> void:
 	guard = 0.0
 	guard_break_t = World.GUARD_BREAK_FRAMES
 	blocking = false
@@ -319,7 +322,7 @@ func _spawn_boss() -> void:
 	boss_phase = true
 	var kind: String = BrawlEnemies.next_boss_kind(boss_kind_forced)
 	var lx: float = world.lock_x if world.lock_x >= 0.0 else cam_x()
-	boss = {"x": lx + size.x + 40.0 * u, "health": boss_max_health, "bump_cooldown": 0, "last_hit_id": -1, "age": 0, "kind": kind, "stun": 0}
+	boss = Boss.make(self, kind, lx + size.x + 40.0 * u)
 	toast.show_message(String(BrawlEnemies.BOSS_INTROS[kind]))
 
 
@@ -327,16 +330,14 @@ func _spawn_enemy(side: String) -> void:
 	var id: String = BrawlEnemies.pick_type(wave_num, randf())
 	var lx: float = world.lock_x if world.lock_x >= 0.0 else cam_x()
 	var x: float = lx - 20.0 * u if side == "left" else lx + size.x + 20.0 * u
-	enemies.append(BrawlEnemies.make(id, x, ENEMY_COLORS[randi() % ENEMY_COLORS.size()], randf()))
+	enemies.append(BrawlEnemies.make(id, x, ENEMY_COLORS[randi() % ENEMY_COLORS.size()], randf(), randf_range(0.15, 0.85)))
 
 
 ## -1 or 1: the side of `other_x` that `x` is on (for knock-back directions).
-func _away(x: float, other_x: float) -> float:
+func away(x: float, other_x: float) -> float:
 	return -1.0 if x < other_x else 1.0
 
 
-## Tries to block a bump from `from_x`. Returns 0 = not blocked, 1 = blocked, 2 = perfect block
-## (block pressed within PERFECT_BLOCK_FRAMES before the hit: stuns the attacker, +1 score).
 func _update_secrets() -> void:
 	for i in World.SECRETS.size():
 		if secrets_found[i] or absf(player_x - float(World.SECRETS[i]["x"]) * size.x) > World.SECRET_RADIUS_PX * u:
@@ -345,8 +346,8 @@ func _update_secrets() -> void:
 		score += World.SECRET_SCORE
 		Snd.play("star")
 		var at := Vector2(player_x, ground_y - 90.0 * u)
-		_spawn_particles(at, Color("#FFE9A0"))
-		_spawn_particles(at, Color("#FF9EC8"))
+		spawn_particles(at, Color("#FFE9A0"))
+		spawn_particles(at, Color("#FF9EC8"))
 		rings.append({"pos": at, "t": 0, "color": Color("#FFE9A0")})
 		toast.show_message("Secret spot! +%d" % World.SECRET_SCORE)
 
@@ -365,21 +366,34 @@ func _update_fx() -> void:
 			rings.remove_at(i)
 
 
-## Applies one hit to enemies[i] (punch or pet zap). Survivors flash and recoil; defeated
-## enemies score, move to `dying` and puff away. Returns true when the enemy was defeated.
-func _hit_enemy(i: int, by_pet: bool, from_x: float) -> bool:
+## Applies one hit to enemies[i] (punch or pet zap). Survivors flash and recoil, and a combo
+## `finisher` knocks them down; defeated enemies score, may drop a pickup, and move to `dying`.
+## Returns true when the enemy was defeated.
+func hit_enemy(i: int, by_pet: bool, from_x: float, finisher: bool = false) -> bool:
 	var e: Dictionary = enemies[i]
-	e["health"] = int(e["health"]) - 1
+	e["health"] = int(e["health"]) - (2 if finisher else 1)
 	e["hit_t"] = HIT_FRAMES
-	e["kb"] = 0.0 if calm() else _away(e["x"], from_x) * (5.0 if int(e["health"]) > 0 else 4.0) * u
+	e["kb"] = 0.0 if calm() else away(e["x"], from_x) * (9.0 if finisher else 5.0 if int(e["health"]) > 0 else 4.0) * u
 	if int(e["health"]) > 0:
+		if finisher:
+			e["mode"] = "down"
+			e["mt"] = World.DOWN_FRAMES
 		return false
 	var pts: int = int(e["score"])
 	score += maxi(1, pts / 2) if by_pet else pts
-	dying.append({"type": e["type"], "x": e["x"], "r": e["r"], "color": e["color"], "age": e["age"], "kb": e["kb"],
-		"t": 0, "toward": 1.0 if player_x > float(e["x"]) else -1.0})
+	dying.append({"type": e["type"], "x": e["x"], "y": e["y"], "r": e["r"], "color": e["color"], "age": e["age"],
+		"kb": e["kb"], "t": 0, "toward": 1.0 if player_x > float(e["x"]) else -1.0})
+	Pickups.drop(self, float(e["x"]), float(e["y"]))
 	enemies.remove_at(i)
 	return true
+
+
+## Counts a landed punch toward the combo; from 2 hits on, pops "N hits!" at `pos`.
+func register_combo_hit(pos: Vector2) -> void:
+	combo_count += 1
+	combo_timer = World.COMBO_RESET
+	if combo_count >= 2:
+		Fx.popup(self, "%d hits!" % combo_count, pos, Color("#FFE9A0"), 16.0 + minf(combo_count, 8) * 2.0)
 
 
 func _update_dying() -> void:
@@ -392,7 +406,8 @@ func _update_dying() -> void:
 			dying.remove_at(i)
 
 
-func _spawn_particles(pos: Vector2, color: Color) -> void:
+## Bursts ten particles of `color` from `pos`.
+func spawn_particles(pos: Vector2, color: Color) -> void:
 	for i in range(10):
 		var ang: float = randf() * TAU
 		particles.append({"pos": pos, "vel": Vector2(cos(ang) * 3.0, sin(ang) * 3.0) * u, "life": 20, "color": color})
@@ -400,28 +415,18 @@ func _spawn_particles(pos: Vector2, color: Color) -> void:
 
 ## Applies the pet's zap when ready: the nearest on-screen Gloomling is zapped away (+1 score) or
 ## the boss loses a little health (never its last point, so the pet cannot win the fight alone).
-func _trigger_punch() -> void:
-	if punch_cooldown > 0 or ended or blocking or not running:
-		return
-	punch_id += 1
-	Snd.play("whoosh", 0.06)
-	punch_active = 10
-	punch_cooldown = 20
+func _on_punch() -> void:
+	if running:
+		Player.trigger_punch(self)
 
 
-func _hurt_player(from_x: float) -> void:
-	if player_invincible > 0:
-		return
-	hearts -= 1
-	player_invincible = 55
-	Snd.play("hit")
-	var b: Vector2 = _bounds()
-	player_x = clampf(player_x + (-26.0 * u if player_x < from_x else 26.0 * u), b.x, b.y)
-	if hearts <= 0:
-		_end_brawl(false)
+## A strike from `from_x` landed (blocks are resolved by brawl_combat.gd first).
+func hurt_player(from_x: float) -> void:
+	Player.hurt(self, from_x)
 
 
-func _end_brawl(won: bool) -> void:
+## Ends the run once: banks the heart bonus and emits `finished`.
+func end_brawl(won: bool) -> void:
 	if ended:
 		return
 	ended = true

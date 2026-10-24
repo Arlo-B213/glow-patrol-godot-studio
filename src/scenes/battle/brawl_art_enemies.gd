@@ -41,4 +41,6 @@ static func draw_puff(ci: CanvasItem, pos: Vector2, r: float, p: float, color: C
 		var a2: float = TAU * float(i) / 4.0 + 0.9 + p * 2.0
 		var c: Vector2 = pos + Vector2(cos(a2), sin(a2) * 0.8) * r * (0.6 + p * 1.2)
 		var sr: float = r * 0.22 * fade
+		if sr < 0.5:
+			continue  # sub-pixel stars fail to triangulate
 		FD.poly(ci, PackedVector2Array([c + Vector2(0, -sr), c + Vector2(sr * 0.3, -sr * 0.3), c + Vector2(sr, 0), c + Vector2(sr * 0.3, sr * 0.3), c + Vector2(0, sr), c + Vector2(-sr * 0.3, sr * 0.3), c + Vector2(-sr, 0), c + Vector2(-sr * 0.3, -sr * 0.3)]), _c(Color("#FFE27A"), 0.9 * fade))
