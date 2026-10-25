@@ -1,4 +1,5 @@
-# Runs the headless smoke tests in tests/smoke on every push to main and every pull request.
+# Runs the headless smoke tests in tests/smoke (logic checks + a parse check of every game
+# script) on every push to main and every pull request.
 name: Smoke tests
 
 on:
@@ -45,7 +46,7 @@ jobs:
         # .godot/ is not committed; import once so class names and resources resolve.
         run: ~/godot/godot --headless --path src --import
 
-      - name: Run smoke tests
+      - name: Run smoke tests and parse check
         # Godot can exit 0 even when a script fails to parse, so also require the
         # script's own "DONE fails=0" line.
         run: |
