@@ -558,7 +558,15 @@ func _persist() -> void:
 func save_game() -> void:
 	if not persist_saves:
 		return
-	var data := {
+	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(to_save_dict()))
+		f.close()
+
+
+## Every persisted field. Must stay in step with apply_save_dict().
+func to_save_dict() -> Dictionary:
+	return {
 		"owned_pets": owned_pets,
 		"active_pet": active_pet,
 		"star_points": star_points,
@@ -582,13 +590,13 @@ func save_game() -> void:
 		"story_claimed": story_claimed,
 		"sound_on": sound_on,
 		"reduce_motion": reduce_motion,
+		"tutorial_done": tutorial_done,
+		"streak": streak,
+		"last_login_date": last_login_date,
+		"stickers": stickers,
 		"seen_scenes": seen_scenes,
 		"finale_done": finale_done,
 	}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify(data))
-		f.close()
 
 
 func load_game() -> void:
@@ -602,6 +610,11 @@ func load_game() -> void:
 	var parsed = JSON.parse_string(text)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
+	apply_save_dict(parsed)
+
+
+## Restores state from a parsed save; missing keys keep their current value.
+func apply_save_dict(parsed: Dictionary) -> void:
 	star_points = parsed.get("star_points", star_points)
 	total_earned = parsed.get("total_earned", total_earned)
 	unlocked_outfits = parsed.get("unlocked_outfits", unlocked_outfits)

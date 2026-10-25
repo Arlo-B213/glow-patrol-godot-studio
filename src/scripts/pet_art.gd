@@ -52,7 +52,9 @@ static func draw(ci: CanvasItem, species: String, stage: int, rect: Rect2, t: fl
 		xs = cs if absf(cs) > 0.14 else (0.14 if cs >= 0.0 else -0.14)
 	var def := _def(species)
 	var c := rect.get_center()
-	ci.draw_set_transform(Vector2(c.x - 50.0 * s * fl * xs, c.y - 50.0 * s), 0.0, Vector2(s * fl * xs, s))
+	# extra["base"]: the caller's canvas transform (e.g. a scrolling camera), kept under the pet's own.
+	var base: Transform2D = extra.get("base", Transform2D.IDENTITY)
+	ci.draw_set_transform_matrix(base * Transform2D(0.0, Vector2(s * fl * xs, s), 0.0, Vector2(c.x - 50.0 * s * fl * xs, c.y - 50.0 * s)))
 	var tt: float = t if animate else 0.0
 	stage = clampi(stage, 0, 3)
 	var md := mood
@@ -102,7 +104,7 @@ static func draw(ci: CanvasItem, species: String, stage: int, rect: Rect2, t: fl
 		Fx.react(ci, p)
 	if bool(extra.get("ready", false)) and animate:
 		Fx.ready(ci, p)
-	ci.draw_set_transform_matrix(Transform2D.IDENTITY)
+	ci.draw_set_transform_matrix(base)
 
 
 static func _def(species: String) -> Dictionary:
