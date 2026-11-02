@@ -1,7 +1,7 @@
 # Story 051: Settings screen
 
 > **Epic**: glowstick-patrol
-> **Status**: Ready
+> **Status**: In Review (screenshot-verified; AC-c restart persistence and AC-e unit path still open, see notes)
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M
@@ -18,12 +18,14 @@ No Settings screen exists in stories 001–035. Stories 040 (haptics), 044 (dysl
 
 ## Acceptance Criteria
 
-- [ ] (a) A Settings screen is reachable from HQ and returns to HQ on close
-- [ ] (b) Screen hosts: Haptics on/off (040), Dyslexia-friendly font on/off (044), Colour palette Off/Protan/Deutan/Tritan (045), and Reduce motion on/off (used by 036, 038, 039, 046)
+- [x] (a) A Settings screen is reachable from HQ and returns to HQ on close
+- [x] (b) Screen hosts: Haptics on/off (040), Dyslexia-friendly font on/off (044), Colour palette Off/Protan/Deutan/Tritan (045), and Reduce motion on/off (used by 036, 038, 039, 046)
 - [ ] (c) Each control writes to `GameState` settings and persists across restart
-- [ ] (d) Controls not yet implemented by their owning stories are shown disabled with "coming soon" rather than hidden
+  - Note: save-dict round trip is tested; a real save-file write and reload is not yet.
+- [x] (d) Controls not yet implemented by their owning stories are shown disabled with "coming soon" rather than hidden
 - [ ] (e) Unit tests: each setting round-trips through save and load with fixed values
-- [ ] (f) Retained screenshots of the screen in `production/qa/evidence/story-051-settings-screen/`
+  - Note: round-trip checks live in `tests/smoke/logic_smoke.gd` (in-memory save dict); `tests/unit/settings/` has not been created.
+- [x] (f) Retained screenshots of the screen in `production/qa/evidence/story-051-settings-screen/`
 
 ## Out of Scope
 
