@@ -358,6 +358,8 @@ static func glow(ci: CanvasItem, p: Dictionary, x: float, y: float, r: float, co
 
 ## Four-point sparkle star at a design-box point.
 static func star4(ci: CanvasItem, c: Vector2, r: float, col: Color) -> void:
+	if r < 0.5:
+		return
 	var pts := PackedVector2Array()
 	for i in 8:
 		var an := -PI * 0.5 + TAU * float(i) / 8.0
