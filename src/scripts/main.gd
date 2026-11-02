@@ -249,6 +249,8 @@ func _set_backdrop(screen_name: String) -> void:
 func _on_child_screen_requested(requested: String) -> void:
 	if requested == "stickers":
 		_open_stickers()
+	elif requested == "settings":
+		_open_settings()
 	elif requested == "tutorial":
 		show_tutorial()
 	elif requested == "club_lounge":
@@ -303,6 +305,17 @@ func _check_stickers() -> void:
 	for s in Stickers.check(game_state):
 		Snd.play("chapter")
 		get_node("/root/Toast").show_message("New sticker: %s!" % s["name"])
+
+
+## Replaces the content area with the settings page; Back returns to HQ and refreshes the motion icon.
+func _open_settings() -> void:
+	for child in content_area.get_children():
+		child.queue_free()
+	var page := SettingsPage.new().setup(game_state)
+	page.closed.connect(func():
+		_top.update_motion_button()
+		set_screen("home"))
+	content_area.add_child(page)
 
 
 ## Replaces the content area with the sticker collection; Back returns to HQ.

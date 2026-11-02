@@ -59,3 +59,27 @@ func _check_save_round_trip() -> void:
 	check(dst.stickers == ["first_zap", "combo_10"], "save keeps stickers")
 	src.free()
 	dst.free()
+	_check_settings_round_trip()
+
+
+## Story 051 AC-1: the four settings come back exactly; an unknown palette falls back to off.
+func _check_settings_round_trip() -> void:
+	var src = GS.new()
+	src.persist_saves = false
+	src.haptics_on = false
+	src.colour_palette = "deutan"
+	src.dyslexia_font = true
+	src.reduce_motion = true
+	var parsed = JSON.parse_string(JSON.stringify(src.to_save_dict()))
+	var dst = GS.new()
+	dst.persist_saves = false
+	dst.apply_save_dict(parsed)
+	check(dst.haptics_on == false, "settings keep haptics off")
+	check(dst.colour_palette == "deutan", "settings keep palette")
+	check(dst.dyslexia_font == true, "settings keep dyslexia font")
+	check(dst.reduce_motion == true, "settings keep reduce motion")
+	parsed["colour_palette"] = "rainbow"
+	dst.apply_save_dict(parsed)
+	check(dst.colour_palette == "off", "unknown palette falls back to off")
+	src.free()
+	dst.free()

@@ -22,6 +22,9 @@ func _init() -> void:
 			view.set_anchors_preset(Control.PRESET_FULL_RECT)
 			main.add_child(view)
 			name = name.get_file().get_basename()
+		elif name == "settings":
+			main.set_screen("home")
+			main._open_settings()
 		else:
 			main.set_screen(name)
 		for f in range(90):

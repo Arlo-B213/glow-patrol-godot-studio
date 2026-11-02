@@ -169,6 +169,11 @@ var story_claimed: int = 0
 var sound_on: bool = true
 ## Accessibility: when true, UI animations jump straight to their final state.
 var reduce_motion: bool = false
+## Settings (Story 051). Effects arrive with stories 040 (haptics), 044 (dyslexia font), 045 (palettes).
+var haptics_on: bool = true
+var dyslexia_font: bool = false
+var colour_palette: String = "off"   ## off | protan | deutan | tritan
+const COLOUR_PALETTES := ["off", "protan", "deutan", "tritan"]
 ## Pets: id -> {name, growth, hunger (100 = full), happiness, last_ts}. Never removed, never harmed.
 var owned_pets: Dictionary = {}
 var active_pet: String = ""
@@ -590,6 +595,9 @@ func to_save_dict() -> Dictionary:
 		"story_claimed": story_claimed,
 		"sound_on": sound_on,
 		"reduce_motion": reduce_motion,
+		"haptics_on": haptics_on,
+		"dyslexia_font": dyslexia_font,
+		"colour_palette": colour_palette,
 		"tutorial_done": tutorial_done,
 		"streak": streak,
 		"last_login_date": last_login_date,
@@ -636,6 +644,10 @@ func apply_save_dict(parsed: Dictionary) -> void:
 	story_claimed = int(parsed.get("story_claimed", story_claimed))
 	sound_on = parsed.get("sound_on", sound_on)
 	reduce_motion = parsed.get("reduce_motion", reduce_motion)
+	haptics_on = bool(parsed.get("haptics_on", haptics_on))
+	dyslexia_font = bool(parsed.get("dyslexia_font", dyslexia_font))
+	var palette := str(parsed.get("colour_palette", colour_palette))
+	colour_palette = palette if COLOUR_PALETTES.has(palette) else "off"
 	tutorial_done = bool(parsed.get("tutorial_done", false))
 	streak = int(parsed.get("streak", 0))
 	last_login_date = str(parsed.get("last_login_date", ""))
