@@ -136,7 +136,7 @@ func _club_room(r: Rect2, a: Color) -> void:
 	var horizon: float = r.size.y * 0.72
 	var vp := Vector2(r.size.x * 0.5, horizon)
 	var floor_col := Color(0.05, 0.02, 0.07, 0.5)
-	draw_colored_polygon(PackedVector2Array([Vector2(0, horizon), Vector2(r.size.x, horizon),
+	FD.poly(self, PackedVector2Array([Vector2(0, horizon), Vector2(r.size.x, horizon),
 		Vector2(r.size.x * 1.4, r.size.y), Vector2(-r.size.x * 0.4, r.size.y)]), floor_col)
 	for i in range(-5, 6):
 		var bottom := Vector2(r.size.x * 0.5 + float(i) * r.size.x * 0.32, r.size.y)
@@ -177,7 +177,7 @@ func _garden(r: Rect2, t: float, a: Color, b: Color) -> void:
 	for i in 9:
 		var x: float = r.size.x * float(i) / 8.0
 		var h: float = r.size.y * (0.5 + 0.25 * FxLight.hash01(i, 3))
-		draw_colored_polygon(PackedVector2Array([Vector2(x - 8.0, r.size.y), Vector2(x, h), Vector2(x + 8.0, r.size.y)]),
+		FD.poly(self, PackedVector2Array([Vector2(x - 8.0, r.size.y), Vector2(x, h), Vector2(x + 8.0, r.size.y)]),
 			Color(0.03, 0.1, 0.08, 0.9))
 	for i in 6:
 		var p := Vector2(r.size.x * FxLight.hash01(i, 5), r.size.y * 0.3 + sin(t + float(i)) * 6.0)
