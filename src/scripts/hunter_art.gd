@@ -63,6 +63,11 @@ static func _ellipse(center: Vector2, rx: float, ry: float, points: int = 20) ->
 ## (or reduced motion on) draws a still pose with only the two-pose punch swing. `guard` (0..1)
 ## draws the block pose (glowstick held upright across the body). The expression follows the
 ## action (determined while punching/guarding, hurt when hit) unless look["expression"] is set.
+## The Gloom Breaker outfit carries a second glowstick in the off hand.
+static func _is_twin(look: Dictionary) -> bool:
+	return String(look.get("outfit_style", "")) == "breaker"
+
+
 static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, facing: int, anim_t: int, moving: bool, alpha: float, punch_active: int, look: Dictionary, hurt_t: int = -1, animate: bool = true, walk_phase: float = -1.0, walk_blend: float = 1.0, guard: float = 0.0) -> void:
 	var f: float = float(facing)
 	var ps: Dictionary = Motion.side_pose(anim_t, moving, punch_active, hurt_t, animate and Motion.motion_on(), walk_phase, walk_blend, guard)
@@ -99,11 +104,17 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 		Limbs.leg_side(ci, hip, foot, u, alpha, rim if side * f < 0.0 else Limbs.NO_RIM)
 		Limbs.boot_side(ci, foot, u, f, glow, alpha)
 
+	# Front arm aim, shared with the back arm's twin stick below.
+	var ang: float = ps["ang"]
+	var dir := Vector2(f * cos(ang), sin(ang))
+
 	# Free (back) arm swings opposite the front leg, behind the body.
 	var back_sh: Vector2 = base + Vector2(-f * 4.0 + lean * 0.85, -68.0 - LEG_EXTRA_SIDE - bob - breath) * u
 	var ba: float = ps["back_arm"]
 	var back_hand: Vector2 = back_sh + Vector2(f * sin(ba), cos(ba)) * 20.0 * u
 	Limbs.arm(ci, back_sh, back_hand, 6.0 * u, Shade.darken(outfit, 0.25), alpha, 0.08 + absf(ba) * 0.1)
+	if _is_twin(look):
+		Weapons.draw(ci, String(look.get("weapon", "stick")), back_hand, dir, 36.0 * u, 3.6 * u, glow, alpha, float(ps["pulse"]), float(ps["pulse_a"]))
 	Limbs.hand(ci, back_hand, Vector2(f * sin(ba), cos(ba)), 3.6 * u, alpha, false)
 
 	# Coat tail streaming behind, then the jacket.
@@ -127,8 +138,6 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 
 	# Front arm and glowstick; the swing sweeps from raised-back to forward.
 	var shoulder: Vector2 = base + Vector2(f * 7.0 + lean * 0.85, -70.0 - LEG_EXTRA_SIDE - bob - breath) * u
-	var ang: float = ps["ang"]
-	var dir := Vector2(f * cos(ang), sin(ang))
 	var hand: Vector2 = shoulder + dir * 24.0 * u
 	Limbs.arm(ci, shoulder, hand, 7.0 * u, outfit, alpha, 0.06, Limbs.NO_RIM)
 	var wlen: float = 36.0 * u
@@ -224,6 +233,9 @@ static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: floa
 	var sdir: Vector2 = (tip - hand).normalized()
 	var rimc: Color = Shade.fade(Shade.lighten(glow, 0.4), 0.55 * alpha)
 	Limbs.arm(ci, l_sh, l_hand, 9.0 * k, outfit, alpha, float(ps["bend_l"]), rimc)
+	if _is_twin(look):
+		var ldir: Vector2 = Vector2(-sdir.x, sdir.y)
+		Weapons.draw(ci, String(look.get("weapon", "stick")), l_hand, ldir, (tip - hand).length() + 6.0 * k, 4.5 * k, glow, alpha, pulse, pulse_a)
 	Limbs.hand(ci, l_hand, sdir if sit else Vector2.DOWN, 5.0 * k, alpha, sit)
 	Limbs.arm(ci, r_sh, hand, 9.0 * k, outfit, alpha, float(ps["bend_r"]), Limbs.NO_RIM)
 	var slen: float = (tip - hand).length() + 6.0 * k
