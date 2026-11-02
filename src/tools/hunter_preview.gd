@@ -1,7 +1,7 @@
 extends SceneTree
 ## Renders the in-game hunter in a spread of looks, expressions and the side view, for
 ## before/after review of art changes. Run windowed (it needs a renderer):
-##   godot --path src --windowed -s res://tools/hunter_preview.gd -- <output.png>
+##   godot --path src --windowed -s res://tools/hunter_preview.gd -- <output.png> [heads|poses|punch]
 
 const HunterArt := preload("res://scripts/hunter_art.gd")
 const W := 1500
@@ -21,9 +21,17 @@ const EXPRS := ["neutral", "happy", "cheer", "determined", "hurt", "surprised", 
 class Sheet extends Control:
 	var heads := false
 	var poses := false
+	var punches := false
 
 	func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO, size), Color("#1E1238"))
+		if punches:
+			# Swing frames from wind-up (10) through contact (4) to recovery (1), then a hit.
+			var frames: Array = [10, 8, 6, 4, 2, 1]
+			for i in frames.size():
+				HunterArt.draw_hunter(self, 110 + i * 205, 1000, 2.2, 1, 30, false, 1.0, frames[i], LOOKS[0], -1, true)
+			HunterArt.draw_hunter(self, 110 + 6 * 205, 1000, 2.2, 1, 30, false, 1.0, 0, LOOKS[0], 0, true)
+			return
 		if heads:
 			for i in 3:
 				var look: Dictionary = LOOKS[[0, 1, BREAKER][i]].duplicate()
@@ -68,6 +76,7 @@ func _init() -> void:
 	var sheet := Sheet.new()
 	sheet.heads = heads
 	sheet.poses = args.size() > 1 and args[1] == "poses"
+	sheet.punches = args.size() > 1 and args[1] == "punch"
 	sheet.size = Vector2(W, H)
 	vp.add_child(sheet)
 	for i in range(4):
