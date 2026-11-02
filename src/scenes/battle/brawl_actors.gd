@@ -172,7 +172,7 @@ static func _boss(v: Variant, cam: Vector2, calm: bool) -> void:
 	if int(boss["stun"]) > 0 or mode == "recover":
 		_stars(v, Vector2(bx, fy - s * 1.35), u, calm, 1.2)
 	if tele:
-		_alert(v, Vector2(bx, fy - s * 1.55), u * 1.4)
+		_alert(v, Vector2(bx + 70.0 * u + 16.0 * u, fy - s * 1.45 - 24.0 * u + 4.5 * u), u * 1.4)
 	var bar_w := 140.0 * u
 	var bar_x: float = bx - bar_w / 2.0
 	var bar_y: float = fy - s * 1.45 - 24.0 * u

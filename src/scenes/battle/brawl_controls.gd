@@ -178,6 +178,7 @@ func _draw() -> void:
 		var hint := Vector2(size.x * 0.28, size.y - 190.0 * u)
 		FD.arc(self, hint, STICK_RADIUS * u, 0.0, TAU, 40, Color(UiTheme.TEXT, 0.22), 3.0 * u, true)
 		FD.circle(self, hint, 22.0 * u, Color(UiTheme.VIOLET, 0.3))
+		draw_rect(Rect2(hint.x - 90.0 * u, hint.y - STICK_RADIUS * u - 24.0 * u, 180.0 * u, 22.0 * u), Color(UiTheme.PANEL, 0.7))
 		draw_string(ThemeDB.fallback_font, hint + Vector2(-90.0 * u, -STICK_RADIUS * u - 8.0 * u), "drag to move", HORIZONTAL_ALIGNMENT_CENTER, 180.0 * u, int(14.0 * u), Color(UiTheme.TEXT, 0.5))
 	_round_button(lay["left"], "left", UiTheme.PANEL_LIGHT, "back", UiTheme.TEXT)
 	_round_button(lay["right"], "right", UiTheme.PANEL_LIGHT, "forward", UiTheme.TEXT)
