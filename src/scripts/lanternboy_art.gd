@@ -10,6 +10,7 @@ const P := preload("res://scripts/lanternboy_parts.gd")
 const Cast := preload("res://scripts/lanternboy_cast.gd")
 const NunArt := preload("res://scripts/lanternboy_nun.gd")
 const Expr := preload("res://scripts/hunter_expr.gd")
+const Light := preload("res://scripts/scene_light.gd")
 
 const FULL_W := 100.0
 const FULL_H := 130.0
@@ -47,6 +48,7 @@ static func draw(ci: CanvasItem, boy_id: String, rect: Rect2, t: float = 0.0,
 	var pivot := Vector2(50.0, 125.0) * s
 	var rot := Transform2D(tilt, Vector2.ZERO)
 	ci.draw_set_transform(origin + pivot - rot * pivot, tilt, Vector2(s, s * breath * STRETCH))
+	Light.contact_shadow(ci, Vector2(50.0, 126.0), 26.0, 3.6)
 	var late: float = 0.7 if boy_id == "nun" else 0.0
 	P.expr = expression if Expr.TABLE.has(expression) else ("happy" if bounce > 0.3 else "neutral")
 	P.closed = _blink(tt + late) if anim else 0.0

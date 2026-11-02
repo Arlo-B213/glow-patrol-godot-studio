@@ -18,6 +18,7 @@ const Face := preload("res://scripts/hunter_face.gd")
 const Hair := preload("res://scripts/hunter_hair.gd")
 const Motion := preload("res://scripts/hunter_motion.gd")
 const Weapons := preload("res://scripts/hunter_weapons.gd")
+const Light := preload("res://scripts/scene_light.gd")
 const Pose := preload("res://scripts/hunter_pose.gd")
 const Fx := preload("res://scripts/hunter_fx.gd")
 
@@ -92,7 +93,7 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 	elif expr == "neutral" and moving and bool(ps["trail"]) == false and walk_blend > 0.5:
 		expr = "happy"
 
-	FD.poly(ci, _ellipse(base + Vector2(0, -1) * u, 26.0 * u, 5.0 * u), Color(0, 0, 0, 0.35 * alpha))
+	Light.contact_shadow(ci, base + Vector2(0, -1) * u, 26.0 * u, 5.0 * u, alpha)
 	if alpha > 0.5:
 		Fx.aura(ci, base + Vector2(lean * 0.4, -52.0 - LEG_EXTRA_SIDE * 0.5 - bob) * u, 26.0 * u, 50.0 * u, glow, alpha, float(ps["pulse"]), 0.8)
 
