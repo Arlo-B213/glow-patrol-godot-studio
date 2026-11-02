@@ -104,6 +104,9 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 			K.pl(ci, o, s, [Vector2(-f * 2, -77), Vector2(f * 10, -77), Vector2(f * 9, -72), Vector2(-f * 1, -72)], lt)
 			K.rc(ci, o, s, Vector2(-13, -45), Vector2(26, 4), gold)
 			K.ln(ci, o, s, Vector2(-12.5, -42), Vector2(12.5, -42), K.c(dk, 0.8), 1.0)
+	if st in ["track", "sequin", "armor", "robe"]:
+		K.fold(ci, o, s, Vector2(-f * 5, -60), Vector2(-f * 7, -45), f * 1.5, K.c(dk, 0.45 * alpha), 1.0)
+		K.fold(ci, o, s, Vector2(f * 4, -62), Vector2(f * 3, -47), -f * 1.0, K.c(dk, 0.35 * alpha), 0.9)
 	D.side(ci, st, o, s, f, sway, outfit, tw, alpha)
 
 
@@ -211,4 +214,7 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 			K.stitch(ci, o, s, Vector2(16.5, -39), Vector2(7.5, -39), lt, 3)
 			K.rc(ci, o, s, Vector2(-21, -29), Vector2(42, 5), gold)
 			K.ln(ci, o, s, Vector2(-20, -23), Vector2(20, -23), K.c(dk, 0.8), 1.0)
+	if st in ["track", "sequin", "armor", "robe"]:
+		K.fold(ci, o, s, Vector2(-9, -44), Vector2(-11, -30), 1.6, K.c(dk, 0.45 * alpha), 1.0)
+		K.fold(ci, o, s, Vector2(10, -46), Vector2(12, -32), -1.4, K.c(dk, 0.35 * alpha), 0.9)
 	D.front(ci, st, o, s, outfit, tw, alpha)
