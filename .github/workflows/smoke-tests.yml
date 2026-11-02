@@ -1,5 +1,5 @@
-# Runs the headless smoke tests in tests/smoke (logic checks + a parse check of every game
-# script) on every push to main and every pull request.
+# Runs the headless gdUnit4 suites in src/tests and a parse check of every game script (tests/smoke)
+# on every push to main and every pull request.
 name: Smoke tests
 
 on:
@@ -46,21 +46,19 @@ jobs:
         # .godot/ is not committed; import once so class names and resources resolve.
         run: ~/godot/godot --headless --path src --import
 
-      - name: Run smoke tests and parse check
+      - name: Parse check every game script
         # Godot can exit 0 even when a script fails to parse, so also require the
         # script's own "DONE fails=0" line.
         run: |
           set -uo pipefail
-          status=0
-          for t in tests/smoke/*.gd; do
-            echo "::group::$t"
-            out="$(~/godot/godot --headless --path src -s "../$t" 2>&1)"
-            code=$?
-            echo "$out"
-            echo "::endgroup::"
-            if [ $code -ne 0 ] || ! grep -q "^DONE fails=0" <<<"$out"; then
-              echo "::error file=$t::smoke test failed (exit $code)"
-              status=1
-            fi
-          done
-          exit $status
+          out="$(~/godot/godot --headless --path src -s ../tests/smoke/parse_smoke.gd 2>&1)"
+          code=$?
+          echo "$out"
+          if [ $code -ne 0 ] || ! grep -q "^DONE fails=0" <<<"$out"; then
+            echo "::error file=tests/smoke/parse_smoke.gd::parse check failed (exit $code)"
+            exit 1
+          fi
+
+      - name: Run gdUnit4 suites
+        # GdUnitCmdTool exits non-zero when any test case fails.
+        run: ~/godot/godot --headless --path src -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode
