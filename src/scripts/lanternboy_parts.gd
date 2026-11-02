@@ -77,47 +77,11 @@ static func face(ci: CanvasItem, c: Vector2, blink: bool, iris: Color, blush: fl
 	var cl: float = 1.0 if blink else closed
 	for sx in [-1.0, 1.0]:
 		Expr.blush(ci, c + v(sx * 14.5, 11.0), 4.2, clampf(b, 0.0, 1.6), 1.0)
-		_eye(ci, c + v(sx * 10.0, 3.0), cl, iris, look + gaze, sx, e)
+		Expr.eye(ci, c + v(sx * 10.0, 3.0), 1.2, sx, iris, 1.0, e, cl, look + gaze)
 		var bp := e.duplicate()
 		bp["raise"] = float(e["raise"]) + brow_bias.x
 		bp["tilt"] = float(e["tilt"]) + brow_bias.y
 		Expr.brow(ci, c + v(sx * 10.0, -9.0), 1.45, sx, S.fade(S.darken(S.INK, 0.0), 0.8), bp, 1.2)
-
-
-static func _eye(ci: CanvasItem, e: Vector2, shut: float, iris: Color, look: Vector2, side: float, ep: Dictionary) -> void:
-	var shape: String = String(ep["shape"])
-	var open: float = float(ep["open"]) * (1.0 - shut * 0.93)
-	if shape == "arch" and shut < 0.5:
-		FD.polyline(ci, PackedVector2Array([e + v(-6, 2), e + v(-3.5, -2.2), e + v(0, -3.6), e + v(3.5, -2.2), e + v(6, 2)]), S.INK, 2.2, true)
-		ci.draw_line(e + v(side * 6, 2), e + v(side * 8.4, 0.2), S.INK, 1.5)
-		return
-	if shape == "closed" or open * 7.4 < 2.0:
-		FD.arc(ci, e + v(0, -1), 5.6, 0.2, PI - 0.2, 10, S.INK, 1.9, true)
-		ci.draw_line(e + v(side * 5.6, 0.6), e + v(side * 8.0, -1.4), S.INK, 1.4)
-		if float(ep["tear"]) > 0.0:
-			FD.arc(ci, e + v(0, 1), 5.0, 0.4, PI - 0.4, 8, S.fade(Expr.TEAR, 0.7), 1.2, true)
-		return
-	var ry: float = 7.4 * open
-	S.fill(ci, S.ellipse(e, 6.2, ry, 18), Color(1, 1, 1, 0.97), 0.9, S.ink(Color(0.9, 0.85, 0.95)))
-	var ie: Vector2 = e + v(clampf(look.x, -1.0, 1.0) * 1.5, clampf(look.y, -1.0, 1.0) * 1.5 * minf(open, 1.0))
-	var ipts := S.ellipse(ie, 4.8, 6.0 * open, 16)
-	var cols := PackedColorArray()
-	for p in ipts:
-		var t: float = clampf((p.y - (ie.y - 6.0 * open)) / maxf(12.0 * open, 0.01), 0.0, 1.0)
-		cols.append(S.darken(iris, 0.5).lerp(iris, clampf(t * 2.0, 0.0, 1.0)).lerp(S.lighten(iris, 0.5), clampf(t * 2.0 - 1.0, 0.0, 1.0)))
-	FD.gpoly(ci, ipts, cols)
-	FD.arc(ci, ie, 4.8, 0.0, TAU, 16, S.fade(S.darken(iris, 0.6), 0.8), 0.8, true)
-	var pr: float = float(ep["pupil"])
-	FD.poly(ci, S.ellipse(ie + v(0, 0.6), 2.5 * pr, 2.7 * pr * minf(open, 1.0), 12), S.INK)
-	FD.circle(ci, ie + v(-1.7, -2.4 * minf(open, 1.0)), 1.8, Color(1, 1, 1, 0.95))
-	FD.circle(ci, ie + v(1.8, 2.6 * minf(open, 1.0)), 0.9, Color(1, 1, 1, 0.8))
-	FD.arc(ci, e + v(0, -0.6), 6.5, PI * 1.08, PI * 1.92, 10, S.INK, 2.4, true)
-	ci.draw_line(e + v(side * 6.2, -2.4), e + v(side * 8.8, -4.6 * minf(open, 1.0)), S.INK, 1.6)
-	ci.draw_line(e + v(side * 5.2, -4.6 * minf(open, 1.0)), e + v(side * 7.2, -6.4 * minf(open, 1.0)), S.fade(S.INK, 0.7), 1.1)
-	FD.arc(ci, e + v(0, -ry - 1.6), 5.2, PI * 1.15, PI * 1.85, 8, S.fade(S.SKIN_SHADOW, 0.7), 0.9, true)
-	ci.draw_line(e + v(-2.4, ry + 0.8), e + v(2.4, ry + 0.8), S.fade(S.INK, 0.35), 0.9)
-	if float(ep["tear"]) > 0.0:
-		FD.arc(ci, e + v(0, 1.5), 5.4, 0.5, PI - 0.5, 8, S.fade(Expr.TEAR, 0.6 * float(ep["tear"])), 1.2, true)
 
 
 ## Mouth at `p`: "smile", "smirk", "grin" (open, energetic) or "shy" (tiny). When the active
