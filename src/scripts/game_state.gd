@@ -19,6 +19,7 @@ static func payout_for(score: int) -> int:
 # ---------------- Data tables ----------------
 
 const OUTFITS := [
+	{"id": "breaker", "name": "Gloom Breaker", "cost": 0, "hair": Color("#2A1F55"), "outfit": Color("#6C5CE7"), "style": "breaker"},
 	{"id": "starter", "name": "Practice Fit", "cost": 0, "hair": Color("#3B2A6B"), "outfit": Color("#6C5CE7"), "style": "track"},
 	{"id": "stage", "name": "Stage Sparkle", "cost": 40, "hair": Color("#B93B6B"), "outfit": Color("#FF5FA2"), "style": "sequin"},
 	{"id": "beat", "name": "Beat Armor", "cost": 60, "hair": Color("#154C40"), "outfit": Color("#52E8C6"), "style": "armor"},
@@ -149,8 +150,8 @@ const PET_SLOW_GROWTH_MULT := 0.4
 
 var star_points: int = 20
 var total_earned: int = 20
-var unlocked_outfits: Array = ["starter"]
-var equipped_outfit: String = "starter"
+var unlocked_outfits: Array = ["breaker", "starter"]
+var equipped_outfit: String = "breaker"
 var unlocked_weapons: Array = ["glowstick"]
 var equipped_weapon: String = "glowstick"
 var unlocked_hairstyles: Array = ["bob"]
@@ -626,6 +627,8 @@ func apply_save_dict(parsed: Dictionary) -> void:
 	star_points = parsed.get("star_points", star_points)
 	total_earned = parsed.get("total_earned", total_earned)
 	unlocked_outfits = parsed.get("unlocked_outfits", unlocked_outfits)
+	if not unlocked_outfits.has("breaker"):
+		unlocked_outfits.append("breaker")
 	equipped_outfit = parsed.get("equipped_outfit", equipped_outfit)
 	unlocked_weapons = parsed.get("unlocked_weapons", unlocked_weapons)
 	equipped_weapon = parsed.get("equipped_weapon", equipped_weapon)
