@@ -207,8 +207,18 @@ signal points_earned(amount: int)
 
 
 ## Stores the reduced-motion preference and saves it.
+## Haptics follow the Settings toggle; turning reduce motion on also turns haptics off (Story 040 AC-d).
+func set_haptics(v: bool) -> void:
+	haptics_on = v
+	Haptics.enabled = v
+	save_game()
+
+
 func set_reduce_motion(v: bool) -> void:
 	reduce_motion = v
+	if v:
+		haptics_on = false
+	Haptics.enabled = haptics_on
 	save_game()
 
 
@@ -221,6 +231,8 @@ func level_for_xp(xp: int) -> int:
 
 
 func earn_points(amount: int) -> void:
+	if amount >= Haptics.SP_BURST_MIN:
+		Haptics.pulse("sp_burst")
 	var before_level := level_for_xp(total_earned)
 	star_points += amount
 	total_earned += amount
@@ -675,6 +687,7 @@ func apply_save_dict(parsed: Dictionary) -> void:
 	sound_on = parsed.get("sound_on", sound_on)
 	reduce_motion = parsed.get("reduce_motion", reduce_motion)
 	haptics_on = bool(parsed.get("haptics_on", haptics_on))
+	Haptics.enabled = haptics_on
 	dyslexia_font = bool(parsed.get("dyslexia_font", dyslexia_font))
 	var palette := str(parsed.get("colour_palette", colour_palette))
 	colour_palette = palette if COLOUR_PALETTES.has(palette) else "off"

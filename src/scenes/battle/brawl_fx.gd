@@ -21,6 +21,7 @@ static func popup(v: Variant, text: String, pos: Vector2, color: Color, size: fl
 ## Feedback for a landed hit of `damage`: a short hit pause (attacker and target freeze) and a
 ## shake that scales with damage, both from `v.feel`.
 static func hit_feedback(v: Variant, damage: int) -> void:
+	Haptics.pulse("enemy_hit")
 	var calm: bool = v.calm()
 	v.hitstop = maxi(v.hitstop, v.feel.pause_frames(calm))
 	shake_screen(v, v.feel.shake_px(damage, calm))

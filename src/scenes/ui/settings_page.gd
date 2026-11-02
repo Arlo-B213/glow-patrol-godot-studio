@@ -1,7 +1,7 @@
 class_name SettingsPage
 extends Control
-## Settings sub-view (Story 051). Reduce motion works now; haptics, dyslexia font and colour
-## palettes are listed but disabled until their owning stories (040, 044, 045) ship.
+## Settings sub-view (Story 051). Reduce motion and haptics work now; the dyslexia font and colour palettes are listed
+## but disabled until their owning stories (044, 045) ship.
 
 signal closed
 
@@ -30,9 +30,9 @@ func setup(game_state: Node) -> SettingsPage:
 	list.add_child(_section("Comfort"))
 	list.add_child(_toggle_row("Reduce motion", "Animations jump straight to their end state.",
 			_gs.reduce_motion, true, _on_reduce_motion))
+	list.add_child(_toggle_row("Haptic feedback", "Phone vibration on hits, star bursts and zap strikes.",
+			_gs.haptics_on, true, _on_haptics))
 	list.add_child(_section("Coming soon"))
-	list.add_child(_toggle_row("Haptic feedback", "Phone vibration on hits and catches. Story 040.",
-			_gs.haptics_on, false, Callable()))
 	list.add_child(_toggle_row("Dyslexia-friendly font", "Easier letter shapes for reading. Story 044.",
 			_gs.dyslexia_font, false, Callable()))
 	list.add_child(_palette_row())
@@ -113,6 +113,11 @@ func _palette_row() -> Control:
 			pick.select(i)
 	(parts[1] as HBoxContainer).add_child(pick)
 	return parts[0]
+
+
+func _on_haptics(v: bool) -> void:
+	Snd.play("tap")
+	_gs.set_haptics(v)
 
 
 func _on_reduce_motion(v: bool) -> void:

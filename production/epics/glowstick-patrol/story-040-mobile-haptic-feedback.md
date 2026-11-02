@@ -1,7 +1,7 @@
 # Story 040: Haptic feedback on mobile
 
 > **Epic**: glowstick-patrol
-> **Status**: Ready
+> **Status**: In Review (unit-tested; not yet felt on a device)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -18,11 +18,12 @@ Add light vibration on mobile for key moments (enemy hit, SP burst, Zap Patrol s
 
 ## Acceptance Criteria
 
-- [ ] (a) Haptic pulse fires on enemy hit, large SP grant and Zap Patrol strike, with per-event duration
-- [ ] (b) On platforms without vibration support, calls are no-ops with no errors
+- [x] (a) Haptic pulse fires on enemy hit, large SP grant and Zap Patrol strike, with per-event duration
+- [x] (b) On platforms without vibration support, calls are no-ops with no errors
 - [ ] (c) A Haptics on/off toggle in Settings is saved and respected
-- [ ] (d) Haptics default off when reduce motion is enabled
-- [ ] (e) Unit test: haptic dispatcher maps events to durations and respects the toggle, with the vibration call injected (no real device needed)
+  - Note: the save-dict round trip is tested; a real device restart is not yet.
+- [x] (d) Haptics default off when reduce motion is enabled
+- [x] (e) Unit test: haptic dispatcher maps events to durations and respects the toggle, with the vibration call injected (no real device needed)
 
 ## Out of Scope
 
@@ -44,6 +45,13 @@ Verify `Input.vibrate_handheld` against the Godot 4.7 docs in `docs/engine-refer
   - Setup: Turn haptics off, restart the game
   - Verify: Still off
   - Pass condition: Setting persists
+
+## Implementation Notes (as built)
+
+- Dispatcher: `src/scripts/haptics.gd` (`Haptics.pulse`), pulses 25 ms enemy hit, 60 ms star burst (10+ stars at once), 40 ms zap strike.
+- Verified against the Godot 4.7 `Input.vibrate_handheld(duration_ms, amplitude)` docs: no effect off Android, iOS or Web.
+- Android needs the `VIBRATE` permission in the export preset. There is no export preset in the repo yet.
+- Reduce motion on turns haptics off (AC-d), via `GameState.set_reduce_motion`.
 
 ## Test Evidence
 
