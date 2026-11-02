@@ -56,6 +56,7 @@ var _backdrop: Control
 
 func _ready() -> void:
 	theme = UiTheme.build()
+	ScreenGrade.attach(self)
 	get_tree().node_added.connect(_on_node_added)
 	sound_button.theme_type_variation = "SecondaryButton"
 	sound_button.custom_minimum_size = Vector2(56, 56)
