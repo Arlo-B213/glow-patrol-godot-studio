@@ -170,6 +170,7 @@ $RECYCLE.BIN/
 # gdUnit4 writes reports/ and Unity's -testResults writes test-results/, both at
 # the project root. Anchored so a reports/ folder elsewhere stays tracked.
 /reports/
+/src/reports/
 /test-results/
 
 # Godot editor cache
