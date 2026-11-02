@@ -3,7 +3,7 @@ extends RefCounted
 ## Lounge missions (data): each Lanternboy has a place on the clubhouse map and missions there.
 ## A mission is an Alley Brawl run that pauses for Study Hall questions after the waves listed in
 ## `quiz_after_waves` (1-based). `needs_affection` gates it behind friendship. Rewards: Star Points
-## through GameState.payout_for, and affection (+5 on a win, +2 on a loss). Values are data, not code.
+## through GameState.payout_for, and affection (+6 on a win, +2 on a loss). Values are data, not code.
 
 const MISSIONS := [
 	{"id": "bridge-1", "boy": "hae", "place": "Lantern Bridge", "title": "Bridge Patrol", "grade": 2,
@@ -21,8 +21,10 @@ const MISSIONS := [
 ]
 
 const PLACES := {"hae": "Lantern Bridge", "bit": "Dance Steps", "nun": "Moth Garden"}
-const AFFECTION_WIN := 5
+const AFFECTION_WIN := 6
 const AFFECTION_LOSS := 2
+## Extra Star Points per correct quiz answer in a mission, on top of the capped brawl payout.
+const STARS_PER_CORRECT := 1
 
 
 ## Every mission for one Lanternboy, in listed order.
