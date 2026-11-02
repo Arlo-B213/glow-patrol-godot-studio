@@ -19,6 +19,8 @@ const Hair := preload("res://scripts/hunter_hair.gd")
 const Motion := preload("res://scripts/hunter_motion.gd")
 const Weapons := preload("res://scripts/hunter_weapons.gd")
 const Light := preload("res://scripts/scene_light.gd")
+## Outline weight multiplier for the hunter: bolder silhouette, same interior detail.
+const HERO_OUTLINE := 1.3
 const Pose := preload("res://scripts/hunter_pose.gd")
 const Fx := preload("res://scripts/hunter_fx.gd")
 
@@ -69,7 +71,14 @@ static func _is_twin(look: Dictionary) -> bool:
 	return String(look.get("outfit_style", "")) == "breaker"
 
 
+## Side-view hunter for battle. Wraps the body with the hero outline weight.
 static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, facing: int, anim_t: int, moving: bool, alpha: float, punch_active: int, look: Dictionary, hurt_t: int = -1, animate: bool = true, walk_phase: float = -1.0, walk_blend: float = 1.0, guard: float = 0.0) -> void:
+	Shade.outline_scale = HERO_OUTLINE
+	_draw_hunter_body(ci, x, ground_y, u, facing, anim_t, moving, alpha, punch_active, look, hurt_t, animate, walk_phase, walk_blend, guard)
+	Shade.outline_scale = 1.0
+
+
+static func _draw_hunter_body(ci: CanvasItem, x: float, ground_y: float, u: float, facing: int, anim_t: int, moving: bool, alpha: float, punch_active: int, look: Dictionary, hurt_t: int = -1, animate: bool = true, walk_phase: float = -1.0, walk_blend: float = 1.0, guard: float = 0.0) -> void:
 	var f: float = float(facing)
 	var ps: Dictionary = Motion.side_pose(anim_t, moving, punch_active, hurt_t, animate and Motion.motion_on(), walk_phase, walk_blend, guard)
 	var base := Vector2(x, ground_y)
@@ -166,6 +175,12 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 ## cards). `animate` = false (or reduced motion on) also forces the still pose. look["pose"]
 ## and look["expression"] (optional) choose the pose and face. Call from _draw().
 static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: float = 0.0, alpha: float = 1.0, animate: bool = true) -> void:
+	Shade.outline_scale = HERO_OUTLINE
+	_draw_portrait_body(ci, rect, look, t, alpha, animate)
+	Shade.outline_scale = 1.0
+
+
+static func _draw_portrait_body(ci: CanvasItem, rect: Rect2, look: Dictionary, t: float = 0.0, alpha: float = 1.0, animate: bool = true) -> void:
 	if rect.size.x <= 1.0 or rect.size.y <= 1.0:
 		return
 	var full: bool = rect.size.y >= rect.size.x * P_FULL_BODY_ASPECT
