@@ -118,6 +118,16 @@ static func mouth(ci: CanvasItem, p: Vector2, kind: String) -> void:
 			FD.arc(ci, p, 4.6, 0.25, PI - 0.25, 10, MOUTH, 1.7, true)
 
 
+## Soft cloth fold: a short curve from `a` to `b`, bowed sideways by `bow`, in shadow colour `col`.
+static func fold(ci: CanvasItem, a: Vector2, b: Vector2, bow: float, col: Color) -> void:
+	var mid: Vector2 = (a + b) * 0.5 + v(bow, 0.0)
+	var pts := PackedVector2Array()
+	for i in range(6):
+		var t: float = float(i) / 5.0
+		pts.append((1.0 - t) * (1.0 - t) * a + 2.0 * (1.0 - t) * t * mid + t * t * b)
+	ci.draw_polyline(pts, col, 1.0, true)
+
+
 ## Eyebrow line from `a` to `b` (legacy; faces draw their own expressive brows now).
 static func brow(ci: CanvasItem, a: Vector2, b: Vector2, col: Color) -> void:
 	pass
