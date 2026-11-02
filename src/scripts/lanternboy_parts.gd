@@ -58,7 +58,7 @@ static func face(ci: CanvasItem, c: Vector2, blink: bool, iris: Color, blush: fl
 	var e: Dictionary = Expr.params(expr)
 	S.circle(ci, c + v(-23, 3), 4.2, skin, OW, S.ink(skin))
 	S.circle(ci, c + v(23, 3), 4.2, skin, OW, S.ink(skin))
-	var pts := S.ellipse(c, 23.0, 21.0, 28)
+	var pts := _chin_outline(c, 23.0, 21.0, 28)
 	var cols := PackedColorArray()
 	for p in pts:
 		var t: float = clampf((p.y - (c.y - 21.0)) / 42.0, 0.0, 1.0)
@@ -82,6 +82,16 @@ static func face(ci: CanvasItem, c: Vector2, blink: bool, iris: Color, blush: fl
 		bp["raise"] = float(e["raise"]) + brow_bias.x
 		bp["tilt"] = float(e["tilt"]) + brow_bias.y
 		Expr.brow(ci, c + v(sx * 10.0, -9.0), 1.45, sx, S.fade(S.darken(S.INK, 0.0), 0.8), bp, 1.2)
+
+
+## Head outline with the hunter's soft pointed chin: the lower half tapers in toward the jaw.
+static func _chin_outline(c: Vector2, rx: float, ry: float, n: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(n):
+		var a: float = TAU * float(i) / float(n)
+		var sa: float = maxf(sin(a), 0.0)
+		pts.append(c + Vector2(cos(a) * rx * (1.0 - 0.3 * pow(sa, 2.5)), sin(a) * ry * (1.0 + 0.1 * sa)))
+	return pts
 
 
 ## Mouth at `p`: "smile", "smirk", "grin" (open, energetic) or "shy" (tiny). When the active
