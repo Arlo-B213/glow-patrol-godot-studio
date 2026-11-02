@@ -84,9 +84,15 @@ static func _eye(r: Kit.Rig, sd: float, ex: float, ey: float, erx: float, ery: f
 		var lx: float = ex + r.look * erx * 0.32
 		r.circ(lx, ey + ery * 0.05, ery * 0.72, eye_col, false)
 		r.circ(lx + r.look * erx * 0.08, ey + ery * 0.05, ery * 0.36, Kit.BLACKOUT, false)
+		# Anime finish: lid shadow over the top of the iris, a light crescent along its base,
+		# a second highlight and a short lash flick at the outer corner.
+		r.ell(lx, ey - ery * 0.42, erx * 0.72, ery * 0.26, Color("#3A1F6E", 0.35), false, false)
+		r.ell(lx, ey + ery * 0.5, erx * 0.5, ery * 0.14, Color(eye_col.lightened(0.5), 0.6), false, false)
 		r.disc(lx - erx * 0.28, ey - ery * 0.3, ery * 0.2, Color.WHITE)
+		r.disc(lx + erx * 0.2, ey + ery * 0.12, ery * 0.09, Color(1, 1, 1, 0.85))
 		if r.detail:
 			r.disc(lx + erx * 0.22, ey + ery * 0.28, ery * 0.1, Color(1, 1, 1, 0.8))
+		r.line(Vector2(ex + sd * erx * 0.95, ey - ery * 0.95), Vector2(ex + sd * erx * 1.45, ey - ery * 1.5), 1.4, Kit.INK)
 	if lid > 0.02:
 		var yl: float = ey - ery + 2.0 * ery * lid
 		var quad: Array = [Vector2(ex - erx * 1.2, ey - ery * 1.25), Vector2(ex + erx * 1.2, ey - ery * 1.25), Vector2(ex + erx * 1.2, yl), Vector2(ex - erx * 1.2, yl)]

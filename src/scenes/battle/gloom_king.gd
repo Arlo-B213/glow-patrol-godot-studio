@@ -50,6 +50,9 @@ static func draw(ci: CanvasItem, x: float, ground_y: float, s: float, age: int, 
 	# Robe and armour: wide shoulders, gold belt, glowing chest gem.
 	r.poly([Vector2(-36, -88), Vector2(36, -88), Vector2(31, -30), Vector2(-31, -30)], robe)
 	r.poly([Vector2(-31, -46), Vector2(31, -46), Vector2(30, -38), Vector2(-30, -38)], GOLD_DARK, true)
+	# Cloth folds down the robe: two soft shadow lines, bowed outward.
+	r.polyline([Vector2(-14.0, -84.0), Vector2(-17.0, -60.0), Vector2(-13.0, -40.0)], 1.5, Shade.darken(robe, 0.35))
+	r.polyline([Vector2(14.0, -84.0), Vector2(17.0, -60.0), Vector2(13.0, -40.0)], 1.5, Shade.darken(robe, 0.35))
 	r.circ(0.0, -42.0, 5.5, GOLD, true)
 	var gem: float = 1.0 if r.calm else 0.75 + 0.25 * sin(r.t * 0.14)
 	r.disc(0.0, -66.0, 12.0 * gem, Color(accent, 0.28))

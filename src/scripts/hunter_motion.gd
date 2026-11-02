@@ -129,6 +129,17 @@ static func side_pose(anim_t: int, moving: bool, punch_active: int, hurt_t: int,
 		lean = lerpf(lean, -1.2, guard)
 		ps["back_arm"] = lerpf(float(ps["back_arm"]), 0.5, guard)
 		ps["trail"] = false
+	# Squash: the body drops (negative bob) while winding up for a swing, slams down on contact,
+	# and crouches when hit. Feet stay planted, so only the upper body compresses.
+	var squash: float = 0.0
+	if animate and punch_active > 0:
+		var e2: float = float(10 - punch_active)
+		if e2 < 2.0:
+			squash = -0.9 * (e2 / 2.0)
+		elif e2 < 7.0:
+			squash = -1.6 * exp(-pow((e2 - 6.0) * 1.4, 2.0))
+	squash -= 1.5 * hurt
+	ps["bob"] = float(ps["bob"]) + squash
 	ps["hurt"] = hurt
 	ps["lean"] = lean
 	ps["ang"] = ang

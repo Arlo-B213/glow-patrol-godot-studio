@@ -170,8 +170,15 @@ $RECYCLE.BIN/
 # gdUnit4 writes reports/ and Unity's -testResults writes test-results/, both at
 # the project root. Anchored so a reports/ folder elsewhere stays tracked.
 /reports/
+/src/reports/
 /test-results/
 
 # Godot editor cache
 .godot/
 *.tmp
+
+# === Third-party AI media skill (installed locally, not project code) ===
+.agents/
+agent/
+.claude/skills/ultimate-ai-media-generator-skill/
+skills-lock.json

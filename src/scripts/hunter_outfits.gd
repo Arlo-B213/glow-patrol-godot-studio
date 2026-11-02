@@ -15,7 +15,8 @@ const B := preload("res://scripts/hunter_outfits_b.gd")
 const D := preload("res://scripts/hunter_outfit_detail.gd")
 
 ## Style ids understood by draw_side / draw_front (unknown ids fall back to "track").
-const STYLES: Array[String] = ["track", "sequin", "armor", "robe", "hanbok", "tailcoat", "cape", "galaxy"]
+const STYLES: Array[String] = ["track", "sequin", "armor", "robe", "hanbok", "tailcoat", "cape", "galaxy", "breaker"]
+const PINK := Color("#FF5FA2")
 
 
 static func _norm(style: String) -> String:
@@ -37,6 +38,9 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 	var wh: Color = K.c(Color.WHITE, alpha)
 	var run: float = 8.0 if moving else 0.0
 	var torso: Array = K.TORSO_S
+	if st == "breaker":
+		K.part(ci, o, s, [Vector2(-f * 10, -50), Vector2(-f * 12, -36), Vector2(-f * (24.0 + run), -26 + sway), Vector2(-f * 18, -22 + sway)], K.c(PINK, alpha))
+		st = "armor"
 	match st:
 		"sequin":
 			K.part(ci, o, s, [Vector2(-f * 8, -50), Vector2(-f * 8, -38), Vector2(-f * (18.0 + run), -34 + sway)], dk)
@@ -100,6 +104,9 @@ static func draw_side(ci: CanvasItem, style: String, o: Vector2, s: float, f: fl
 			K.pl(ci, o, s, [Vector2(-f * 2, -77), Vector2(f * 10, -77), Vector2(f * 9, -72), Vector2(-f * 1, -72)], lt)
 			K.rc(ci, o, s, Vector2(-13, -45), Vector2(26, 4), gold)
 			K.ln(ci, o, s, Vector2(-12.5, -42), Vector2(12.5, -42), K.c(dk, 0.8), 1.0)
+	if st in ["track", "sequin", "armor", "robe"]:
+		K.fold(ci, o, s, Vector2(-f * 5, -60), Vector2(-f * 7, -45), f * 1.5, K.c(dk, 0.45 * alpha), 1.0)
+		K.fold(ci, o, s, Vector2(f * 4, -62), Vector2(f * 3, -47), -f * 1.0, K.c(dk, 0.35 * alpha), 0.9)
 	D.side(ci, st, o, s, f, sway, outfit, tw, alpha)
 
 
@@ -119,6 +126,21 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 	var sw: float = sin(tw * 2.0) * 2.0
 	var torso: Array = K.TORSO_F
 	match st:
+		"breaker":
+			K.part(ci, o, s, [Vector2(-30, -52), Vector2(30, -52), Vector2(38 + sw * 0.5, -8), Vector2(-38 + sw * 0.5, -8)], K.c(PINK, alpha))
+			K.part(ci, o, s, torso, dk)
+			K.part(ci, o, s, [Vector2(-22, -50), Vector2(-2, -50), Vector2(-2, -33), Vector2(-18, -33)], m)
+			K.part(ci, o, s, [Vector2(2, -50), Vector2(22, -50), Vector2(18, -33), Vector2(2, -33)], m)
+			K.ln(ci, o, s, Vector2(-21, -49), Vector2(-3, -49), gold, 1.4)
+			K.ln(ci, o, s, Vector2(3, -49), Vector2(21, -49), gold, 1.4)
+			K.pl(ci, o, s, [Vector2(0, -44), Vector2(4, -40), Vector2(0, -36), Vector2(-4, -40)], PINK)
+			K.rc(ci, o, s, Vector2(-21, -30), Vector2(42, 5), gold)
+			K.part(ci, o, s, [Vector2(-21, -26), Vector2(-3, -26), Vector2(-5, -17), Vector2(-19, -17)], m)
+			K.part(ci, o, s, [Vector2(3, -26), Vector2(21, -26), Vector2(19, -17), Vector2(5, -17)], m)
+			for side in [-1.0, 1.0]:
+				var pc := Vector2(side * 27, -50)
+				K.part(ci, o, s, K.ell(pc, 12.0, 8.0), m)
+				FD.arc(ci, o + pc * s, 10.0 * s, PI, TAU, 10, gold, maxf(1.0, 2.0 * s))
 		"sequin":
 			K.part(ci, o, s, torso, m)
 			K.pl(ci, o, s, [Vector2(-22, -30), Vector2(22, -30), Vector2(27, -20), Vector2(-27, -20)], lt)
@@ -192,4 +214,7 @@ static func draw_front(ci: CanvasItem, style: String, o: Vector2, s: float, outf
 			K.stitch(ci, o, s, Vector2(16.5, -39), Vector2(7.5, -39), lt, 3)
 			K.rc(ci, o, s, Vector2(-21, -29), Vector2(42, 5), gold)
 			K.ln(ci, o, s, Vector2(-20, -23), Vector2(20, -23), K.c(dk, 0.8), 1.0)
+	if st in ["track", "sequin", "armor", "robe"]:
+		K.fold(ci, o, s, Vector2(-9, -44), Vector2(-11, -30), 1.6, K.c(dk, 0.45 * alpha), 1.0)
+		K.fold(ci, o, s, Vector2(10, -46), Vector2(12, -32), -1.4, K.c(dk, 0.35 * alpha), 0.9)
 	D.front(ci, st, o, s, outfit, tw, alpha)

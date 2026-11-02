@@ -11,6 +11,9 @@ const FxParticles := preload("res://scripts/fx_particles.gd")
 const THEMES := {
 	"home": {"top": Color("#1B1040"), "bot": Color("#6B2F78"), "a": Color("#FF5FA2"), "b": Color("#8E7CFF")},
 	"club": {"top": Color("#20102F"), "bot": Color("#4A2238"), "a": Color("#FFB35E"), "b": Color("#FF5FA2")},
+	"bridge": {"top": Color("#0F1A3A"), "bot": Color("#23426B"), "a": Color("#FFD36E"), "b": Color("#7FD3FF")},
+	"dance": {"top": Color("#1A0A2E"), "bot": Color("#4B1260"), "a": Color("#FF5FA2"), "b": Color("#52E8C6")},
+	"garden": {"top": Color("#0C2A24"), "bot": Color("#1F4A3A"), "a": Color("#FFD36E"), "b": Color("#B9A7FF")},
 	"study": {"top": Color("#0E1B33"), "bot": Color("#1F3F55"), "a": Color("#FFD36E"), "b": Color("#52E8C6")},
 	"games": {"top": Color("#0E0A2E"), "bot": Color("#2A1260"), "a": Color("#FF5FA2"), "b": Color("#52E8C6")},
 	"pets": {"top": Color("#2A1A3F"), "bot": Color("#6E3A58"), "a": Color("#FFC15E"), "b": Color("#FF9BC0")},
@@ -56,6 +59,9 @@ func _draw() -> void:
 		"club": _club(r, t, a, b)
 		"study": _study(r, t, a, b)
 		"games": _games(r, t, a, b)
+		"bridge": _bridge(r, t, a, b)
+		"dance": _dance(r, t, a, b)
+		"garden": _garden(r, t, a, b)
 		_: _pets(r, t, a, b)
 	FxLight.motes(self, r, t, 8, Color(1, 0.95, 0.85, 0.7), 2.6, theme_name.length())
 	FxLight.vignette(self, r, 0.4)
@@ -86,6 +92,7 @@ func _skyline(r: Rect2, col: Color, base: float, seed_v: int, hfrac: float, win:
 
 
 func _club(r: Rect2, t: float, a: Color, b: Color) -> void:
+	_club_room(r, a)
 	for row in 2:
 		var y0: float = 60.0 + float(row) * 90.0
 		var n := 7
@@ -121,6 +128,61 @@ func _games(r: Rect2, t: float, a: Color, b: Color) -> void:
 		draw_line(Vector2(0, y), Vector2(r.size.x, y), Color(a.r, a.g, a.b, 0.3 * f), 1.5)
 	FxLight.edge_glow(self, r, b, 0.22, 34.0, t)
 	FxParticles.sparkle_storm(self, Rect2(0, 0, r.size.x, hy), t, 10, b, 5.0)
+
+
+## Floor and back wall for the lounge: the wall meets the floor at a horizon line, and the floor
+## boards converge on a vanishing point, so the room reads as a space rather than a flat gradient.
+func _club_room(r: Rect2, a: Color) -> void:
+	var horizon: float = r.size.y * 0.72
+	var vp := Vector2(r.size.x * 0.5, horizon)
+	var floor_col := Color(0.05, 0.02, 0.07, 0.5)
+	FD.poly(self, PackedVector2Array([Vector2(0, horizon), Vector2(r.size.x, horizon),
+		Vector2(r.size.x * 1.4, r.size.y), Vector2(-r.size.x * 0.4, r.size.y)]), floor_col)
+	for i in range(-5, 6):
+		var bottom := Vector2(r.size.x * 0.5 + float(i) * r.size.x * 0.32, r.size.y)
+		draw_line(vp, bottom, Color(a.r, a.g, a.b, 0.05), 1.5)
+	for k in 5:
+		var y: float = horizon + (r.size.y - horizon) * pow(float(k + 1) / 6.0, 2.0)
+		draw_line(Vector2(0, y), Vector2(r.size.x, y), Color(a.r, a.g, a.b, 0.05), 1.0)
+	draw_line(Vector2(0, horizon), Vector2(r.size.x, horizon), Color(a.r, a.g, a.b, 0.2), 2.0)
+
+## Lantern bridge: lamp posts along a deck, light on the water below.
+func _bridge(r: Rect2, t: float, a: Color, b: Color) -> void:
+	var deck_y: float = r.size.y * 0.62
+	for i in 6:
+		var x: float = r.size.x * (float(i) + 0.5) / 6.0
+		draw_line(Vector2(x, deck_y - 30.0), Vector2(x, deck_y), Color(a.r, a.g, a.b, 0.5), 3.0)
+		FxLight.halo(self, Vector2(x, deck_y - 32.0), 14.0, a, 0.9)
+	draw_rect(Rect2(0.0, deck_y, r.size.x, 6.0), Color(b.r, b.g, b.b, 0.35))
+	for k in 4:
+		var y: float = deck_y + 14.0 + float(k) * 9.0
+		draw_line(Vector2(r.size.x * 0.1, y), Vector2(r.size.x * 0.9, y), Color(b.r, b.g, b.b, 0.12 - 0.02 * float(k)), 2.0)
+
+
+## Dance floor: sweeping spotlight shafts over a checkered floor.
+func _dance(r: Rect2, t: float, a: Color, b: Color) -> void:
+	for i in 3:
+		FxLight.shaft(self, Vector2(r.size.x * (0.25 + 0.25 * float(i)), -10.0), PI * 0.5 + (0.4 - 0.4 * float(i)),
+			r.size.y, 120.0, a if i % 2 == 0 else b, 0.14, t, float(i))
+	var floor_y: float = r.size.y * 0.7
+	var cell: float = 22.0
+	for row in 4:
+		for col in int(r.size.x / cell) + 1:
+			if (row + col) % 2 == 0:
+				draw_rect(Rect2(float(col) * cell, floor_y + float(row) * cell * 0.5, cell, cell * 0.5), Color(b.r, b.g, b.b, 0.08))
+
+
+## Moth garden: tall grass against the dusk, with moth lights drifting over it.
+func _garden(r: Rect2, t: float, a: Color, b: Color) -> void:
+	for i in 9:
+		var x: float = r.size.x * float(i) / 8.0
+		var h: float = r.size.y * (0.5 + 0.25 * FxLight.hash01(i, 3))
+		FD.poly(self, PackedVector2Array([Vector2(x - 8.0, r.size.y), Vector2(x, h), Vector2(x + 8.0, r.size.y)]),
+			Color(0.03, 0.1, 0.08, 0.9))
+	for i in 6:
+		var p := Vector2(r.size.x * FxLight.hash01(i, 5), r.size.y * 0.3 + sin(t + float(i)) * 6.0)
+		FxLight.halo(self, p, 12.0, a if i % 2 == 0 else b, 0.7)
+
 
 
 func _pets(r: Rect2, t: float, a: Color, b: Color) -> void:

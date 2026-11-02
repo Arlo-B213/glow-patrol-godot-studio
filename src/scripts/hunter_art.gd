@@ -18,6 +18,9 @@ const Face := preload("res://scripts/hunter_face.gd")
 const Hair := preload("res://scripts/hunter_hair.gd")
 const Motion := preload("res://scripts/hunter_motion.gd")
 const Weapons := preload("res://scripts/hunter_weapons.gd")
+const Light := preload("res://scripts/scene_light.gd")
+## Outline weight multiplier for the hunter: bolder silhouette, same interior detail.
+const HERO_OUTLINE := 1.3
 const Pose := preload("res://scripts/hunter_pose.gd")
 const Fx := preload("res://scripts/hunter_fx.gd")
 
@@ -30,12 +33,18 @@ const STICK := Color("#F5EFFF")
 
 ## Portrait figure space: origin at the feet, x centred, y up is negative. All values in figure units.
 const P_WIDTH := 110.0
-const P_TOP := -124.0
+## Extra leg length (figure units) over the original chibi build; everything above the hips is
+## lifted by it. Front portrait and side view are tuned separately.
+const LEG_EXTRA := 20.0
+const LEG_EXTRA_SIDE := 9.0
+const P_TOP := -124.0 - LEG_EXTRA
 const P_BOTTOM_FULL := 2.0
-const P_BOTTOM_BUST := -16.0
+const P_BOTTOM_BUST := -16.0 - LEG_EXTRA
 ## Rects at least this much taller than wide get the full-body portrait, others head-and-torso.
 const P_FULL_BODY_ASPECT := 1.2
-const P_HEAD_Y := -78.0
+## Head centre above the lifted upper body; the head is drawn at P_HEAD_SCALE of the body scale.
+const P_HEAD_Y := -76.0
+const P_HEAD_SCALE := 0.9
 const P_HEAD_R := 24.0
 
 
@@ -57,7 +66,19 @@ static func _ellipse(center: Vector2, rx: float, ry: float, points: int = 20) ->
 ## (or reduced motion on) draws a still pose with only the two-pose punch swing. `guard` (0..1)
 ## draws the block pose (glowstick held upright across the body). The expression follows the
 ## action (determined while punching/guarding, hurt when hit) unless look["expression"] is set.
+## The Gloom Breaker outfit carries a second glowstick in the off hand.
+static func _is_twin(look: Dictionary) -> bool:
+	return String(look.get("outfit_style", "")) == "breaker"
+
+
+## Side-view hunter for battle. Wraps the body with the hero outline weight.
 static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, facing: int, anim_t: int, moving: bool, alpha: float, punch_active: int, look: Dictionary, hurt_t: int = -1, animate: bool = true, walk_phase: float = -1.0, walk_blend: float = 1.0, guard: float = 0.0) -> void:
+	Shade.outline_scale = HERO_OUTLINE
+	_draw_hunter_body(ci, x, ground_y, u, facing, anim_t, moving, alpha, punch_active, look, hurt_t, animate, walk_phase, walk_blend, guard)
+	Shade.outline_scale = 1.0
+
+
+static func _draw_hunter_body(ci: CanvasItem, x: float, ground_y: float, u: float, facing: int, anim_t: int, moving: bool, alpha: float, punch_active: int, look: Dictionary, hurt_t: int = -1, animate: bool = true, walk_phase: float = -1.0, walk_blend: float = 1.0, guard: float = 0.0) -> void:
 	var f: float = float(facing)
 	var ps: Dictionary = Motion.side_pose(anim_t, moving, punch_active, hurt_t, animate and Motion.motion_on(), walk_phase, walk_blend, guard)
 	var base := Vector2(x, ground_y)
@@ -81,33 +102,39 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 	elif expr == "neutral" and moving and bool(ps["trail"]) == false and walk_blend > 0.5:
 		expr = "happy"
 
-	FD.poly(ci, _ellipse(base + Vector2(0, -1) * u, 26.0 * u, 5.0 * u), Color(0, 0, 0, 0.35 * alpha))
+	Light.contact_shadow(ci, base + Vector2(0, -1) * u, 26.0 * u, 5.0 * u, alpha)
 	if alpha > 0.5:
-		Fx.aura(ci, base + Vector2(lean * 0.4, -52.0 - bob) * u, 26.0 * u, 50.0 * u, glow, alpha, float(ps["pulse"]), 0.8)
+		Fx.aura(ci, base + Vector2(lean * 0.4, -52.0 - LEG_EXTRA_SIDE * 0.5 - bob) * u, 26.0 * u, 50.0 * u, glow, alpha, float(ps["pulse"]), 0.8)
 
 	# Legs and boots (4-pose walk cycle: contact, down, passing, up).
 	for side in [-1.0, 1.0]:
 		var fp: Vector2 = ps["foot_b"] if side > 0.0 else ps["foot_a"]
-		var hip: Vector2 = base + Vector2(side * 6.0, -40.0 - bob) * u
+		var hip: Vector2 = base + Vector2(side * 6.0, -40.0 - LEG_EXTRA_SIDE - bob) * u
 		var foot: Vector2 = base + Vector2(side * (float(ps["stance_x"]) + float(ps["spread"])) + f * fp.x, -4.0 - fp.y) * u
 		Limbs.leg_side(ci, hip, foot, u, alpha, rim if side * f < 0.0 else Limbs.NO_RIM)
 		Limbs.boot_side(ci, foot, u, f, glow, alpha)
 
+	# Front arm aim, shared with the back arm's twin stick below.
+	var ang: float = ps["ang"]
+	var dir := Vector2(f * cos(ang), sin(ang))
+
 	# Free (back) arm swings opposite the front leg, behind the body.
-	var back_sh: Vector2 = base + Vector2(-f * 4.0 + lean * 0.85, -68.0 - bob - breath) * u
+	var back_sh: Vector2 = base + Vector2(-f * 4.0 + lean * 0.85, -68.0 - LEG_EXTRA_SIDE - bob - breath) * u
 	var ba: float = ps["back_arm"]
 	var back_hand: Vector2 = back_sh + Vector2(f * sin(ba), cos(ba)) * 20.0 * u
 	Limbs.arm(ci, back_sh, back_hand, 6.0 * u, Shade.darken(outfit, 0.25), alpha, 0.08 + absf(ba) * 0.1)
+	if _is_twin(look):
+		Weapons.draw(ci, String(look.get("weapon", "stick")), back_hand, dir, 36.0 * u, 3.6 * u, glow, alpha, float(ps["pulse"]), float(ps["pulse_a"]))
 	Limbs.hand(ci, back_hand, Vector2(f * sin(ba), cos(ba)), 3.6 * u, alpha, false)
 
 	# Coat tail streaming behind, then the jacket.
-	var body_o: Vector2 = base + Vector2(lean * 0.6, -bob - breath * 0.4) * u
+	var body_o: Vector2 = base + Vector2(lean * 0.6, -LEG_EXTRA_SIDE - bob - breath * 0.4) * u
 	Outfits.draw_side(ci, String(look.get("outfit_style", "track")), body_o, u, f, sway, moving, outfit, ps["tw"], alpha)
 	Fx.rim(ci, body_o + Vector2(-f * 15.5, -72.0) * u, body_o + Vector2(-f * 12.5, -44.0) * u, glow, 1.4 * u, alpha)
 	Fx.rim(ci, body_o + Vector2(-f * 14.0, -73.5) * u, body_o + Vector2(f * 6.0, -75.0) * u, glow, 1.0 * u, alpha)
 
 	# Hair behind the head, then the face.
-	var head: Vector2 = base + Vector2(f * 2.0 + lean - f * 2.0 * hurt, -88.0 - bob + float(ps["head_dy"]) + 1.5 * hurt) * u
+	var head: Vector2 = base + Vector2(f * 2.0 + lean - f * 2.0 * hurt, -88.0 - LEG_EXTRA_SIDE - bob + float(ps["head_dy"]) + 1.5 * hurt) * u
 	Face.hair_back_side(ci, head, u, f, sway - f * lean * 0.3, hair, style == "twintails", alpha, style)
 	Face.face_side(ci, head, u, f, hair, alpha, ps["blink"], false, expr, Color(glow.r, glow.g, glow.b, 1.0))
 
@@ -120,9 +147,7 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 	Accessories.draw_headwear_side(ci, headwear, head, u, f, hair, alpha)
 
 	# Front arm and glowstick; the swing sweeps from raised-back to forward.
-	var shoulder: Vector2 = base + Vector2(f * 7.0 + lean * 0.85, -70.0 - bob - breath) * u
-	var ang: float = ps["ang"]
-	var dir := Vector2(f * cos(ang), sin(ang))
+	var shoulder: Vector2 = base + Vector2(f * 7.0 + lean * 0.85, -70.0 - LEG_EXTRA_SIDE - bob - breath) * u
 	var hand: Vector2 = shoulder + dir * 24.0 * u
 	Limbs.arm(ci, shoulder, hand, 7.0 * u, outfit, alpha, 0.06, Limbs.NO_RIM)
 	var wlen: float = 36.0 * u
@@ -140,7 +165,7 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 		Fx.idle_trail(ci, hand + dir * (wlen + 2.0 * u), dir * 3.0 * u, glow, 2.6 * u, float(anim_t) / 60.0, alpha)
 	if hurt > 0.0:
 		var tint := Color(1.0, 0.85, 0.92, 0.42 * hurt * alpha)
-		FD.poly(ci, _ellipse(base + Vector2(lean * 0.6, -54.0 - bob) * u, 14.0 * u, 22.0 * u, 16), tint)
+		FD.poly(ci, _ellipse(base + Vector2(lean * 0.6, -54.0 - LEG_EXTRA_SIDE - bob) * u, 14.0 * u, 22.0 * u, 16), tint)
 		FD.poly(ci, _ellipse(head, 13.0 * u, 13.0 * u, 16), tint)
 
 
@@ -150,6 +175,12 @@ static func draw_hunter(ci: CanvasItem, x: float, ground_y: float, u: float, fac
 ## cards). `animate` = false (or reduced motion on) also forces the still pose. look["pose"]
 ## and look["expression"] (optional) choose the pose and face. Call from _draw().
 static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: float = 0.0, alpha: float = 1.0, animate: bool = true) -> void:
+	Shade.outline_scale = HERO_OUTLINE
+	_draw_portrait_body(ci, rect, look, t, alpha, animate)
+	Shade.outline_scale = 1.0
+
+
+static func _draw_portrait_body(ci: CanvasItem, rect: Rect2, look: Dictionary, t: float = 0.0, alpha: float = 1.0, animate: bool = true) -> void:
 	if rect.size.x <= 1.0 or rect.size.y <= 1.0:
 		return
 	var full: bool = rect.size.y >= rect.size.x * P_FULL_BODY_ASPECT
@@ -175,6 +206,9 @@ static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: floa
 	var expr: String = String(look.get("expression", ps["expr"]))
 	var sit: bool = String(ps["legs"]) == "sit"
 	var dyv := Vector2(0.0, float(ps["dy"]) * k)
+	var leg_extra: float = LEG_EXTRA * (0.5 if sit else 1.0)
+	var feet := origin
+	origin += Vector2(0.0, -leg_extra * k)
 	var up := Vector2(0.0, -bob) + dyv
 	var rise := Vector2(0.0, -breath)
 	var head: Vector2 = origin + Vector2(float(ps["tilt"]), P_HEAD_Y) * k + up + rise * 0.8
@@ -184,7 +218,7 @@ static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: floa
 		Fx.aura(ci, origin + Vector2(0.0, -62.0 * k), 44.0 * k, 66.0 * k, glow, alpha, pulse, float(ps["aura"]) * 0.8)
 	if full:
 		for side in [-1.0, 1.0]:
-			Limbs.leg_front(ci, origin, up - dyv, side, k, outfit, glow, alpha, 4.0 if sit else 0.0, float(ps["dy"]) if sit else 0.0)
+			Limbs.leg_front(ci, feet, up - dyv, side, k, outfit, glow, alpha, 4.0 if sit else 0.0, (float(ps["dy"]) if sit else 0.0) - leg_extra)
 
 	# Jacket, centre seam, belt, then a cel-shade rim along the glow side.
 	var o2: Vector2 = origin + up + rise * 0.4
@@ -194,15 +228,16 @@ static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: floa
 	FD.poly(ci, PackedVector2Array([o2 + Vector2(21.0, -48.0) * k, o2 + Vector2(26.0, -49.0) * k, o2 + Vector2(20.0, -24.0) * k, o2 + Vector2(17.5, -24.0) * k]), Color(0.1, 0.04, 0.2, 0.16 * alpha))
 
 	# Hair behind the head, then the face.
-	Face.hair_back_front(ci, head, k, hair, style == "twintails", alpha, hsway, style)
-	Face.face_front(ci, head, k, hair, alpha, blink, expr, gaze, Color(glow.r, glow.g, glow.b, 1.0))
+	var hk: float = k * P_HEAD_SCALE
+	Face.hair_back_front(ci, head, hk, hair, style == "twintails", alpha, hsway, style)
+	Face.face_front(ci, head, hk, hair, alpha, blink, expr, gaze, Color(glow.r, glow.g, glow.b, 1.0))
 
 	if headwear == "none":
-		var clip: Vector2 = head + Vector2(-16.0, -17.0) * k
-		Shade.circle(ci, clip, 3.8 * k, _c(GOLD, alpha), maxf(1.0, 0.8 * k), Shade.ink(_c(GOLD, alpha)))
-		FD.circle(ci, clip + Vector2(-1.2, -1.2) * k, 1.2 * k, _c(Color.WHITE, 0.8 * alpha))
-	Accessories.draw_face_front(ci, face_acc, head, k, alpha)
-	Accessories.draw_headwear_front(ci, headwear, head, k, hair, alpha)
+		var clip: Vector2 = head + Vector2(-16.0, -17.0) * hk
+		Shade.circle(ci, clip, 3.8 * hk, _c(GOLD, alpha), maxf(1.0, 0.8 * hk), Shade.ink(_c(GOLD, alpha)))
+		FD.circle(ci, clip + Vector2(-1.2, -1.2) * hk, 1.2 * hk, _c(Color.WHITE, 0.8 * alpha))
+	Accessories.draw_face_front(ci, face_acc, head, hk, alpha)
+	Accessories.draw_headwear_front(ci, headwear, head, hk, hair, alpha)
 
 	# Arms, with the glowstick raised on the viewer's right.
 	var arm_up: Vector2 = up + rise
@@ -214,6 +249,9 @@ static func draw_portrait(ci: CanvasItem, rect: Rect2, look: Dictionary, t: floa
 	var sdir: Vector2 = (tip - hand).normalized()
 	var rimc: Color = Shade.fade(Shade.lighten(glow, 0.4), 0.55 * alpha)
 	Limbs.arm(ci, l_sh, l_hand, 9.0 * k, outfit, alpha, float(ps["bend_l"]), rimc)
+	if _is_twin(look):
+		var ldir: Vector2 = Vector2(-sdir.x, sdir.y)
+		Weapons.draw(ci, String(look.get("weapon", "stick")), l_hand, ldir, (tip - hand).length() + 6.0 * k, 4.5 * k, glow, alpha, pulse, pulse_a)
 	Limbs.hand(ci, l_hand, sdir if sit else Vector2.DOWN, 5.0 * k, alpha, sit)
 	Limbs.arm(ci, r_sh, hand, 9.0 * k, outfit, alpha, float(ps["bend_r"]), Limbs.NO_RIM)
 	var slen: float = (tip - hand).length() + 6.0 * k

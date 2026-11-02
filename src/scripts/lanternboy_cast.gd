@@ -38,6 +38,8 @@ static func hae(ci: CanvasItem, pulse: float) -> void:
 	FD.poly(ci, PackedVector2Array([P.v(45, 54), P.v(55, 54), P.v(56, 67), P.v(44, 67)]), S.SKIN_SHADOW)
 	var body: Array = [P.v(35, 64), P.v(65, 64), P.v(70, 72), P.v(68, 86), P.v(64, 97), P.v(74, 113), P.v(26, 113), P.v(36, 97), P.v(32, 86), P.v(30, 72)]
 	torso(ci, body, coat)
+	P.fold(ci, P.v(41, 80), P.v(39, 96), 1.4, S.darken(coat, 0.35))
+	P.fold(ci, P.v(60, 80), P.v(62, 97), -1.4, S.darken(coat, 0.35))
 	P.cast_light(ci, body, P.v(77, 104), GOLD, pulse, P.v(69.5, 72), P.v(73.5, 112))
 	ci.draw_line(P.v(50, 70), P.v(50, 113), GOLD, 1.6)
 	ci.draw_line(P.v(26.5, 111), P.v(73.5, 111), GOLD, 2.2)
@@ -92,6 +94,8 @@ static func bit(ci: CanvasItem, t: float, anim: bool, pulse: float) -> void:
 	FD.poly(ci, PackedVector2Array([P.v(45, 54), P.v(55, 54), P.v(56, 67), P.v(44, 67)]), S.SKIN_SHADOW)
 	var body: Array = [P.v(33, 64), P.v(67, 64), P.v(72, 72), P.v(73, 90), P.v(77, 111), P.v(23, 111), P.v(27, 90), P.v(28, 72)]
 	torso(ci, body, jacket)
+	P.fold(ci, P.v(38, 80), P.v(36, 98), 1.2, S.darken(jacket, 0.3))
+	P.fold(ci, P.v(63, 82), P.v(65, 98), -1.2, S.darken(jacket, 0.3))
 	P.cast_light(ci, body, P.v(14, 70), CORAL, pulse, P.v(28.5, 72), P.v(27, 100))
 	ci.draw_line(P.v(50, 66), P.v(50, 111), S.darken(jacket, 0.5), 1.4)
 	for sx in [-1.0, 1.0]:
