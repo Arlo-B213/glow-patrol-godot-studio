@@ -6,6 +6,7 @@ const FD := preload("res://scripts/fast_draw.gd")
 ## GameState.FACE_ACC; "none" (or any unknown id) draws nothing.
 
 const Expr := preload("res://scripts/hunter_expr.gd")
+const Shade := preload("res://scripts/hunter_shade.gd")
 const INK := Color("#1A0B33")
 const GOLD := Color("#FFD36E")
 const PINK := Color("#FF5FA2")
@@ -28,7 +29,7 @@ static func _poly(ci: CanvasItem, pts: PackedVector2Array, fill: Color, outline:
 	FD.poly(ci, pts, fill)
 	var closed := PackedVector2Array(pts)
 	closed.append(pts[0])
-	FD.polyline(ci, closed, outline, width)
+	FD.polyline(ci, closed, outline, width * Shade.outline_scale)
 
 
 static func _star_points(center: Vector2, r_out: float, r_in: float) -> PackedVector2Array:

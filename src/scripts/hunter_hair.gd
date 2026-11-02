@@ -119,7 +119,7 @@ static func _back_mass(ci: CanvasItem, head: Vector2, k: float, base: Color, dar
 		var lag: float = clampf((ty - 8.0) / 25.0, 0.0, 1.0)
 		pts.append(head + Vector2(float(tp[0]) + sway * lag * 1.5, 6.0 + (ty - 6.0) * len_mul) * k)
 	grad(ci, pts, base.lerp(Color.WHITE, 0.08), dark, head.y - 28.0 * k, head.y + 34.0 * k)
-	FD.polyline(ci, _closed(pts), Shade.ink(base), w, true)
+	FD.polyline(ci, _closed(pts), Shade.ink(base), w * Shade.outline_scale, true)
 	var hl: Color = Shade.fade(Shade.lighten(base, 0.45), 0.5 * base.a)
 	for side in [-1.0, 1.0]:
 		var line := PackedVector2Array()
@@ -148,7 +148,7 @@ static func lock_pts(head: Vector2, k: float, root: Vector2, ctrl: Vector2, tip:
 
 static func _lock(ci: CanvasItem, pts: PackedVector2Array, hair: Color, alpha: float, k: float, y0: float, y1: float) -> void:
 	grad(ci, pts, Shade.fade(Shade.lighten(hair, 0.12), alpha), Shade.fade(Shade.darken(hair, 0.32), alpha), y0, y1)
-	FD.polyline(ci, _closed(pts), Shade.ink(Shade.fade(hair, alpha)), maxf(1.0, 1.1 * k), true)
+	FD.polyline(ci, _closed(pts), Shade.ink(Shade.fade(hair, alpha)), maxf(1.0, 1.1 * k) * Shade.outline_scale, true)
 
 
 ## Front hair: crown, face-framing side locks, strand bangs fanned from a parting (each casting a
@@ -160,7 +160,7 @@ static func cap_front(ci: CanvasItem, head: Vector2, k: float, hair: Color, alph
 		var a: float = PI + PI * float(i) / 16.0
 		cap.append(head + (Vector2(0.0, -4.0) + Vector2(cos(a), sin(a)) * 26.0) * k)
 	grad(ci, cap, Shade.fade(Shade.lighten(hair, 0.15), alpha), Shade.fade(Shade.darken(hair, 0.2), alpha), head.y - 30.0 * k, head.y - 4.0 * k)
-	FD.polyline(ci, _closed(cap), Shade.ink(Shade.fade(hair, alpha)), w, true)
+	FD.polyline(ci, _closed(cap), Shade.ink(Shade.fade(hair, alpha)), w * Shade.outline_scale, true)
 	for side in [-1.0, 1.0]:
 		var sl := lock_pts(head, k, Vector2(side * 21.5, -10.0), Vector2(side * 28.5, 8.0), Vector2(side * 24.0, 27.0), 9.5)
 		_lock(ci, sl, hair, alpha, k, head.y - 10.0 * k, head.y + 27.0 * k)
@@ -216,7 +216,7 @@ static func back_side(ci: CanvasItem, head: Vector2, u: float, f: float, sway: f
 		var low: float = maxf(sa, 0.0)
 		pts.append(bc + Vector2(cos(a) * 16.0 + sway * 0.5 * low * low * 1.6 - f * low * 2.0, sa * 16.0 + low * low * 5.0) * u)
 	grad(ci, pts, base.lerp(Color.WHITE, 0.06), dark, head.y - 14.0 * u, head.y + 24.0 * u)
-	FD.polyline(ci, _closed(pts), Shade.ink(base), w, true)
+	FD.polyline(ci, _closed(pts), Shade.ink(base), w * Shade.outline_scale, true)
 	var hl: Color = Shade.fade(Shade.lighten(base, 0.45), 0.5 * base.a)
 	ci.draw_line(head + Vector2(-f * 14.5, -1.0) * u, head + Vector2(-f * 15.5 + sway * 0.2, 12.0) * u, hl, maxf(1.0, 1.4 * u))
 	ci.draw_line(head + Vector2(-f * 11.0, 8.0) * u, head + Vector2(-f * 12.5 + sway * 0.3, 18.0) * u, Shade.fade(dark, 0.6), maxf(1.0, 0.8 * u))
