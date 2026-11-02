@@ -45,3 +45,11 @@ func test_missions_open_by_friendship() -> void:
 func test_affection_reward_is_bigger_for_a_win() -> void:
 	assert_int(M.affection_reward(true)).is_greater(M.affection_reward(false))
 	assert_int(M.affection_reward(false)).is_greater(0)
+
+
+func test_stars_per_correct_rise_with_grade() -> void:
+	assert_int(M.stars_per_correct(1)).is_equal(1)
+	assert_int(M.stars_per_correct(2)).is_equal(1)
+	assert_int(M.stars_per_correct(3)).is_equal(2)
+	assert_int(M.stars_per_correct(4)).is_equal(2)
+	assert_int(M.stars_per_correct(5)).is_equal(3)

@@ -23,8 +23,7 @@ const MISSIONS := [
 const PLACES := {"hae": "Lantern Bridge", "bit": "Dance Steps", "nun": "Moth Garden"}
 const AFFECTION_WIN := 6
 const AFFECTION_LOSS := 2
-## Extra Star Points per correct quiz answer in a mission, on top of the capped brawl payout.
-const STARS_PER_CORRECT := 1
+## Star Points per correct quiz answer come on top of the capped brawl payout; harder grades pay more.
 
 
 ## Every mission for one Lanternboy, in listed order.
@@ -47,6 +46,11 @@ static func by_id(mission_id: String) -> Dictionary:
 ## Whether the player's affection for the boy is high enough to start the mission.
 static func is_open(mission: Dictionary, affection: int) -> bool:
 	return affection >= int(mission["needs_affection"])
+
+
+## Star Points for one correct answer at `grade`: 1 for grades 1-2, 2 for 3-4, 3 for 5.
+static func stars_per_correct(grade: int) -> int:
+	return 1 + (clampi(grade, 1, 5) - 1) / 2
 
 
 ## Affection gained for finishing a mission.

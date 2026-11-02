@@ -123,7 +123,7 @@ var debug_skip_to_boss := false
 var mission: Dictionary = {}
 var quiz_card: MissionQuiz = null
 var quiz_count := 0
-var quiz_correct := 0
+var quiz_stars := 0
 var boss_kind_forced := ""
 ## Set before add_child: skip the waves and fight the forced Grumble King with FINALE_BOSS_HEALTH.
 var finale := false
@@ -323,7 +323,7 @@ func _on_quiz_done(correct: bool) -> void:
 	quiz_card = null
 	if correct:
 		hearts = mini(hearts + 1, BRAWL_HEARTS)
-		quiz_correct += 1
+		quiz_stars += LoungeMissions.stars_per_correct(int(mission.get("grade", 1)))
 		guard = World.GUARD_MAX
 		score += 2
 		Fx.popup(self, "Help!", Vector2(size.x * 0.5, size.y * 0.4), Color("#FFE9A0"), 22.0)
@@ -477,7 +477,7 @@ func end_brawl(won: bool) -> void:
 	_sync_ui()
 	var heart_bonus: int = hearts * 5
 	score += heart_bonus
-	var earned: int = preload("res://scripts/game_state.gd").payout_for(score) + quiz_correct * LoungeMissions.STARS_PER_CORRECT
+	var earned: int = preload("res://scripts/game_state.gd").payout_for(score) + quiz_stars
 	finished.emit(score, earned, won)
 
 

@@ -13,7 +13,10 @@ func test_landed_punch_hurts_boss_with_feedback() -> void:
 	gs.persist_saves = false
 	gs.tutorial_done = true
 	gs.reduce_motion = false
+	# Seeded and with spare hearts, so the boss's random attacks cannot end the run before a punch lands.
+	seed(1234)
 	var view: Control = VIEW.instantiate()
+	view.hearts = 99
 	view.debug_skip_to_boss = true
 	view.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(view)

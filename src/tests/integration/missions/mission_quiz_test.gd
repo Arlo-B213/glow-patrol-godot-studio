@@ -54,5 +54,5 @@ func test_correct_answers_add_stars_on_finish() -> void:
 	view.finished.connect(func(_s: int, earned: int, _w: bool): paid.append(earned))
 	view.end_brawl(true)
 	var gs: Node = get_node("/root/GameState")
-	assert_int(paid[0]).is_equal(gs.payout_for(view.score) + LoungeMissions.STARS_PER_CORRECT)
+	assert_int(paid[0]).is_equal(gs.payout_for(view.score) + LoungeMissions.stars_per_correct(1))
 	view.queue_free()
