@@ -172,6 +172,12 @@ static func cap_front(ci: CanvasItem, head: Vector2, k: float, hair: Color, alph
 			FD.poly(ci, part, shadow)
 	for b in BANGS:
 		_lock(ci, lock_pts(head, k, b[0], b[1], b[2], float(b[3])), hair, alpha, k, head.y - 29.0 * k, head.y + 6.0 * k)
+	# Specular streak: one thin, bright stroke along the middle of each bang lock.
+	var sheen := Shade.fade(Shade.lighten(hair, 0.6), 0.6 * alpha)
+	for b in BANGS:
+		var a0: Vector2 = (b[0] as Vector2).lerp(b[1] as Vector2, 0.35)
+		var a1: Vector2 = (b[0] as Vector2).lerp(b[2] as Vector2, 0.55)
+		FD.polyline(ci, PackedVector2Array([head + a0 * k, head + a1 * k]), sheen, maxf(1.0, 0.9 * k), true)
 	var ring := PackedVector2Array()
 	var inner := PackedVector2Array()
 	for i in range(13):
