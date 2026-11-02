@@ -12,7 +12,7 @@ const LOOKS := [
 	{"outfit": Color("#52E8C6"), "outfit_style": "armor", "hair": Color("#FFC15E"), "glow": Color("#8E7CFF"), "weapon": "rod", "hairstyle": "bob", "headwear": "cat-ears", "face_acc": "glasses"},
 	{"outfit": Color("#8E7CFF"), "outfit_style": "hanbok", "hair": Color("#101033"), "glow": Color("#FF5FA2"), "weapon": "scepter", "hairstyle": "ponytail", "headwear": "star-clip", "face_acc": "freckles"},
 	{"outfit": Color("#FFD36E"), "outfit_style": "tailcoat", "hair": Color("#52E8C6"), "glow": Color("#FFC15E"), "weapon": "stick", "hairstyle": "twintails", "headwear": "flower-crown", "face_acc": "none"},
-	{"outfit": Color("#6C5CE7"), "outfit_style": "breaker", "hair": Color("#2A1F55"), "glow": Color("#FF5FA2"), "weapon": "stick", "hairstyle": "bob", "headwear": "none", "face_acc": "none"},
+	{"outfit": Color("#6C5CE7"), "outfit_style": "breaker", "hair": Color("#2A1F55"), "glow": Color("#FF5FA2"), "weapon": "stick", "hairstyle": "bob", "headwear": "lightning-streak", "face_acc": "none"},
 ]
 const BREAKER := 5
 const EXPRS := ["neutral", "happy", "cheer", "determined", "hurt", "surprised", "shy", "sleepy"]

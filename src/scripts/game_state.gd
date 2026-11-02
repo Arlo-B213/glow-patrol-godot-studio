@@ -90,6 +90,7 @@ const HEADWEAR := [
 	{"id": "star-clip", "name": "Star Clip", "cost": 25},
 	{"id": "flower-crown", "name": "Flower Crown", "cost": 45},
 	{"id": "cat-ears", "name": "Cat Ears", "cost": 40},
+	{"id": "lightning-streak", "name": "Lightning Streak", "cost": 35},
 ]
 
 const FACE_ACC := [

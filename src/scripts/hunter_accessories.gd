@@ -88,6 +88,9 @@ static func _cat_ear(ci: CanvasItem, pts: PackedVector2Array, inner: PackedVecto
 static func draw_headwear_side(ci: CanvasItem, id: String, head: Vector2, u: float, f: float, hair: Color, alpha: float) -> void:
 	var w: float = maxf(1.0, 1.1 * u)
 	match id:
+		"lightning-streak":
+			_streak(ci, [_pt(head, u, -f * 4.0, -17.0), _pt(head, u, f * 3.0, -16.0), _pt(head, u, f * 8.0, -8.0)], u, alpha)
+			_bolt(ci, _pt(head, u, f * 6.0, -11.0), 6.0 * u, alpha, w)
 		"bow":
 			_bow(ci, _pt(head, u, -f * 6.0, -15.0), u, 8.0, alpha)
 		"star-clip":
@@ -103,6 +106,23 @@ static func draw_headwear_side(ci: CanvasItem, id: String, head: Vector2, u: flo
 					_pt(head, u, side * 11.0, -10.0), _pt(head, u, side * 10.5, -20.0), _pt(head, u, side * 5.0, -13.5),
 				])
 				_cat_ear(ci, pts, inner, hair, alpha, w)
+
+
+## Pink hair streak: a tapered ribbon of pink along a three-point path.
+static func _streak(ci: CanvasItem, pts: Array, k: float, alpha: float) -> void:
+	var path := PackedVector2Array(pts)
+	ci.draw_polyline(path, _c(INK, alpha), 3.6 * k, true)
+	ci.draw_polyline(path, _c(PINK, alpha), 2.0 * k, true)
+	ci.draw_polyline(path, _c(Color("#FFB3D6"), 0.7 * alpha), 0.7 * k, true)
+
+
+## Gold lightning-bolt clip; `s` is the bolt's full height in pixels.
+static func _bolt(ci: CanvasItem, c: Vector2, s: float, alpha: float, w: float) -> void:
+	var shape := PackedVector2Array([
+		c + Vector2(0.2, -1.0) * s * 0.5, c + Vector2(-0.6, 0.1) * s * 0.5, c + Vector2(-0.05, 0.1) * s * 0.5,
+		c + Vector2(-0.35, 1.0) * s * 0.5, c + Vector2(0.6, -0.2) * s * 0.5, c + Vector2(0.05, -0.2) * s * 0.5,
+	])
+	_poly(ci, shape, _c(GOLD, alpha), _c(Color("#B8860B"), alpha), w)
 
 
 ## Face accessory on the side-view face; eye and cheek positions mirror HunterArt.
@@ -134,6 +154,9 @@ static func draw_face_side(ci: CanvasItem, id: String, head: Vector2, u: float, 
 static func draw_headwear_front(ci: CanvasItem, id: String, head: Vector2, k: float, hair: Color, alpha: float) -> void:
 	var w: float = maxf(1.0, 1.0 * k)
 	match id:
+		"lightning-streak":
+			_streak(ci, [_pt(head, k, -6.0, -30.0), _pt(head, k, 4.0, -27.0), _pt(head, k, 12.0, -17.0)], k, alpha)
+			_bolt(ci, _pt(head, k, 15.0, -19.0), 8.0 * k, alpha, w)
 		"bow":
 			_bow(ci, _pt(head, k, 13.0, -27.0), k, 13.0, alpha)
 		"star-clip":
