@@ -1,14 +1,16 @@
 class_name LoungeMap
 extends VBoxContainer
+
 ## Lounge map: one place per Lanternboy (LoungeMissions.PLACES). Each place shows the boy, friendship,
 ## the missions there (locked until friendship is high enough), and a Talk button for the dialogue.
 ## Emits `mission_requested` with the chosen mission, or `talk_requested` with the boy id.
+
+const EnvBackdrop := preload("res://scenes/ui/env_backdrop.gd")
 
 signal mission_requested(mission: Dictionary)
 signal talk_requested(boy_id: String)
 
 var _game_state: Node
-
 
 ## Builds the map for `game_state`. Returns self for chaining.
 func setup(game_state: Node) -> LoungeMap:
@@ -19,7 +21,6 @@ func setup(game_state: Node) -> LoungeMap:
 		add_child(_place_card(boy))
 	return self
 
-
 func _place_card(boy: Dictionary) -> PanelContainer:
 	var boy_id: String = boy["id"]
 	var affection: int = int(_game_state.affection.get(boy_id, 0))
@@ -28,6 +29,7 @@ func _place_card(boy: Dictionary) -> PanelContainer:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	card.add_child(box)
+	box.add_child(_banner(boy_id))
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 12)
 	box.add_child(top)
@@ -49,10 +51,9 @@ func _place_card(boy: Dictionary) -> PanelContainer:
 	box.add_child(talk)
 	return card
 
-
 func _mission_button(mission: Dictionary, affection: int) -> Button:
 	var open: bool = LoungeMissions.is_open(mission, affection)
-	var done: int = int(_game_state.mission_done.get(mission["id"], 0))
+	var best: int = int(_game_state.mission_best.get(mission["id"], 0))
 	var subjects: String = ", ".join(PackedStringArray(mission["subjects"]))
 	var btn := Button.new()
 	btn.theme_type_variation = "SecondaryButton"
@@ -61,12 +62,18 @@ func _mission_button(mission: Dictionary, affection: int) -> Button:
 	btn.disabled = not open
 	if open:
 		btn.text = "%s - Grade %d (%s)%s" % [mission["title"], mission["grade"], subjects,
-			"  Done %d" % done if done > 0 else ""]
+			"  Best %d" % best if best > 0 else ""]
 		btn.pressed.connect(func(): mission_requested.emit(mission))
 	else:
 		btn.text = "%s - locked until friendship %d" % [mission["title"], int(mission["needs_affection"])]
 	return btn
 
+## Backdrop strip for a place, in the theme of the place (bridge, dance floor, garden).
+func _banner(boy_id: String) -> Control:
+	var banner: Control = EnvBackdrop.new()
+	banner.set_theme_name(String(LoungeMissions.PLACE_THEMES.get(boy_id, "club")))
+	banner.custom_minimum_size = Vector2(0, 80)
+	return banner
 
 func _label(text: String, variation: String) -> Label:
 	var l := Label.new()

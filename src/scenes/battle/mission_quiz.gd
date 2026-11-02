@@ -68,6 +68,7 @@ func _on_choice(choice: String, btn: Button) -> void:
 		return
 	_answered = true
 	_correct = choice == String(_question["answer"])
+	Snd.play("correct" if _correct else "wrong")
 	btn.modulate = Color("#52E8C6") if _correct else Color("#FF5FA2")
 	_feedback.text = "Right! Your help lights up the lantern." if _correct \
 		else "Not quite. The answer was %s." % _question["answer"]

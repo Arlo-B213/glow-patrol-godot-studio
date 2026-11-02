@@ -40,3 +40,12 @@ func test_mission_progress_survives_round_trip() -> void:
 	dst.apply_save_dict(parsed)
 	assert_int(int(dst.mission_done["garden-1"])).is_equal(1)
 	assert_int(int(dst.affection["nun"])).is_equal(M.AFFECTION_WIN)
+
+
+func test_best_score_keeps_the_highest_result() -> void:
+	var gs := _fresh()
+	gs.record_mission("garden-2", true, 30)
+	gs.record_mission("garden-2", false, 20)
+	assert_int(int(gs.mission_best["garden-2"])).is_equal(30)
+	gs.record_mission("garden-2", true, 45)
+	assert_int(int(gs.mission_best["garden-2"])).is_equal(45)

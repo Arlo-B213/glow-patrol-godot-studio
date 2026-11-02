@@ -166,6 +166,8 @@ var face_acc: String = "none"
 var affection: Dictionary = {"hae": 0, "bit": 0, "nun": 0}
 ## Missions finished per mission id (Lounge missions, see LoungeMissions).
 var mission_done: Dictionary = {}
+## Best brawl score per mission id, for the mission cards.
+var mission_best: Dictionary = {}
 ## Set when a mission ends so the Club opens on the Lounge tab next time.
 var open_lounge_on_club := false
 var best_scores: Dictionary = {"battle": 0, "rhythm": 0, "memory": 0, "brawl": 0, "catch": 0, "lantern": 0, "study_math": 0, "study_grammar": 0, "study_reading": 0}
@@ -300,11 +302,13 @@ func style_item_by_id(list: Array, id: String) -> Dictionary:
 ## unlocked (and pays StoryArc.REWARD_PER_CHAPTER stars for each), then saves.
 ## Records a finished Lounge mission: counts it, raises the boy's affection, and saves.
 ## Returns the affection gained (0 for an unknown mission).
-func record_mission(mission_id: String, won: bool) -> int:
+func record_mission(mission_id: String, won: bool, score: int = 0) -> int:
 	var m: Dictionary = LoungeMissions.by_id(mission_id)
 	if m.is_empty():
 		return 0
 	mission_done[mission_id] = int(mission_done.get(mission_id, 0)) + 1
+	if score > int(mission_best.get(mission_id, 0)):
+		mission_best[mission_id] = score
 	var gained: int = LoungeMissions.affection_reward(won)
 	var boy: String = m["boy"]
 	affection[boy] = int(affection.get(boy, 0)) + gained
@@ -610,6 +614,7 @@ func to_save_dict() -> Dictionary:
 		"face_acc": face_acc,
 		"affection": affection,
 		"mission_done": mission_done,
+		"mission_best": mission_best,
 		"best_scores": best_scores,
 		"grade": grade,
 		"story_wins": story_wins,
@@ -662,6 +667,7 @@ func apply_save_dict(parsed: Dictionary) -> void:
 	face_acc = parsed.get("face_acc", face_acc)
 	affection = parsed.get("affection", affection)
 	mission_done = parsed.get("mission_done", mission_done)
+	mission_best = parsed.get("mission_best", mission_best)
 	best_scores = parsed.get("best_scores", best_scores)
 	grade = parsed.get("grade", grade)
 	story_wins = int(parsed.get("story_wins", story_wins))

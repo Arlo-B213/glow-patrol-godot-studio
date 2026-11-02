@@ -322,14 +322,45 @@ func start_mission(mission: Dictionary) -> void:
 	view.finished.connect(_on_mission_finished.bind(mission))
 
 
-## Pays a finished mission (stars from the brawl payout, plus affection) and returns to the Lounge.
-func _on_mission_finished(_score: int, earned: int, won: bool, mission: Dictionary) -> void:
+## Pays a finished mission and shows the result card with the boy's reaction.
+func _on_mission_finished(score: int, earned: int, won: bool, mission: Dictionary) -> void:
 	game_state.earn_points(earned)
-	var gained: int = game_state.record_mission(String(mission["id"]), won)
-	var boy_name: String = String(game_state.lanternboy_by_id(String(mission["boy"]))["name"])
-	get_node("/root/Toast").show_message("%s: +%d friendship with %s, +%d stars" % [mission["title"], gained, boy_name, earned])
+	var gained: int = game_state.record_mission(String(mission["id"]), won, score)
+	_show_mission_result(mission, score, earned, won, gained)
+
+
+## Mission result: the boy's reaction and friendship gained, then the shared result card.
+func _show_mission_result(mission: Dictionary, score: int, earned: int, won: bool, gained: int) -> void:
+	for child in content_area.get_children():
+		content_area.remove_child(child)
+		child.queue_free()
+	var boy_id: String = mission["boy"]
+	var boy: Dictionary = game_state.lanternboy_by_id(boy_id)
+	var column := VBoxContainer.new()
+	column.set_anchors_preset(Control.PRESET_FULL_RECT)
+	column.add_theme_constant_override("separation", 12)
+	var reaction := HBoxContainer.new()
+	reaction.add_theme_constant_override("separation", 12)
+	reaction.add_child(ClubCards.portrait_tile(boy_id, Color(boy["color"]), Vector2(110, 110), 18))
+	var line := Label.new()
+	line.text = "%s\n+%d friendship with %s" % [LoungeMissions.REACTIONS[boy_id][0 if won else 1], gained, boy["name"]]
+	line.theme_type_variation = "Heading"
+	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reaction.add_child(line)
+	column.add_child(reaction)
+	var best: int = int(game_state.mission_best.get(mission["id"], 0))
+	var score_text: String = "%s - Score %d - Best %d" % [mission["title"], score, best]
+	column.add_child(UiCards.result_card("star", "Mission Complete!" if won else "Mission Over", score_text, earned,
+		"Back to Lounge", _return_to_lounge, "Replay", start_mission.bind(mission)))
+	content_area.add_child(column)
+
+
+## Returns to the Club on the Lounge tab.
+func _return_to_lounge() -> void:
 	game_state.open_lounge_on_club = true
 	set_screen("club")
+
 
 
 ## Replaces the content area with the settings page; Back returns to HQ and refreshes the motion icon.

@@ -21,6 +21,14 @@ const MISSIONS := [
 ]
 
 const PLACES := {"hae": "Lantern Bridge", "bit": "Dance Steps", "nun": "Moth Garden"}
+## Backdrop theme for each place's banner on the Lounge map (EnvBackdrop theme keys).
+const PLACE_THEMES := {"hae": "bridge", "bit": "dance", "nun": "garden"}
+## What each boy says when a mission ends: [won, lost].
+const REACTIONS := {
+	"hae": ["The lantern is safe! You're a great partner.", "Close one. Let's patrol again soon."],
+	"bit": ["That was a showstopper! Encore?", "Good moves. We'll get the next one."],
+	"nun": ["The moths are happy, thank you.", "The moths are a bit scattered. Try again?"],
+}
 const AFFECTION_WIN := 6
 const AFFECTION_LOSS := 2
 ## Star Points per correct quiz answer come on top of the capped brawl payout; harder grades pay more.

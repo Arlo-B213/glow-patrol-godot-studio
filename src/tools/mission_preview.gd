@@ -20,6 +20,8 @@ func _init() -> void:
 	var view: Node = main.content_area.get_child(0)
 	view._zone_cleared()
 	await _shot(out_dir, "lounge-mission-quiz")
+	main._show_mission_result(LoungeMissions.by_id("bridge-1"), 34, 6, true, 6)
+	await _shot(out_dir, "mission-result")
 	quit()
 
 
