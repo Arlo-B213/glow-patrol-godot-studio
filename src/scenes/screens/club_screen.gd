@@ -4,6 +4,9 @@ extends Control
 ## Card visuals live in res://scripts/club_cards.gd (ClubCards).
 
 const HunterPortrait := preload("res://scenes/ui/hunter_portrait.gd")
+
+## A mission was picked on the Lounge map; main.gd runs it.
+signal mission_requested(mission: Dictionary)
 ## Height of the live preview at the top of the Closet and Style tabs.
 const PREVIEW_HEIGHT := 340.0
 const PREVIEW_WIDTH := 260.0
@@ -27,7 +30,11 @@ func _ready() -> void:
 	for key in sub_tabs.keys():
 		var btn: Button = sub_tabs[key]
 		btn.pressed.connect(_on_sub_tab_pressed.bind(key))
-	render_sub("closet")
+	var start := "closet"
+	if game_state.open_lounge_on_club:
+		game_state.open_lounge_on_club = false
+		start = "lounge"
+	render_sub(start)
 
 
 func _on_sub_tab_pressed(key: String) -> void:
@@ -163,10 +170,10 @@ func _on_weapon_pressed(weapon_id: String) -> void:
 
 
 func render_lounge() -> void:
-	for boy in game_state.LANTERNBOYS:
-		var boy_id: String = boy["id"]
-		var affection: int = int(game_state.affection.get(boy_id, 0))
-		sub_content.add_child(ClubCards.lounge_row(boy, affection, _on_boy_pressed.bind(boy_id)))
+	var map := LoungeMap.new().setup(game_state)
+	map.mission_requested.connect(func(m: Dictionary): mission_requested.emit(m))
+	map.talk_requested.connect(_on_boy_pressed)
+	sub_content.add_child(map)
 
 
 func _on_boy_pressed(boy_id: String) -> void:

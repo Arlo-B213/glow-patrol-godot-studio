@@ -119,6 +119,10 @@ var boss: Dictionary = {}
 var boss_hit_flash := 0
 var boss_max_health: int = BRAWL_BOSS_HEALTH
 var debug_skip_to_boss := false
+## Lounge mission config (see LoungeMissions); empty for a normal brawl. Quizzes pause the fight.
+var mission: Dictionary = {}
+var quiz_card: MissionQuiz = null
+var quiz_count := 0
 var boss_kind_forced := ""
 ## Set before add_child: skip the waves and fight the forced Grumble King with FINALE_BOSS_HEALTH.
 var finale := false
@@ -182,6 +186,8 @@ func calm() -> bool:
 
 func _process(delta: float) -> void:
 	if not running or size.x < 8.0:
+		return
+	if quiz_card != null:
 		return
 	u = clampf(size.x / REF_WIDTH, 1.0, MAX_LAYOUT_SCALE)
 	ground_y = size.y * GROUND_FRACTION
@@ -294,11 +300,42 @@ func _enter_zone(i: int) -> void:
 		_spawn_boss()
 
 
+## Shows one Study Hall question from the mission's subjects; the fight stays paused until Continue.
+func _open_quiz() -> void:
+	var subjects: Array = mission["subjects"]
+	var subject: String = subjects[quiz_count % subjects.size()]
+	quiz_count += 1
+	var question: Dictionary = StudyQuestions.round_for(subject, int(mission["grade"]))[0]
+	var boy_name: String = String(game_state.lanternboy_by_id(String(mission["boy"]))["name"])
+	var wrap := CenterContainer.new()
+	wrap.set_anchors_preset(Control.PRESET_FULL_RECT)
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(wrap)
+	quiz_card = MissionQuiz.new().setup(question, boy_name)
+	wrap.add_child(quiz_card)
+	quiz_card.done.connect(_on_quiz_done)
+
+
+## A right answer heals a heart, refills the guard and scores; a wrong answer costs a heart.
+func _on_quiz_done(correct: bool) -> void:
+	quiz_card.get_parent().queue_free()
+	quiz_card = null
+	if correct:
+		hearts = mini(hearts + 1, BRAWL_HEARTS)
+		guard = World.GUARD_MAX
+		score += 2
+		Fx.popup(self, "Help!", Vector2(size.x * 0.5, size.y * 0.4), Color("#FFE9A0"), 22.0)
+	else:
+		hurt_player(player_x)
+
+
 func _zone_cleared() -> void:
 	in_fight = false
 	world.lock_x = -1.0
 	zone_i += 1
 	toast.show_message("Wave cleared! Keep going!")
+	if mission.get("quiz_after_waves", []).has(zone_i):
+		_open_quiz()
 
 
 ## Reads the debug-only launch args. Does nothing in an exported release build.
@@ -419,7 +456,7 @@ func spawn_particles(pos: Vector2, color: Color) -> void:
 ## Applies the pet's zap when ready: the nearest on-screen Gloomling is zapped away (+1 score) or
 ## the boss loses a little health (never its last point, so the pet cannot win the fight alone).
 func _on_punch() -> void:
-	if running:
+	if running and quiz_card == null:
 		Player.trigger_punch(self)
 
 

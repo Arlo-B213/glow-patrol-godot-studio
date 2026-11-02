@@ -164,6 +164,10 @@ var headwear: String = "none"
 var unlocked_face_acc: Array = ["none"]
 var face_acc: String = "none"
 var affection: Dictionary = {"hae": 0, "bit": 0, "nun": 0}
+## Missions finished per mission id (Lounge missions, see LoungeMissions).
+var mission_done: Dictionary = {}
+## Set when a mission ends so the Club opens on the Lounge tab next time.
+var open_lounge_on_club := false
 var best_scores: Dictionary = {"battle": 0, "rhythm": 0, "memory": 0, "brawl": 0, "catch": 0, "lantern": 0, "study_math": 0, "study_grammar": 0, "study_reading": 0}
 var grade: int = 3
 var story_wins: int = 0
@@ -294,6 +298,20 @@ func style_item_by_id(list: Array, id: String) -> Dictionary:
 
 ## Counts a cleared patrol toward the story arc. Returns the chapters newly
 ## unlocked (and pays StoryArc.REWARD_PER_CHAPTER stars for each), then saves.
+## Records a finished Lounge mission: counts it, raises the boy's affection, and saves.
+## Returns the affection gained (0 for an unknown mission).
+func record_mission(mission_id: String, won: bool) -> int:
+	var m: Dictionary = LoungeMissions.by_id(mission_id)
+	if m.is_empty():
+		return 0
+	mission_done[mission_id] = int(mission_done.get(mission_id, 0)) + 1
+	var gained: int = LoungeMissions.affection_reward(won)
+	var boy: String = m["boy"]
+	affection[boy] = int(affection.get(boy, 0)) + gained
+	save_game()
+	return gained
+
+
 func record_battle_win() -> Array:
 	var arc := preload("res://scripts/story_arc.gd")
 	story_wins += 1
@@ -591,6 +609,7 @@ func to_save_dict() -> Dictionary:
 		"unlocked_face_acc": unlocked_face_acc,
 		"face_acc": face_acc,
 		"affection": affection,
+		"mission_done": mission_done,
 		"best_scores": best_scores,
 		"grade": grade,
 		"story_wins": story_wins,
@@ -642,6 +661,7 @@ func apply_save_dict(parsed: Dictionary) -> void:
 	unlocked_face_acc = parsed.get("unlocked_face_acc", unlocked_face_acc)
 	face_acc = parsed.get("face_acc", face_acc)
 	affection = parsed.get("affection", affection)
+	mission_done = parsed.get("mission_done", mission_done)
 	best_scores = parsed.get("best_scores", best_scores)
 	grade = parsed.get("grade", grade)
 	story_wins = int(parsed.get("story_wins", story_wins))

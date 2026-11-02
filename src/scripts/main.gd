@@ -236,6 +236,8 @@ func set_screen(screen_name: String) -> void:
 	# once the club screen itself is built out.
 	if instance.has_signal("screen_requested"):
 		instance.screen_requested.connect(_on_child_screen_requested)
+	if instance.has_signal("mission_requested"):
+		instance.mission_requested.connect(start_mission)
 
 
 ## Shows the themed animated backdrop (env_backdrop.gd) behind the current screen.
@@ -306,6 +308,28 @@ func _check_stickers() -> void:
 	for s in Stickers.check(game_state):
 		Snd.play("chapter")
 		get_node("/root/Toast").show_message("New sticker: %s!" % s["name"])
+
+
+## Runs a Lounge mission: the Alley Brawl view with quiz breaks, filling the content area.
+func start_mission(mission: Dictionary) -> void:
+	for child in content_area.get_children():
+		content_area.remove_child(child)
+		child.queue_free()
+	var view: Control = preload("res://scenes/battle/alley_brawl_view.tscn").instantiate()
+	view.mission = mission
+	view.set_anchors_preset(Control.PRESET_FULL_RECT)
+	content_area.add_child(view)
+	view.finished.connect(_on_mission_finished.bind(mission))
+
+
+## Pays a finished mission (stars from the brawl payout, plus affection) and returns to the Lounge.
+func _on_mission_finished(_score: int, earned: int, won: bool, mission: Dictionary) -> void:
+	game_state.earn_points(earned)
+	var gained: int = game_state.record_mission(String(mission["id"]), won)
+	var boy_name: String = String(game_state.lanternboy_by_id(String(mission["boy"]))["name"])
+	get_node("/root/Toast").show_message("%s: +%d friendship with %s, +%d stars" % [mission["title"], gained, boy_name, earned])
+	game_state.open_lounge_on_club = true
+	set_screen("club")
 
 
 ## Replaces the content area with the settings page; Back returns to HQ and refreshes the motion icon.

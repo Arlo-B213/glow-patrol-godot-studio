@@ -164,38 +164,6 @@ static func set_meter(meter: HBoxContainer, value: int) -> void:
 	(meter.get_meta("pct") as Label).text = "%d%%" % value
 
 
-## Lounge list row card for one Lanternboy.
-static func lounge_row(boy: Dictionary, affection: int, on_pressed: Callable) -> PanelContainer:
-	var card := PanelContainer.new()
-	card.theme_type_variation = "CardPanel"
-	card.custom_minimum_size = Vector2(0, 88)
-	var row := HBoxContainer.new()
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 12)
-	card.add_child(row)
-	var tile := portrait_tile(String(boy["id"]), Color(boy["color"]), Vector2(72, 72), 16)
-	tile.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(tile)
-	var col := VBoxContainer.new()
-	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_theme_constant_override("separation", 2)
-	row.add_child(col)
-	col.add_child(_label(boy["name"], "Heading", HORIZONTAL_ALIGNMENT_LEFT, false))
-	col.add_child(_label(boy["role"], "Muted", HORIZONTAL_ALIGNMENT_LEFT))
-	col.add_child(friend_meter(affection))
-	var btn := Button.new()
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.flat = true
-	var empty := StyleBoxEmpty.new()
-	for sname in ["normal", "hover", "pressed", "focus", "disabled"]:
-		btn.add_theme_stylebox_override(sname, empty)
-	btn.pressed.connect(on_pressed)
-	card.add_child(btn)
-	return card
-
-
 ## Builds the Lanternboy dialogue card into `parent`. Returns
 ## {"line": Label, "meter": HBoxContainer} for the high-five handler.
 static func dialogue_view(parent: Control, boy: Dictionary, line: String, affection: int,

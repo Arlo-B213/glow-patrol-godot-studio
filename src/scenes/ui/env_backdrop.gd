@@ -86,6 +86,7 @@ func _skyline(r: Rect2, col: Color, base: float, seed_v: int, hfrac: float, win:
 
 
 func _club(r: Rect2, t: float, a: Color, b: Color) -> void:
+	_club_room(r, a)
 	for row in 2:
 		var y0: float = 60.0 + float(row) * 90.0
 		var n := 7
@@ -122,6 +123,22 @@ func _games(r: Rect2, t: float, a: Color, b: Color) -> void:
 	FxLight.edge_glow(self, r, b, 0.22, 34.0, t)
 	FxParticles.sparkle_storm(self, Rect2(0, 0, r.size.x, hy), t, 10, b, 5.0)
 
+
+## Floor and back wall for the lounge: the wall meets the floor at a horizon line, and the floor
+## boards converge on a vanishing point, so the room reads as a space rather than a flat gradient.
+func _club_room(r: Rect2, a: Color) -> void:
+	var horizon: float = r.size.y * 0.72
+	var vp := Vector2(r.size.x * 0.5, horizon)
+	var floor_col := Color(0.05, 0.02, 0.07, 0.5)
+	draw_colored_polygon(PackedVector2Array([Vector2(0, horizon), Vector2(r.size.x, horizon),
+		Vector2(r.size.x * 1.4, r.size.y), Vector2(-r.size.x * 0.4, r.size.y)]), floor_col)
+	for i in range(-5, 6):
+		var bottom := Vector2(r.size.x * 0.5 + float(i) * r.size.x * 0.32, r.size.y)
+		draw_line(vp, bottom, Color(a.r, a.g, a.b, 0.05), 1.5)
+	for k in 5:
+		var y: float = horizon + (r.size.y - horizon) * pow(float(k + 1) / 6.0, 2.0)
+		draw_line(Vector2(0, y), Vector2(r.size.x, y), Color(a.r, a.g, a.b, 0.05), 1.0)
+	draw_line(Vector2(0, horizon), Vector2(r.size.x, horizon), Color(a.r, a.g, a.b, 0.2), 2.0)
 
 func _pets(r: Rect2, t: float, a: Color, b: Color) -> void:
 	var w := Rect2(r.size.x * 0.58, r.size.y * 0.1, r.size.x * 0.32, r.size.y * 0.22)
