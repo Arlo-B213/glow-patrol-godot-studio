@@ -7,6 +7,7 @@ extends RefCounted
 const STATE_NORMAL := "normal"
 const STATE_EQUIPPED := "equipped"
 const STATE_LOCKED := "locked"
+const CharacterArt := preload("res://scripts/character_art.gd")
 
 
 static func _label(text: String, variation: String, align: int = HORIZONTAL_ALIGNMENT_CENTER,
@@ -217,5 +218,16 @@ static func portrait_tile(boy_id: String, accent: Color, px: Vector2, radius: in
 		(sb as StyleBoxFlat).shadow_color = Color(accent.r, accent.g, accent.b, 0.3)
 		(sb as StyleBoxFlat).shadow_size = 8
 	tile.add_theme_stylebox_override("panel", sb)
-	tile.add_child(LanternboyPortrait.new().setup(boy_id, px.x, px.y))
+	# Approved art when it exists; the code-drawn Lanternboy is the fallback.
+	var art := CharacterArt.texture(boy_id, "neutral")
+	if art != null:
+		var pic := TextureRect.new()
+		pic.texture = art
+		pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		pic.custom_minimum_size = px
+		pic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		tile.add_child(pic)
+	else:
+		tile.add_child(LanternboyPortrait.new().setup(boy_id, px.x, px.y))
 	return tile
