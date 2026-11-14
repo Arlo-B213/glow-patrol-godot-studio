@@ -7,7 +7,7 @@ date: 2026-11-02
 # Pearl
 
 ## Role and canon
-- **Role:** Fellow Hunter B. Joins the patrol after chapter 10 "The Tower Gate", the end of act 2. Playable in brawls through the hunter picker. (Established in code, name provisional)
+- **Role:** Fellow Hunter B. Joins the patrol at the start of act 3 (moved from after chapter 10 "The Tower Gate", author decision 2026-11-14). Playable in brawls through the hunter picker. (Provisional for narrative; code still unlocks at ch10 until changed)
 - **Name:** Pearl is provisional. (Provisional)
 - **Pronouns:** she/her. (Established, author decision)
 

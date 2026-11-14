@@ -7,7 +7,7 @@ date: 2026-11-14
 # Cinderwhisk
 
 ## Role and canon
-- **Role:** a sly rival who turns up at the Shining Ring (act 4) to steal the spotlight from the patrol's big celebration. Not the saga's main villain. (Provisional)
+- **Role:** a sly rival who turns up at the Shining Ring (act 4) to steal the spotlight from the patrol's big celebration. Not the saga's main villain. Stays a villain (a rival). (Provisional, author decision 2026-11-14)
 - **Pronouns:** they/them. Not given in the story yet. Use they/them until the author decides. (Provisional)
 - **Relationship to the King:** a rival, not a servant. Cinderwhisk wants the city to look at them, not at the King. (Provisional)
 

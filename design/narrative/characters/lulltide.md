@@ -7,7 +7,7 @@ date: 2026-11-14
 # Lulltide
 
 ## Role and canon
-- **Role:** the singer of the Gloomling family's nest. A gentle villain whose lullabies make the pets' glow fade, so the pets fall asleep in the dark. Not a main antagonist. (Provisional)
+- **Role:** the singer of the Gloomling family's nest. A gentle villain whose lullabies make the pets' glow fade, so the pets fall asleep in the dark. Not a main antagonist. Stays a villain. (Provisional, author decision 2026-11-14)
 - **Pronouns:** they/them. Not given in the story yet. (Provisional)
 - **Relationship to the Gloomlings:** the family's oldest singer. Their hum is the same tune the Gloomlings hum when they are sad, which makes it the source of that tune. (Provisional, ties to gloomlings.md open question 1: a nest and a leader)
 - **Relationship to the King:** not his servant. Lulltide sings because they are tired and want everyone to rest, the King's same loneliness in a softer form. (Provisional)

@@ -8,7 +8,7 @@ date: 2026-11-14
 
 ## Role and canon
 - **Role:** the second boss of the Alley Brawl. A fused gloom creature with three kid heads on one body. Chosen by the boss rotation (`BOSS_KINDS` in `src/scripts/brawl_enemies.gd`, alternating with the Grumble King per session run). (Established, code)
-- **Story role:** not yet decided. Proposed: the Hydra is three Gloomlings that got tangled together while chasing a hiccup of stolen light. Each head keeps the mood of the Gloomling it was. (Under Review, author to decide)
+- **Story role:** the Hydra is three Gloomlings that got tangled together while chasing a hiccup of stolen light. Each head keeps the mood of the Gloomling it was. (Provisional, author confirmed the proposal 2026-11-14)
 - **Pronouns:** not given. Each head is a kid, so refer to them by head: the angry one, the sleepy one, the giggly one. (Provisional)
 - **Relationship to the King:** the Hydra is not his servant. It is a creature that drifts toward the cold, like the Gloomlings. (Provisional)
 

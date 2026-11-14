@@ -28,7 +28,7 @@ One sheet per character. Every sheet has the same sections, so the cast can be c
 |---|---|---|
 | You (the player's hunter) | Main character | `you.md` |
 | Juno | Fellow hunter, joins after chapter 5 | `juno.md` |
-| Pearl | Fellow hunter, joins after chapter 10 | `pearl.md` |
+| Pearl | Fellow hunter, joins at the start of act 3 | `pearl.md` |
 | Hae | Lanternboy, leader | `hae.md` |
 | Bit | Lanternboy, dancer | `bit.md` |
 | Nun | Lanternboy, quiet one | `nun.md` |

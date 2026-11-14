@@ -7,7 +7,7 @@ date: 2026-11-14
 # Wickmaw
 
 ## Role and canon
-- **Role:** the Grumble Tower's stair-warden, the first lieutenant the patrol meets in act 3. He guards the stairs and puts out any light that climbs too high. (Provisional)
+- **Role:** the Grumble Tower's stair-warden, the first lieutenant the patrol meets in act 3. He guards the stairs and puts out any light that climbs too high. He stays a villain, the King's loyal warden. (Provisional, author decision 2026-11-14)
 - **Pronouns:** he/him. (Provisional)
 - **Relationship to the King:** serves him out of loyalty, not fear. He believes the King's cold keeps the city safe from the dark that once hurt the King. (Under Review: ties to the true answer in the story bible)
 - **Canon check:** he is a lamplighter who lost his light, which matches the world rule that lamplighters are anyone who shares their light. He is not a Gloomling. (Provisional)
