@@ -35,3 +35,5 @@ One sheet per character. Every sheet has the same sections, so the cast can be c
 | Grumble King | Antagonist | `grumble-king.md` |
 | Gloomlings | Enemies | `gloomlings.md` |
 | Hiccup Hydra | Second boss (Alley Brawl) | `hiccup-hydra.md` |
+| Wickmaw | Act 3 stair-warden of the Grumble Tower | `wickmaw.md` |
+| Cinderwhisk | Act 4 rival at the Shining Ring | `cinderwhisk.md` |
