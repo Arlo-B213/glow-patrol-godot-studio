@@ -5,6 +5,8 @@ const FD := preload("res://scripts/fast_draw.gd")
 ## CanvasItem and must be called from its _draw(). Ids match GameState.HEADWEAR and
 ## GameState.FACE_ACC; "none" (or any unknown id) draws nothing.
 
+const Expr := preload("res://scripts/hunter_expr.gd")
+const Shade := preload("res://scripts/hunter_shade.gd")
 const INK := Color("#1A0B33")
 const GOLD := Color("#FFD36E")
 const PINK := Color("#FF5FA2")
@@ -27,7 +29,7 @@ static func _poly(ci: CanvasItem, pts: PackedVector2Array, fill: Color, outline:
 	FD.poly(ci, pts, fill)
 	var closed := PackedVector2Array(pts)
 	closed.append(pts[0])
-	FD.polyline(ci, closed, outline, width)
+	FD.polyline(ci, closed, outline, width * Shade.outline_scale)
 
 
 static func _star_points(center: Vector2, r_out: float, r_in: float) -> PackedVector2Array:
@@ -87,6 +89,9 @@ static func _cat_ear(ci: CanvasItem, pts: PackedVector2Array, inner: PackedVecto
 static func draw_headwear_side(ci: CanvasItem, id: String, head: Vector2, u: float, f: float, hair: Color, alpha: float) -> void:
 	var w: float = maxf(1.0, 1.1 * u)
 	match id:
+		"lightning-streak":
+			_streak(ci, [_pt(head, u, -f * 4.0, -17.0), _pt(head, u, f * 3.0, -16.0), _pt(head, u, f * 8.0, -8.0)], u, alpha)
+			_bolt(ci, _pt(head, u, f * 6.0, -11.0), 6.0 * u, alpha, w)
 		"bow":
 			_bow(ci, _pt(head, u, -f * 6.0, -15.0), u, 8.0, alpha)
 		"star-clip":
@@ -102,6 +107,23 @@ static func draw_headwear_side(ci: CanvasItem, id: String, head: Vector2, u: flo
 					_pt(head, u, side * 11.0, -10.0), _pt(head, u, side * 10.5, -20.0), _pt(head, u, side * 5.0, -13.5),
 				])
 				_cat_ear(ci, pts, inner, hair, alpha, w)
+
+
+## Pink hair streak: a tapered ribbon of pink along a three-point path.
+static func _streak(ci: CanvasItem, pts: Array, k: float, alpha: float) -> void:
+	var path := PackedVector2Array(pts)
+	ci.draw_polyline(path, _c(INK, alpha), 3.6 * k, true)
+	ci.draw_polyline(path, _c(PINK, alpha), 2.0 * k, true)
+	ci.draw_polyline(path, _c(Color("#FFB3D6"), 0.7 * alpha), 0.7 * k, true)
+
+
+## Gold lightning-bolt clip; `s` is the bolt's full height in pixels.
+static func _bolt(ci: CanvasItem, c: Vector2, s: float, alpha: float, w: float) -> void:
+	var shape := PackedVector2Array([
+		c + Vector2(0.2, -1.0) * s * 0.5, c + Vector2(-0.6, 0.1) * s * 0.5, c + Vector2(-0.05, 0.1) * s * 0.5,
+		c + Vector2(-0.35, 1.0) * s * 0.5, c + Vector2(0.6, -0.2) * s * 0.5, c + Vector2(0.05, -0.2) * s * 0.5,
+	])
+	_poly(ci, shape, _c(GOLD, alpha), _c(Color("#B8860B"), alpha), w)
 
 
 ## Face accessory on the side-view face; eye and cheek positions mirror HunterArt.
@@ -133,6 +155,9 @@ static func draw_face_side(ci: CanvasItem, id: String, head: Vector2, u: float, 
 static func draw_headwear_front(ci: CanvasItem, id: String, head: Vector2, k: float, hair: Color, alpha: float) -> void:
 	var w: float = maxf(1.0, 1.0 * k)
 	match id:
+		"lightning-streak":
+			_streak(ci, [_pt(head, k, -6.0, -30.0), _pt(head, k, 4.0, -27.0), _pt(head, k, 12.0, -17.0)], k, alpha)
+			_bolt(ci, _pt(head, k, 15.0, -19.0), 8.0 * k, alpha, w)
 		"bow":
 			_bow(ci, _pt(head, k, 13.0, -27.0), k, 13.0, alpha)
 		"star-clip":
@@ -155,20 +180,20 @@ static func draw_face_front(ci: CanvasItem, id: String, head: Vector2, k: float,
 	match id:
 		"blush":
 			for side in [-1.0, 1.0]:
-				FD.circle(ci, _pt(head, k, side * 15.0, 10.5), 6.0 * k, _c(BLUSH, 0.65 * alpha))
+				FD.circle(ci, _pt(head, k, side * 16.0, 13.0), 6.0 * k, _c(BLUSH, 0.65 * alpha))
 		"glasses":
 			var gold: Color = _c(GOLD, alpha)
 			var lw: float = maxf(1.0, 1.5 * k)
 			for side in [-1.0, 1.0]:
-				var pts: PackedVector2Array = _star_points(_pt(head, k, side * 9.5, 3.0), 9.0 * k, 5.2 * k)
+				var pts: PackedVector2Array = _star_points(head + Expr.EYE_FRONT * Vector2(side, 1.0) * k, 10.0 * k, 5.8 * k)
 				FD.poly(ci, pts, _c(Color.WHITE, 0.2 * alpha))
 				pts.append(pts[0])
 				FD.polyline(ci, pts, gold, lw)
-			ci.draw_line(_pt(head, k, -1.5, 1.5), _pt(head, k, 1.5, 1.5), gold, lw)
+			ci.draw_line(_pt(head, k, -1.5, 3.5), _pt(head, k, 1.5, 3.5), gold, lw)
 			for side in [-1.0, 1.0]:
-				ci.draw_line(_pt(head, k, side * 18.0, 1.5), _pt(head, k, side * 24.0, -1.0), gold, lw)
+				ci.draw_line(_pt(head, k, side * 19.5, 3.5), _pt(head, k, side * 24.0, 1.0), gold, lw)
 		"freckles":
 			for side in [-1.0, 1.0]:
-				var c: Vector2 = _pt(head, k, side * 15.0, 9.0)
+				var c: Vector2 = _pt(head, k, side * 16.0, 12.0)
 				for d in [Vector2(-3.5, -1.0), Vector2(0.0, -3.0), Vector2(3.5, -0.5), Vector2(-1.5, 2.5), Vector2(2.0, 3.0)]:
 					FD.circle(ci, c + d * k, 1.15 * k, _c(FRECKLE, alpha))

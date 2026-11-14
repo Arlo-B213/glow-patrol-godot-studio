@@ -56,6 +56,7 @@ var _backdrop: Control
 
 func _ready() -> void:
 	theme = UiTheme.build()
+	ScreenGrade.attach(self)
 	get_tree().node_added.connect(_on_node_added)
 	sound_button.theme_type_variation = "SecondaryButton"
 	sound_button.custom_minimum_size = Vector2(56, 56)
@@ -235,6 +236,8 @@ func set_screen(screen_name: String) -> void:
 	# once the club screen itself is built out.
 	if instance.has_signal("screen_requested"):
 		instance.screen_requested.connect(_on_child_screen_requested)
+	if instance.has_signal("mission_requested"):
+		instance.mission_requested.connect(start_mission)
 
 
 ## Shows the themed animated backdrop (env_backdrop.gd) behind the current screen.
@@ -249,6 +252,8 @@ func _set_backdrop(screen_name: String) -> void:
 func _on_child_screen_requested(requested: String) -> void:
 	if requested == "stickers":
 		_open_stickers()
+	elif requested == "settings":
+		_open_settings()
 	elif requested == "tutorial":
 		show_tutorial()
 	elif requested == "club_lounge":
@@ -303,6 +308,70 @@ func _check_stickers() -> void:
 	for s in Stickers.check(game_state):
 		Snd.play("chapter")
 		get_node("/root/Toast").show_message("New sticker: %s!" % s["name"])
+
+
+## Runs a Lounge mission: the Alley Brawl view with quiz breaks, filling the content area.
+func start_mission(mission: Dictionary) -> void:
+	for child in content_area.get_children():
+		content_area.remove_child(child)
+		child.queue_free()
+	var view: Control = preload("res://scenes/battle/alley_brawl_view.tscn").instantiate()
+	view.mission = mission
+	view.set_anchors_preset(Control.PRESET_FULL_RECT)
+	content_area.add_child(view)
+	view.finished.connect(_on_mission_finished.bind(mission))
+
+
+## Pays a finished mission and shows the result card with the boy's reaction.
+func _on_mission_finished(score: int, earned: int, won: bool, mission: Dictionary) -> void:
+	game_state.earn_points(earned)
+	var gained: int = game_state.record_mission(String(mission["id"]), won, score)
+	_show_mission_result(mission, score, earned, won, gained)
+
+
+## Mission result: the boy's reaction and friendship gained, then the shared result card.
+func _show_mission_result(mission: Dictionary, score: int, earned: int, won: bool, gained: int) -> void:
+	for child in content_area.get_children():
+		content_area.remove_child(child)
+		child.queue_free()
+	var boy_id: String = mission["boy"]
+	var boy: Dictionary = game_state.lanternboy_by_id(boy_id)
+	var column := VBoxContainer.new()
+	column.set_anchors_preset(Control.PRESET_FULL_RECT)
+	column.add_theme_constant_override("separation", 12)
+	var reaction := HBoxContainer.new()
+	reaction.add_theme_constant_override("separation", 12)
+	reaction.add_child(ClubCards.portrait_tile(boy_id, Color(boy["color"]), Vector2(110, 110), 18))
+	var line := Label.new()
+	line.text = "%s\n+%d friendship with %s" % [LoungeMissions.REACTIONS[boy_id][0 if won else 1], gained, boy["name"]]
+	line.theme_type_variation = "Heading"
+	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reaction.add_child(line)
+	column.add_child(reaction)
+	var best: int = int(game_state.mission_best.get(mission["id"], 0))
+	var score_text: String = "%s - Score %d - Best %d" % [mission["title"], score, best]
+	column.add_child(UiCards.result_card("star", "Mission Complete!" if won else "Mission Over", score_text, earned,
+		"Back to Lounge", _return_to_lounge, "Replay", start_mission.bind(mission)))
+	content_area.add_child(column)
+
+
+## Returns to the Club on the Lounge tab.
+func _return_to_lounge() -> void:
+	game_state.open_lounge_on_club = true
+	set_screen("club")
+
+
+
+## Replaces the content area with the settings page; Back returns to HQ and refreshes the motion icon.
+func _open_settings() -> void:
+	for child in content_area.get_children():
+		child.queue_free()
+	var page := SettingsPage.new().setup(game_state)
+	page.closed.connect(func():
+		_top.update_motion_button()
+		set_screen("home"))
+	content_area.add_child(page)
 
 
 ## Replaces the content area with the sticker collection; Back returns to HQ.

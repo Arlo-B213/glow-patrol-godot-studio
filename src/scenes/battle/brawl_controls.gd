@@ -51,6 +51,23 @@ func read_axis() -> float:
 	return digital if absf(digital) > absf(a) else a
 
 
+## Current 2D movement input: x is `read_axis()`, y is lane depth, -1 (up/back) .. 1
+## (down/front), from the stick's vertical travel or W/S/Up/Down.
+func read_move() -> Vector2:
+	var y := 0.0
+	if _stick_id != -2:
+		var dy: float = (_stick_pos.y - _stick_origin.y) / (STICK_RADIUS * _u)
+		var m: float = clampf(absf(dy), 0.0, 1.0)
+		if m > STICK_DEADZONE:
+			y = signf(dy) * (m - STICK_DEADZONE) / (1.0 - STICK_DEADZONE)
+	var digital := 0.0
+	if Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP):
+		digital -= 1.0
+	if Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN):
+		digital += 1.0
+	return Vector2(read_axis(), digital if absf(digital) > absf(y) else y)
+
+
 ## Refreshes `block_held` (block button or K / Shift); call once per frame before reading it.
 func poll_block() -> bool:
 	block_held = active and (_held("block") or Input.is_physical_key_pressed(KEY_K) or Input.is_physical_key_pressed(KEY_SHIFT))
@@ -161,6 +178,7 @@ func _draw() -> void:
 		var hint := Vector2(size.x * 0.28, size.y - 190.0 * u)
 		FD.arc(self, hint, STICK_RADIUS * u, 0.0, TAU, 40, Color(UiTheme.TEXT, 0.22), 3.0 * u, true)
 		FD.circle(self, hint, 22.0 * u, Color(UiTheme.VIOLET, 0.3))
+		draw_rect(Rect2(hint.x - 90.0 * u, hint.y - STICK_RADIUS * u - 24.0 * u, 180.0 * u, 22.0 * u), Color(UiTheme.PANEL, 0.7))
 		draw_string(ThemeDB.fallback_font, hint + Vector2(-90.0 * u, -STICK_RADIUS * u - 8.0 * u), "drag to move", HORIZONTAL_ALIGNMENT_CENTER, 180.0 * u, int(14.0 * u), Color(UiTheme.TEXT, 0.5))
 	_round_button(lay["left"], "left", UiTheme.PANEL_LIGHT, "back", UiTheme.TEXT)
 	_round_button(lay["right"], "right", UiTheme.PANEL_LIGHT, "forward", UiTheme.TEXT)

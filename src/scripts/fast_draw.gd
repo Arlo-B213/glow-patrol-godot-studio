@@ -114,10 +114,28 @@ static func _convex(p: PackedVector2Array) -> bool:
 	return true
 
 
+## True when `pts` has a real, finite area. Zero-area or NaN shapes make the engine's triangulator fail
+## ("Invalid polygon data") and spam errors, so drawing skips them.
+static func has_area(pts: PackedVector2Array) -> bool:
+	var n: int = pts.size()
+	if n < 3:
+		return false
+	var twice_area := 0.0
+	for i in n:
+		var a: Vector2 = pts[i]
+		var b: Vector2 = pts[(i + 1) % n]
+		if is_nan(a.x) or is_nan(a.y) or is_inf(a.x) or is_inf(a.y):
+			return false
+		twice_area += a.x * b.y - b.x * a.y
+	return absf(twice_area) > 0.5
+
+
 ## Same as CanvasItem.draw_colored_polygon; convex polygons are drawn as quads (no triangulation).
 static func poly(ci: CanvasItem, pts: PackedVector2Array, col: Color, uvs: PackedVector2Array = PackedVector2Array(), tex: Texture2D = null) -> void:
 	var n: int = pts.size()
 	if n < 3:
+		return
+	if not has_area(pts):
 		return
 	if tex != null or uvs.size() > 0 or n > 40 or (n > 4 and not _convex(pts)):
 		_s('poly_fb')

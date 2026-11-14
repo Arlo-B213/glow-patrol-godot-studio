@@ -14,6 +14,10 @@ const LIP := Color("#E0607A")
 const MOUTH_IN := Color("#8A2F45")
 const TONGUE := Color("#FF8E9C")
 const TEAR := Color("#BDEBFF")
+## Front-view eye centre (x is mirrored per side) and size, in head units (head radius 24).
+## HunterAccessories places glasses on this point.
+const EYE_FRONT := Vector2(10.0, 5.5)
+const EYE_FRONT_SCALE := 1.22
 
 ## open = eye height 0..1.2, shape = open|arch|closed, pupil = pupil scale, raise/tilt = brow
 ## lift and inner-end slope (+ = angry, - = worried), blush 0..1, tear 0..1, gaze = iris offset.
@@ -34,11 +38,9 @@ static func params(expr: String) -> Dictionary:
 	return TABLE.get(expr, TABLE["neutral"])
 
 
-## Iris colour: a warm brown tinted by the hair colour.
+## Iris colour: a vivid jewel tone in the hair's hue (anime style), never muddy or near-black.
 static func iris_color(hair: Color) -> Color:
-	var c: Color = Color("#7A4A2E").lerp(hair, 0.35)
-	c.a = 1.0
-	return c
+	return Color.from_hsv(hair.h, clampf(hair.s, 0.45, 0.8), 0.72)
 
 
 ## One eye centred at `c` at scale `s`. `outward` is -1/1 (side of the outer corner), `e` the
@@ -72,9 +74,10 @@ static func eye(ci: CanvasItem, c: Vector2, s: float, outward: float, iris: Colo
 	var rx: float = 5.0 * s
 	var ry: float = 6.4 * s * open
 	FD.poly(ci, Shade.ellipse(c, rx + 0.5 * s, ry + 0.5 * s, 18), dark)
+	FD.poly(ci, Shade.ellipse(c, rx, ry, 18), Shade.fade(Color("#FBF8FF"), alpha))
 	var off := Vector2(clampf(gaze.x, -1.0, 1.0) * 1.1 * s, clampf(gaze.y, -1.0, 1.0) * 1.2 * s * minf(open, 1.0))
 	var ir: float = ry * 0.9
-	var ipts := Shade.ellipse(c + off + Vector2(0.0, 0.4 * s), rx * 0.82, ir, 18)
+	var ipts := Shade.ellipse(c + off + Vector2(0.0, 0.4 * s), rx * 0.8, ir, 18)
 	var icols := PackedColorArray()
 	var top: Color = Shade.fade(Shade.darken(iris, 0.5), alpha)
 	var bot: Color = Shade.fade(Shade.lighten(iris, 0.5), alpha)
@@ -82,25 +85,35 @@ static func eye(ci: CanvasItem, c: Vector2, s: float, outward: float, iris: Colo
 		var t: float = clampf((p.y - (c.y + off.y - ir)) / (2.0 * ir), 0.0, 1.0)
 		icols.append(top.lerp(Shade.fade(iris, alpha), clampf(t * 2.0, 0.0, 1.0)).lerp(bot, clampf(t * 2.0 - 1.0, 0.0, 1.0)))
 	FD.gpoly(ci, ipts, icols)
-	FD.arc(ci, c + off + Vector2(0.0, 0.4 * s), rx * 0.82, 0.0, TAU, 18, Shade.fade(Shade.darken(iris, 0.6), 0.8 * alpha), maxf(1.0, 0.7 * s), true)
+	var ic: Vector2 = c + off + Vector2(0.0, 0.4 * s)
+	FD.arc(ci, ic, rx * 0.8, 0.0, TAU, 18, Shade.fade(Shade.darken(iris, 0.6), 0.8 * alpha), maxf(1.0, 0.7 * s), true)
 	var pr: float = float(e["pupil"])
 	FD.poly(ci, Shade.ellipse(c + off + Vector2(0.0, 0.3 * s), 1.9 * s * pr, 2.9 * s * pr * minf(open, 1.0), 12), dark)
-	FD.circle(ci, c + off + Vector2(1.5, -2.2 * minf(open, 1.0)) * s, 1.55 * s, Shade.fade(Color.WHITE, alpha))
-	FD.circle(ci, c + off + Vector2(-1.4, 2.2 * minf(open, 1.0)) * s, 0.8 * s, Shade.fade(Color.WHITE, 0.9 * alpha))
+	# Lid shadow across the top of the eye and a light crescent at the bottom of the iris.
+	FD.poly(ci, Shade.ellipse(ic + Vector2(0.0, -ir * 0.66), rx * 0.86, ir * 0.36, 14), Shade.fade(Color("#3A1F6E"), 0.3 * alpha))
+	FD.poly(ci, Shade.ellipse(ic + Vector2(0.0, ir * 0.56), rx * 0.5, ir * 0.24, 12), Shade.fade(Shade.lighten(iris, 0.7), 0.7 * alpha))
+	var hy: float = minf(open, 1.0)
+	FD.poly(ci, Shade.ellipse(c + off + Vector2(-1.5, -2.4 * hy) * s, 1.8 * s, 2.3 * s * hy, 12), Shade.fade(Color.WHITE, alpha))
+	FD.circle(ci, c + off + Vector2(1.8, 2.5 * hy) * s, 0.85 * s, Shade.fade(Color.WHITE, 0.9 * alpha))
 	if s >= 0.9:
-		FD.circle(ci, c + off + Vector2(0.2, 0.8) * s, 0.4 * s, Shade.fade(Color.WHITE, 0.7 * alpha))
-	# Upper lash arc, crease, outer flick and mini lashes.
+		FD.circle(ci, c + off + Vector2(1.2, -0.6) * s, 0.45 * s, Shade.fade(Color.WHITE, 0.7 * alpha))
+	# Upper lash arc (heavier toward the outer corner), wing, crease and mini lashes.
 	var lash := PackedVector2Array()
+	var outer := PackedVector2Array()
 	for i in range(8):
 		var a: float = PI + PI * float(i) / 7.0
-		lash.append(c + Vector2(cos(a) * (rx + 0.3 * s), sin(a) * (ry + 0.3 * s) + 0.4 * s))
-	FD.polyline(ci, lash, dark, lw * 1.2, true)
-	ci.draw_line(c + Vector2(outward * (rx + 0.2 * s), -0.4 * s), c + Vector2(outward * 7.6 * s, -2.8 * s * minf(open, 1.0)), dark, maxf(1.0, 1.4 * s))
+		var lp: Vector2 = c + Vector2(cos(a) * (rx + 0.3 * s), sin(a) * (ry + 0.3 * s) + 0.4 * s)
+		lash.append(lp)
+		if (i >= 3 and outward > 0.0) or (i <= 4 and outward < 0.0):
+			outer.append(lp)
+	FD.polyline(ci, lash, dark, lw * 1.25, true)
+	FD.polyline(ci, outer, dark, lw * 2.0, true)
+	ci.draw_line(c + Vector2(outward * (rx + 0.2 * s), -0.4 * s), c + Vector2(outward * 7.8 * s, -2.9 * s * hy), dark, maxf(1.0, 1.8 * s))
 	ci.draw_line(c + Vector2(outward * 4.0 * s, -ry * 0.8), c + Vector2(outward * 6.0 * s, -ry - 1.4 * s), Shade.fade(dark, 0.75), maxf(1.0, 0.9 * s))
 	if s >= 0.9:
 		var crease := PackedVector2Array([c + Vector2(-outward * 3.6 * s, -ry - 1.6 * s), c + Vector2(0.0, -ry - 2.3 * s), c + Vector2(outward * 4.0 * s, -ry - 1.0 * s)])
 		FD.polyline(ci, crease, Shade.fade(Shade.SKIN_SHADOW, 0.7 * alpha), maxf(1.0, 0.8 * s))
-	ci.draw_line(c + Vector2(-2.0 * s, ry + 0.8 * s), c + Vector2(2.0 * s, ry + 0.8 * s), Shade.fade(dark, 0.35), maxf(1.0, 0.8 * s))
+	ci.draw_line(c + Vector2(outward * rx * 0.25, ry + 0.7 * s), c + Vector2(outward * (rx + 0.5 * s), ry * 0.5), Shade.fade(dark, 0.75), maxf(1.0, 1.0 * s))
 	_tear(ci, c + Vector2(0.0, ry - 5.4 * s), s, float(e["tear"]), alpha)
 
 
@@ -183,12 +196,12 @@ static func front(ci: CanvasItem, head: Vector2, k: float, hair: Color, alpha: f
 	var browc: Color = Shade.fade(Shade.darken(hair, 0.35), alpha)
 	var g: Vector2 = (e["gaze"] as Vector2) + gaze
 	for side in [-1.0, 1.0]:
-		blush(ci, head + Vector2(side * 15.5, 10.5) * k, 4.2 * k, float(e["blush"]), alpha)
-		eye(ci, head + Vector2(side * 9.5, 3.0) * k, k * 1.08, side, iris, alpha, e, closed, g)
-		brow(ci, head + Vector2(side * 10.0, -6.2) * k, k, side, browc, e, 1.6)
-	FD.circle(ci, head + Vector2(0.0, 8.6) * k, 0.9 * k, Shade.fade(Shade.darken(Shade.SKIN_SHADOW, 0.3), 0.9 * alpha))
-	FD.circle(ci, head + Vector2(-0.3, 8.0) * k, 0.45 * k, Shade.fade(Shade.SKIN_LIGHT, alpha))
-	mouth(ci, head + Vector2(0.0, 13.4) * k, k * 0.9, String(e["mouth"]), alpha)
+		blush(ci, head + Vector2(side * 16.0, 13.0) * k, 4.2 * k, float(e["blush"]), alpha)
+		eye(ci, head + EYE_FRONT * Vector2(side, 1.0) * k, k * EYE_FRONT_SCALE, side, iris, alpha, e, closed, g)
+		brow(ci, head + Vector2(side * 10.5, -5.0) * k, k, side, browc, e, 1.6)
+	FD.circle(ci, head + Vector2(0.0, 11.4) * k, 0.8 * k, Shade.fade(Shade.darken(Shade.SKIN_SHADOW, 0.3), 0.9 * alpha))
+	FD.circle(ci, head + Vector2(-0.3, 10.9) * k, 0.4 * k, Shade.fade(Shade.SKIN_LIGHT, alpha))
+	mouth(ci, head + Vector2(0.0, 16.0) * k, k * 0.82, String(e["mouth"]), alpha)
 
 
 ## Face features for the SIDE head at `head` (radius 13 * u) facing `f`.

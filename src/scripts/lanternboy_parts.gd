@@ -58,7 +58,7 @@ static func face(ci: CanvasItem, c: Vector2, blink: bool, iris: Color, blush: fl
 	var e: Dictionary = Expr.params(expr)
 	S.circle(ci, c + v(-23, 3), 4.2, skin, OW, S.ink(skin))
 	S.circle(ci, c + v(23, 3), 4.2, skin, OW, S.ink(skin))
-	var pts := S.ellipse(c, 23.0, 21.0, 28)
+	var pts := _chin_outline(c, 23.0, 21.0, 28)
 	var cols := PackedColorArray()
 	for p in pts:
 		var t: float = clampf((p.y - (c.y - 21.0)) / 42.0, 0.0, 1.0)
@@ -77,47 +77,21 @@ static func face(ci: CanvasItem, c: Vector2, blink: bool, iris: Color, blush: fl
 	var cl: float = 1.0 if blink else closed
 	for sx in [-1.0, 1.0]:
 		Expr.blush(ci, c + v(sx * 14.5, 11.0), 4.2, clampf(b, 0.0, 1.6), 1.0)
-		_eye(ci, c + v(sx * 10.0, 3.0), cl, iris, look + gaze, sx, e)
+		Expr.eye(ci, c + v(sx * 10.0, 3.0), 1.2, sx, iris, 1.0, e, cl, look + gaze)
 		var bp := e.duplicate()
 		bp["raise"] = float(e["raise"]) + brow_bias.x
 		bp["tilt"] = float(e["tilt"]) + brow_bias.y
 		Expr.brow(ci, c + v(sx * 10.0, -9.0), 1.45, sx, S.fade(S.darken(S.INK, 0.0), 0.8), bp, 1.2)
 
 
-static func _eye(ci: CanvasItem, e: Vector2, shut: float, iris: Color, look: Vector2, side: float, ep: Dictionary) -> void:
-	var shape: String = String(ep["shape"])
-	var open: float = float(ep["open"]) * (1.0 - shut * 0.93)
-	if shape == "arch" and shut < 0.5:
-		FD.polyline(ci, PackedVector2Array([e + v(-6, 2), e + v(-3.5, -2.2), e + v(0, -3.6), e + v(3.5, -2.2), e + v(6, 2)]), S.INK, 2.2, true)
-		ci.draw_line(e + v(side * 6, 2), e + v(side * 8.4, 0.2), S.INK, 1.5)
-		return
-	if shape == "closed" or open * 7.4 < 2.0:
-		FD.arc(ci, e + v(0, -1), 5.6, 0.2, PI - 0.2, 10, S.INK, 1.9, true)
-		ci.draw_line(e + v(side * 5.6, 0.6), e + v(side * 8.0, -1.4), S.INK, 1.4)
-		if float(ep["tear"]) > 0.0:
-			FD.arc(ci, e + v(0, 1), 5.0, 0.4, PI - 0.4, 8, S.fade(Expr.TEAR, 0.7), 1.2, true)
-		return
-	var ry: float = 7.4 * open
-	S.fill(ci, S.ellipse(e, 6.2, ry, 18), Color(1, 1, 1, 0.97), 0.9, S.ink(Color(0.9, 0.85, 0.95)))
-	var ie: Vector2 = e + v(clampf(look.x, -1.0, 1.0) * 1.5, clampf(look.y, -1.0, 1.0) * 1.5 * minf(open, 1.0))
-	var ipts := S.ellipse(ie, 4.8, 6.0 * open, 16)
-	var cols := PackedColorArray()
-	for p in ipts:
-		var t: float = clampf((p.y - (ie.y - 6.0 * open)) / maxf(12.0 * open, 0.01), 0.0, 1.0)
-		cols.append(S.darken(iris, 0.5).lerp(iris, clampf(t * 2.0, 0.0, 1.0)).lerp(S.lighten(iris, 0.5), clampf(t * 2.0 - 1.0, 0.0, 1.0)))
-	FD.gpoly(ci, ipts, cols)
-	FD.arc(ci, ie, 4.8, 0.0, TAU, 16, S.fade(S.darken(iris, 0.6), 0.8), 0.8, true)
-	var pr: float = float(ep["pupil"])
-	FD.poly(ci, S.ellipse(ie + v(0, 0.6), 2.5 * pr, 2.7 * pr * minf(open, 1.0), 12), S.INK)
-	FD.circle(ci, ie + v(-1.7, -2.4 * minf(open, 1.0)), 1.8, Color(1, 1, 1, 0.95))
-	FD.circle(ci, ie + v(1.8, 2.6 * minf(open, 1.0)), 0.9, Color(1, 1, 1, 0.8))
-	FD.arc(ci, e + v(0, -0.6), 6.5, PI * 1.08, PI * 1.92, 10, S.INK, 2.4, true)
-	ci.draw_line(e + v(side * 6.2, -2.4), e + v(side * 8.8, -4.6 * minf(open, 1.0)), S.INK, 1.6)
-	ci.draw_line(e + v(side * 5.2, -4.6 * minf(open, 1.0)), e + v(side * 7.2, -6.4 * minf(open, 1.0)), S.fade(S.INK, 0.7), 1.1)
-	FD.arc(ci, e + v(0, -ry - 1.6), 5.2, PI * 1.15, PI * 1.85, 8, S.fade(S.SKIN_SHADOW, 0.7), 0.9, true)
-	ci.draw_line(e + v(-2.4, ry + 0.8), e + v(2.4, ry + 0.8), S.fade(S.INK, 0.35), 0.9)
-	if float(ep["tear"]) > 0.0:
-		FD.arc(ci, e + v(0, 1.5), 5.4, 0.5, PI - 0.5, 8, S.fade(Expr.TEAR, 0.6 * float(ep["tear"])), 1.2, true)
+## Head outline with the hunter's soft pointed chin: the lower half tapers in toward the jaw.
+static func _chin_outline(c: Vector2, rx: float, ry: float, n: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(n):
+		var a: float = TAU * float(i) / float(n)
+		var sa: float = maxf(sin(a), 0.0)
+		pts.append(c + Vector2(cos(a) * rx * (1.0 - 0.3 * pow(sa, 2.5)), sin(a) * ry * (1.0 + 0.1 * sa)))
+	return pts
 
 
 ## Mouth at `p`: "smile", "smirk", "grin" (open, energetic) or "shy" (tiny). When the active
@@ -142,6 +116,16 @@ static func mouth(ci: CanvasItem, p: Vector2, kind: String) -> void:
 			FD.arc(ci, p, 2.4, 0.3, PI - 0.3, 8, MOUTH, 1.4, true)
 		_:
 			FD.arc(ci, p, 4.6, 0.25, PI - 0.25, 10, MOUTH, 1.7, true)
+
+
+## Soft cloth fold: a short curve from `a` to `b`, bowed sideways by `bow`, in shadow colour `col`.
+static func fold(ci: CanvasItem, a: Vector2, b: Vector2, bow: float, col: Color) -> void:
+	var mid: Vector2 = (a + b) * 0.5 + v(bow, 0.0)
+	var pts := PackedVector2Array()
+	for i in range(6):
+		var t: float = float(i) / 5.0
+		pts.append((1.0 - t) * (1.0 - t) * a + 2.0 * (1.0 - t) * t * mid + t * t * b)
+	ci.draw_polyline(pts, col, 1.0, true)
 
 
 ## Eyebrow line from `a` to `b` (legacy; faces draw their own expressive brows now).

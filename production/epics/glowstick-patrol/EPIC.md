@@ -48,3 +48,19 @@
 | 033 | Pets visual upgrade | UI/Feel | In Review | N/A |
 | 034 | Environment, lighting/FX toolkit and UI polish (Club perf open) | UI/Feel | In Review | [story-034](story-034-environment-lighting-and-ui-polish.md) |
 | 035 | Performance pass (benchmarked, fixes pending) | UI/Feel | Ready | [story-035](story-035-performance-pass.md) |
+| 036 | Screen shake and hit pause in Alley Brawl | UI/Feel | Ready | N/A |
+| 037 | Star Point sparkle trail on collection | UI/Feel | Ready | N/A |
+| 038 | Pet idle animations | UI/Feel | Ready | N/A |
+| 039 | Lanternboy reaction emotes on friendship milestones | UI/Feel | Ready | N/A |
+| 040 | Haptic feedback on mobile | Logic | Ready | N/A |
+| 041 | Gear set bonuses | Logic | Ready | N/A |
+| 042 | Daily and weekly challenges with SP bonus | Logic | Ready | N/A |
+| 043 | Rhythm Tap hold notes, slide notes and call-and-response | Logic | Ready | N/A |
+| 044 | Dyslexia-friendly font toggle | UI | Ready | N/A |
+| 045 | Colorblind palette modes | UI | Ready | N/A |
+| 046 | Auto-save visual cue | UI/Feel | Ready | N/A |
+| 047 | Photo mode | UI | Ready | N/A |
+| 048 | Constellation map | UI | Ready | N/A |
+| 049 | "Glow Up" timelapse | Integration | Ready | N/A |
+| 050 | Seasonal Glow Fest events | Integration | Ready | N/A |
+| 051 | Settings screen (prerequisite for 040, 044, 045) | UI | Ready | N/A |
