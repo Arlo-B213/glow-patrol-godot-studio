@@ -37,3 +37,4 @@ One sheet per character. Every sheet has the same sections, so the cast can be c
 | Hiccup Hydra | Second boss (Alley Brawl) | `hiccup-hydra.md` |
 | Wickmaw | Act 3 stair-warden of the Grumble Tower | `wickmaw.md` |
 | Cinderwhisk | Act 4 rival at the Shining Ring | `cinderwhisk.md` |
+| Lulltide | Gloomling nest singer; dims pets with a lullaby | `lulltide.md` |
