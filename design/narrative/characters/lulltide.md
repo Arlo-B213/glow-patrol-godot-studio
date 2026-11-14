@@ -29,7 +29,7 @@ date: 2026-11-14
 ## Visual design
 - **Build:** a small, round Gloomling elder in a long shawl, with a soft glow inside, drowsy eyes and a little hum-note floating above. (Provisional)
 - **Colours:** shawl deep violet `#8E7CFF`, glow teal `#52E8C6`, hum-notes pale lavender `#C9B8FF`. Existing Gloomling colours, so the family reads as one. (Provisional, needs a code check)
-- **Look rule:** cosy and sleepy, never scary. Round shapes, closed eyes when they hum. Never gory. (Provisional, art bible pillar 4)
+- **Look rule:** menacing (author direction 2026-11-14): hooded, cold teal eyes narrowed under the hood, a sinister smile, dark claws on a lantern. Personality stays soft and sleepy. Never gory, never frightening to small children. (Provisional, art bible pillar 4)
 
 ## Gameplay role
 - Act 2 or act 3 encounter, not a brawl boss. Lulltide hums, and the pets around the player dim. The player must wake them with a rhythm (dance) to brighten their glow again. (Provisional, needs design)

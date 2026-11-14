@@ -35,7 +35,7 @@ date: 2026-11-14
   - Right (giggly): pink shirt `#E85BA0`, hair `#FF5FA2`, eyes `#FF9EC8`, pigtails. (Established)
 - **Expression:** every ~2.5 s one head sneezes sparkles (visual only) and the body hiccups. (Established, code)
 - **Health 34% or less:** the sleepy head wakes up. (Established, code)
-- **Look rule:** kid-friendly, round and bouncy. Never gory or sharp. Dark purple is the neon backdrop, not the creature. (Provisional, art bible pillar 4)
+- **Look rule:** menacing (author direction 2026-11-14): narrowed glowing eyes, snarls, dark claws along the fluff. Never gory, never frightening to small children. Dark purple is the neon backdrop, not the creature. (Provisional, art bible pillar 4)
 
 ## Gameplay role
 - Second Alley Brawl boss. Its pattern is a lane sneeze: a blob flies along a telegraphed lane, and the player changes lane to dodge. (Established, `brawl_boss.gd`)

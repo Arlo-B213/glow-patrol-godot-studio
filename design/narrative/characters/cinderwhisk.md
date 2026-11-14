@@ -26,7 +26,8 @@ date: 2026-11-14
 ## Visual design
 - **Build:** a slim gloom in a glittering plum coat with a cape of sparks. A small lantern on a stick, held like a microphone. (Provisional)
 - **Colours:** coat plum `#7C4DFF`, sparks gold `#FFD36E`, hair pale pink `#FF9EC8`, eyes gold `#FFD36E`. (Provisional, needs a code check)
-- **Look rule:** a showy, bouncy idol-villain. Never gory, never frightening to small children. Dark purple neon backdrop, not on the character. (Provisional, art bible pillar 4)
+- **Look rule:** menacing and showy (author direction 2026-11-14): sharp gold eyes, a wicked closed-lip grin, spiked collar, sparkle cape. Never gory, never frightening to small children. Dark purple neon backdrop, not on the character. (Provisional, art bible pillar 4)
+- **Approved look (2026-11-14):** the menacing reference is canonical. Cinderwhisk is a dark cat-like creature with pink hair, gold eyes, a spiked collar and a sparkle cape. The Build line above (slim gloom) is superseded by this.
 
 ## Gameplay role
 - Act 4 rival. Appears during the Shining Ring celebration and challenges the patrol to a dance-off, which is a Lounge-style rhythm mini-game, not a brawl. (Provisional, needs design)

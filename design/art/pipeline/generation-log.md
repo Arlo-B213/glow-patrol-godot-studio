@@ -229,3 +229,27 @@ Every attempt, including rejected ones. One entry per image.
 - Author approved the five expression candidates (neutral, angry, gloat, determined, enraged) on 2026-11-14. Enraged's crown and fang deviations were accepted as-is.
 - Canonical Grumble King set: ref-02 + neutral, angry, gloat, determined, enraged (all -01 files).
 - art-bible.md pillar 4 updated to allow menacing villains that are never gory, gross or frightening to small children.
+
+## 2026-11-14 new villain ref-01 set (hiccup-hydra, wickmaw, cinderwhisk, lulltide)
+- Generator: OpenAI Images API, gpt-image-1.5, 1024x1024, quality medium
+- Prompts: design/art/pipeline/villains/<name>-ref-prompt.txt (written from the sheets' visual design)
+- Outputs: raw/villains/<name>/ref-01.png (raw, git-ignored)
+- hiccup-hydra ref-01: PASS. Three kid heads (orange spiky, lavender nightcap, pink pigtails) on one teal fluff body, colours match the sheet. Candidate.
+- wickmaw ref-01: PASS on coat, high collar, lavender trim, lantern, pole on back, amber eyes. Deviations: a brass bell on the belt instead of the snuffer; expression reads smug, not stern-polite; hair is black, not in the sheet. Candidate, needs author look.
+- cinderwhisk ref-01: PASS on pink hair, plum sparkle coat, spark cape, gold eyes, lantern on a stick. Deviations: a small fang shows at the collar; the look reads girl-coded, while the sheet says they/them. Candidate, needs author look.
+- lulltide ref-01: PASS. Violet hooded shawl, teal glow, closed eyes, hum-note above. Candidate.
+- Status: all four candidates, not approved. Expression sets not generated yet.
+
+## 2026-11-14 new villain menacing pass (author direction: villains should look menacing)
+- Prompts rewritten: design/art/pipeline/villains/<name>-ref-prompt.txt (menacing wording, same no-gore and not-frightening-to-small-children limits as the King).
+- Outputs: raw/villains/<name>/menacing-01.png (raw, git-ignored). Earlier ref-01 files are superseded but kept on disk.
+- hiccup-hydra menacing-01: PASS. Narrowed eyes, snarls, claws, glowing edges. Deviation: the left head shows fangs in an open grin, which is at the edge of "not frightening to small children"; check it.
+- wickmaw menacing-01: PASS. Smirk, grey mist, hooked pole, amber eyes. Deviations: the belt has a bell, not a snuffer; hair is black.
+- cinderwhisk menacing-01: DRIFT. Reads as a dark cat-like creature with cat ears and whiskers, not the slim gloom idol in the sheet. Gold eyes, spiked collar and sparkle cape are correct. Needs a decision: keep the cat-like look, or regenerate as a gloom idol.
+- lulltide menacing-01: PASS. Hood, cold teal eyes, narrowed smile, claws on a lantern, hum-notes as dark mist.
+- Status: all four candidates, not approved. Cinderwhisk needs a decision before any expression set.
+
+## 2026-11-14 new villain menacing set APPROVED
+- Author approved (chat, "perfect"): hiccup-hydra, wickmaw, cinderwhisk and lulltide menacing-01 images are canonical references. Superseded: earlier ref-01 files.
+- Accepted as-is: the Cinderwhisk cat-like look, the Hydra's fangs, and Wickmaw's bell (not a snuffer). Lulltide keeps a soft, sleepy personality.
+- Next: expression sets (not started).

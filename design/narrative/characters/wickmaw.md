@@ -28,7 +28,7 @@ date: 2026-11-14
 ## Visual design
 - **Build:** tall and thin, in a grey-violet coat with a high collar, an old lamplighter's pole on his back, and a snuffer on his belt. (Provisional)
 - **Colours:** coat grey-violet `#5A4E7A`, trim pale lavender `#C9B8FF`, eyes amber `#FFB347` (matching the King's glow, so the two read as related). (Provisional, needs a code check)
-- **Look rule:** stern, not scary. Round shapes, no sharp teeth, a little smile under the scowl. Never gory. (Provisional, art bible pillar 4)
+- **Look rule:** menacing (author direction 2026-11-14): sharp amber eyes under a heavy brow, a cold smirk, grey mist around him. Never gory, never frightening to small children. (Provisional, art bible pillar 4)
 
 ## Gameplay role
 - Act 3 mini-boss. He blocks the stairs and uses a snuff move: a dimming wave that the player dodges by standing in a lit tile. (Provisional, needs design)
