@@ -253,3 +253,12 @@ Every attempt, including rejected ones. One entry per image.
 - Author approved (chat, "perfect"): hiccup-hydra, wickmaw, cinderwhisk and lulltide menacing-01 images are canonical references. Superseded: earlier ref-01 files.
 - Accepted as-is: the Cinderwhisk cat-like look, the Hydra's fangs, and Wickmaw's bell (not a snuffer). Lulltide keeps a soft, sleepy personality.
 - Next: expression sets (not started).
+
+## 2026-11-14 pearl ref APPROVED
+- Author approved Pearl's reference (chat, 2026-11-14). Canonical Pearl reference: raw/pearl/ref-01.png (pearl-ref-prompt.txt).
+- Pearl expression set (neutral, happy, cheer, determined): NOT yet approved. The green-screen batch renders these as candidates for review.
+- New villains (hiccup-hydra, wickmaw, cinderwhisk, lulltide): references only. No expression sets yet.
+
+## 2026-11-14 nun ref: neutral-frame workaround
+- nun-ref render blocked twice by the image safety system (moderation_blocked, category sexual). Not reworded. Appeal request IDs: req_eda1bd60797d4f46be49d1fa10fef361, req_b663abe3be07499182652c29f3cb366c.
+- Author chose: use the approved Nun neutral frame as the reference. raw/keyed/nun/ref.png = copy of raw/keyed/nun/neutral.png.

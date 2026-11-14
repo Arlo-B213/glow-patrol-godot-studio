@@ -6,7 +6,7 @@ date: 2026-11-02
 
 # Character Art Pipeline (AI-rendered portraits and key art)
 
-Scope (author decision): **portraits and key art only**. Brawl figures stay code-drawn, because their animations (punches, walks, hits) depend on the code. Generator in use: **OpenAI Images API (gpt-image-1.5, 1024x1024, quality medium)** via `tools/generate.sh`. SeaArt and Leonardo were the original plan and are not in use.
+Scope (author decision, amended 2026-11-14): portraits, key art, **and brawl figures**. The approved art replaces the code-drawn brawl characters too (hunters, the Grumble King, the Hydra, Wickmaw, Cinderwhisk, Lulltide, the Gloomlings and the pets). Brawl animation (walk, hit, knock-down) needs a sprite plan, because static images cannot follow the code's motion. Generator in use: **OpenAI Images API (gpt-image-1.5, 1024x1024, quality medium)** via `tools/generate.sh`. SeaArt and Leonardo were the original plan and are not in use.
 
 ## 1. What gets generated
 
