@@ -38,3 +38,10 @@ One sheet per character. Every sheet has the same sections, so the cast can be c
 | Wickmaw | Act 3 stair-warden of the Grumble Tower | `wickmaw.md` |
 | Cinderwhisk | Act 4 rival at the Shining Ring | `cinderwhisk.md` |
 | Lulltide | Gloomling nest singer; dims pets with a lullaby | `lulltide.md` |
+| Blinker | Gloomling scout (brawl enemy) | `blinker.md` |
+| Mossback | Gloomling brute (brawl enemy) | `mossback.md` |
+| Xolo | Pet companion (axolotl) | `xolo.md` |
+| Puff | Pet companion (glow-moth) | `puff.md` |
+| Sparkfox | Pet companion (fox) | `sparkfox.md` |
+| Moonbun | Pet companion (moon-rabbit) | `moonbun.md` |
+| Inkydrake | Pet companion (teal dragon) | `inkydrake.md` |

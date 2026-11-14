@@ -31,7 +31,7 @@ date: 2026-11-02
 - **Signature weapon:** a plain straight glowstick. It is her only weapon, and she polishes it. (Provisional)
 
 ## Gameplay role
-- Unlocks after chapter 10 is finished (quiz passed). Locked before that.
+- Unlocks when the act 3 opener (ch11 "The Grumble Stairs") is finished. Locked before that. (Author decision 2026-11-14; code matches in `story_hunters.gd`.)
 - Playable hunter with the same combo chain as You. No brawl move yet. (Provisional, a move can be designed in act 3)
 
 ## Open questions
