@@ -9,7 +9,7 @@
 1. **Glow is the hero.** Light sources (glowsticks, lanterns, stage lights) are the brightest things on screen. Everything else is slightly muted so glow reads first.
 2. **Clear at a glance.** A 6-year-old must tell hunter, Lanternboy, demon and pickup apart at phone size, in under a second.
 3. **Idol polish.** Clean silhouettes, confident poses, tidy outlines. No grit, no gore.
-4. **Friendly monsters.** Gloom characters are spooky-cute, never scary. Dark purple, not black.
+4. **Friendly monsters.** Gloom characters are spooky-cute, never gory or gross. Dark purple, not black. Villains may be menacing (e.g. the Grumble King: stone-grey skin, amber eyes, a scowl), but must never be frightening to small children. The pets and the Gloomlings stay friendly.
 
 ## 2. Palette
 
