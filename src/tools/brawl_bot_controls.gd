@@ -3,11 +3,14 @@ extends Control
 ## chosen movement, never blocks, and carries the fields the HUD reads from the real controls.
 
 signal punch_pressed
+signal move_pressed
 
 var move := Vector2.ZERO
 var active := true
 var guard_ratio := 1.0
 var guard_broken := false
+var move_name := ""
+var move_ready_ratio := 1.0
 
 
 func read_move() -> Vector2:

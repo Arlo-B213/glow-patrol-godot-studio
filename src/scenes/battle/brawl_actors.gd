@@ -9,6 +9,7 @@ const FD := preload("res://scripts/fast_draw.gd")
 const BrawlArt := preload("res://scenes/battle/brawl_art.gd")
 const BrawlEnemies := preload("res://scripts/brawl_enemies.gd")
 const HunterArt := preload("res://scripts/hunter_art.gd")
+const BrawlBreakerRig := preload("res://scripts/rigs/brawl_breaker_rig.gd")
 const Lanes := preload("res://scenes/battle/brawl_lanes.gd")
 const World := preload("res://scenes/battle/brawl_world.gd")
 const Boss := preload("res://scenes/battle/brawl_boss.gd")
@@ -190,7 +191,10 @@ static func _hunter(v: Variant, calm: bool) -> void:
 		alpha = 0.35
 	var hurt_t: int = (55 - v.player_invincible) if (v.player_invincible > 0 and v.player_invincible > 41 and v.player_invincible < 56) else -1
 	Lanes.shadow(v, v.player_x, fy, 52.0 * u * sc, v.player_y)
-	HunterArt.draw_hunter(v, v.player_x, fy, u * HUNTER_ART_SCALE * sc, v.player_facing, v.anim_t, v.walk_blend > 0.5, alpha, v.punch_active, v.look, hurt_t, true, v.walk_phase, v.walk_blend, v.block_t)
+	if BrawlBreakerRig.is_breaker(v.look):
+		BrawlBreakerRig.sync(v, v.player_x, fy, u * HUNTER_ART_SCALE * sc, v.player_facing, alpha, v.walk_blend > 0.5, v.punch_active, hurt_t)
+	else:
+		HunterArt.draw_hunter(v, v.player_x, fy, u * HUNTER_ART_SCALE * sc, v.player_facing, v.anim_t, v.walk_blend > 0.5, alpha, v.punch_active, v.look, hurt_t, true, v.walk_phase, v.walk_blend, v.block_t)
 	if v.block_t > 0.05:
 		var f: float = float(v.player_facing)
 		var c := Vector2(v.player_x + f * 22.0 * u * sc, fy - 74.0 * u * sc)

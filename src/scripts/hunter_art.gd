@@ -17,6 +17,7 @@ const Limbs := preload("res://scripts/hunter_limbs.gd")
 const Face := preload("res://scripts/hunter_face.gd")
 const Hair := preload("res://scripts/hunter_hair.gd")
 const Motion := preload("res://scripts/hunter_motion.gd")
+const Skel := preload("res://scripts/hunter_skeleton.gd")
 const Weapons := preload("res://scripts/hunter_weapons.gd")
 const Light := preload("res://scripts/scene_light.gd")
 ## Outline weight multiplier for the hunter: bolder silhouette, same interior detail.
@@ -107,48 +108,54 @@ static func _draw_hunter_body(ci: CanvasItem, x: float, ground_y: float, u: floa
 		Fx.aura(ci, base + Vector2(lean * 0.4, -52.0 - LEG_EXTRA_SIDE * 0.5 - bob) * u, 26.0 * u, 50.0 * u, glow, alpha, float(ps["pulse"]), 0.8)
 
 	# Legs and boots (4-pose walk cycle: contact, down, passing, up).
+	# Every joint comes from the named skeleton, so the drawing and the rig agree.
+	var J: Dictionary = Skel.side_joints(base, u, f, ps, lean, bob, breath, LEG_EXTRA_SIDE)
 	for side in [-1.0, 1.0]:
-		var fp: Vector2 = ps["foot_b"] if side > 0.0 else ps["foot_a"]
-		var hip: Vector2 = base + Vector2(side * 6.0, -40.0 - LEG_EXTRA_SIDE - bob) * u
-		var foot: Vector2 = base + Vector2(side * (float(ps["stance_x"]) + float(ps["spread"])) + f * fp.x, -4.0 - fp.y) * u
+		var hip: Vector2 = J["hip_b"] if side > 0.0 else J["hip_a"]
+		var foot: Vector2 = J["foot_b"] if side > 0.0 else J["foot_a"]
 		Limbs.leg_side(ci, hip, foot, u, alpha, rim if side * f < 0.0 else Limbs.NO_RIM)
 		Limbs.boot_side(ci, foot, u, f, glow, alpha)
 
 	# Front arm aim, shared with the back arm's twin stick below.
+	var dir: Vector2 = J["aim"]
 	var ang: float = ps["ang"]
-	var dir := Vector2(f * cos(ang), sin(ang))
+	var ba: float = ps["back_arm"]
 
 	# Free (back) arm swings opposite the front leg, behind the body.
-	var back_sh: Vector2 = base + Vector2(-f * 4.0 + lean * 0.85, -68.0 - LEG_EXTRA_SIDE - bob - breath) * u
-	var ba: float = ps["back_arm"]
-	var back_hand: Vector2 = back_sh + Vector2(f * sin(ba), cos(ba)) * 20.0 * u
+	var back_sh: Vector2 = J["back_shoulder"]
+	var back_hand: Vector2 = J["back_hand"]
 	Limbs.arm(ci, back_sh, back_hand, 6.0 * u, Shade.darken(outfit, 0.25), alpha, 0.08 + absf(ba) * 0.1)
 	if _is_twin(look):
 		Weapons.draw(ci, String(look.get("weapon", "stick")), back_hand, dir, 36.0 * u, 3.6 * u, glow, alpha, float(ps["pulse"]), float(ps["pulse_a"]))
 	Limbs.hand(ci, back_hand, Vector2(f * sin(ba), cos(ba)), 3.6 * u, alpha, false)
 
 	# Coat tail streaming behind, then the jacket.
-	var body_o: Vector2 = base + Vector2(lean * 0.6, -LEG_EXTRA_SIDE - bob - breath * 0.4) * u
+	var body_o: Vector2 = J["body"]
 	Outfits.draw_side(ci, String(look.get("outfit_style", "track")), body_o, u, f, sway, moving, outfit, ps["tw"], alpha)
 	Fx.rim(ci, body_o + Vector2(-f * 15.5, -72.0) * u, body_o + Vector2(-f * 12.5, -44.0) * u, glow, 1.4 * u, alpha)
 	Fx.rim(ci, body_o + Vector2(-f * 14.0, -73.5) * u, body_o + Vector2(f * 6.0, -75.0) * u, glow, 1.0 * u, alpha)
 
-	# Hair behind the head, then the face.
-	var head: Vector2 = base + Vector2(f * 2.0 + lean - f * 2.0 * hurt, -88.0 - LEG_EXTRA_SIDE - bob + float(ps["head_dy"]) + 1.5 * hurt) * u
-	Face.hair_back_side(ci, head, u, f, sway - f * lean * 0.3, hair, style == "twintails", alpha, style)
-	Face.face_side(ci, head, u, f, hair, alpha, ps["blink"], false, expr, Color(glow.r, glow.g, glow.b, 1.0))
+	# Head bone: hair, face and accessories draw in the joint's own space, so the whole head
+	# tilts about the neck. The tilt is a slow idle sway (about 1.7 degrees) and zero when still.
+	var head: Vector2 = J["head"]
+	var tilt: float = sin(float(anim_t) * 0.07 - 0.7) * 0.03 * f if animate and Motion.motion_on() else 0.0
+	ci.draw_set_transform(head, tilt, Vector2.ONE)
+	var hz := Vector2.ZERO
+	Face.hair_back_side(ci, hz, u, f, sway - f * lean * 0.3, hair, style == "twintails", alpha, style)
+	Face.face_side(ci, hz, u, f, hair, alpha, ps["blink"], false, expr, Color(glow.r, glow.g, glow.b, 1.0))
 
 	# The gold hair clip gives way to any headwear so the two never collide.
 	if headwear == "none":
-		var clip: Vector2 = head + Vector2(-f * 10.0, -9.0) * u
+		var clip: Vector2 = hz + Vector2(-f * 10.0, -9.0) * u
 		Shade.circle(ci, clip, 3.0 * u, _c(GOLD, alpha), maxf(1.0, 0.7 * u), Shade.ink(_c(GOLD, alpha)))
 		FD.circle(ci, clip + Vector2(-0.8, -0.8) * u, 0.9 * u, _c(Color.WHITE, 0.8 * alpha))
-	Accessories.draw_face_side(ci, face_acc, head, u, f, alpha)
-	Accessories.draw_headwear_side(ci, headwear, head, u, f, hair, alpha)
+	Accessories.draw_face_side(ci, face_acc, hz, u, f, alpha)
+	Accessories.draw_headwear_side(ci, headwear, hz, u, f, hair, alpha)
+	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	# Front arm and glowstick; the swing sweeps from raised-back to forward.
-	var shoulder: Vector2 = base + Vector2(f * 7.0 + lean * 0.85, -70.0 - LEG_EXTRA_SIDE - bob - breath) * u
-	var hand: Vector2 = shoulder + dir * 24.0 * u
+	var shoulder: Vector2 = J["shoulder"]
+	var hand: Vector2 = J["hand"]
 	Limbs.arm(ci, shoulder, hand, 7.0 * u, outfit, alpha, 0.06, Limbs.NO_RIM)
 	var wlen: float = 36.0 * u
 	Weapons.draw(ci, String(look.get("weapon", "stick")), hand, dir, wlen, 4.0 * u, glow, alpha, float(ps["pulse"]), float(ps["pulse_a"]))

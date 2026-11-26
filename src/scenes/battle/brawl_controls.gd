@@ -10,6 +10,8 @@ const FD := preload("res://scripts/fast_draw.gd")
 ## `block_held` each frame and listens for `punch_pressed`.
 
 signal punch_pressed
+## MOVE button (or L): the hunter's Lanternboy move, when it has one.
+signal move_pressed
 
 const MOUSE_ID := -1
 const STICK_RADIUS := 52.0
@@ -19,6 +21,9 @@ const STICK_DEADZONE := 0.12
 var guard_ratio := 1.0
 var guard_broken := false
 var block_held := false
+## Caption of the hunter's move ("" = no move button) and its ready fraction (1 = ready).
+var move_name := ""
+var move_ready_ratio := 1.0
 ## When false (finished/paused) input is ignored.
 var active := true
 
@@ -90,12 +95,15 @@ func _layout() -> Dictionary:
 	var block := Vector2(punch.x - rp - rb - 14.0 * u, punch.y + rp * 0.25)
 	var left := Vector2(24.0 * u + ra, size.y - ra - 34.0 * u)
 	var right := Vector2(left.x + 2.0 * ra + 14.0 * u, left.y)
-	return {"punch": [punch, rp], "block": [block, rb], "left": [left, ra], "right": [right, ra]}
+	var move := Vector2(punch.x, punch.y - rp - rb * 2.0 - 30.0 * u)
+	return {"punch": [punch, rp], "block": [block, rb], "left": [left, ra], "right": [right, ra], "move": [move, rb]}
 
 
 func _role_at(p: Vector2) -> String:
 	var lay: Dictionary = _layout()
-	for role in ["punch", "block", "left", "right"]:
+	for role in ["punch", "block", "left", "right", "move"]:
+		if role == "move" and move_name == "":
+			continue
 		var d: Array = lay[role]
 		if p.distance_to(d[0]) <= float(d[1]) + 8.0 * _u:
 			return role
@@ -127,6 +135,8 @@ func _input(event: InputEvent) -> void:
 		var k := event as InputEventKey
 		if k.pressed and not k.echo and (k.physical_keycode == KEY_J or k.physical_keycode == KEY_SPACE):
 			punch_pressed.emit()
+		if k.pressed and not k.echo and k.physical_keycode == KEY_L:
+			move_pressed.emit()
 
 
 func _local(p: Vector2) -> Vector2:
@@ -149,6 +159,8 @@ func _pointer(id: int, p: Vector2, pressed: bool) -> void:
 	_pointers[id] = role
 	if role == "punch":
 		punch_pressed.emit()
+	elif role == "move":
+		move_pressed.emit()
 	elif role == "stick" and _stick_id == -2:
 		_stick_id = id
 		_stick_origin = p
@@ -184,6 +196,9 @@ func _draw() -> void:
 	_round_button(lay["right"], "right", UiTheme.PANEL_LIGHT, "forward", UiTheme.TEXT)
 	_round_button(lay["punch"], "punch", UiTheme.ACCENT, "fist", UiTheme.TEXT_ON_ACCENT, "PUNCH")
 	_round_button(lay["block"], "block", UiTheme.TEAL, "shield", UiTheme.TEXT_ON_ACCENT, "BLOCK", guard_broken)
+	if move_name != "":
+		_round_button(lay["move"], "move", UiTheme.GOLD, "star", UiTheme.TEXT_ON_ACCENT, move_name, move_ready_ratio < 1.0)
+		FD.arc(self, lay["move"][0], float(lay["move"][1]) + 5.0 * u, -PI * 0.5, -PI * 0.5 + TAU * move_ready_ratio, 40, Color(UiTheme.GOLD, 0.9), 4.0 * u, true)
 
 
 func _round_button(d: Array, role: String, col: Color, icon: String, ink: Color, caption: String = "", dim: bool = false) -> void:

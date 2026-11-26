@@ -31,8 +31,8 @@ func render_hub() -> void:
 	vbox.add_child(UiCards.mode_card("zap", UiTheme.GOLD, "Zap Patrol", "Tap Gloomlings before they float away.", "Best %d" % int(game_state.best_scores.get("battle", 0)), _on_zap_card_pressed))
 	vbox.add_child(UiCards.mode_card("fist", UiTheme.ACCENT, "Alley Brawl", "Walk up and punch - a beat-'em-up patrol.", "Best %d" % int(game_state.best_scores.get("brawl", 0)), _on_brawl_card_pressed))
 	var arc := preload("res://scripts/story_arc.gd")
-	var done: int = arc.unlocked_count(int(game_state.story_wins))
-	vbox.add_child(UiCards.mode_card("star", UiTheme.TEAL, arc.TITLE, "Clear patrols to unlock the next chapter.", "Chapter %d/%d" % [done, arc.CHAPTERS.size()], render_story))
+	var done: int = int(game_state.story_claimed)
+	vbox.add_child(UiCards.mode_card("star", UiTheme.TEAL, arc.TITLE, "Keep playing and visit the Lounge to unlock chapters.", "Chapter %d/%d" % [done, arc.CHAPTERS.size()], render_story))
 
 
 func _build_intro(icon: String, color: Color, eyebrow: String, heading: String, body: String,
@@ -113,7 +113,44 @@ func _build_result(heading: String, score: int, earned: int, on_again: Callable,
 ## Story arc screen (Story 004/020): chapters, plus the finale button once chapter 5 is open.
 func render_story() -> void:
 	_clear_content()
-	content.add_child(StoryPanel.create(game_state, render_hub, _start_finale))
+	content.add_child(StoryPanel.create(game_state, render_hub, _start_finale, _start_chapter_quiz))
+
+
+## Opens the quiz for chapter `i`: its reading questions at the chapter's grade.
+func _start_chapter_quiz(i: int) -> void:
+	var ch: Dictionary = StoryArc.CHAPTERS[i]
+	_clear_content()
+	var questions: Array = StudyQuestions.round_for("reading", int(ch["quiz_grade"]))
+	var boy_name: String = String(game_state.lanternboy_by_id(String(ch["boy"]))["name"])
+	var quiz := ChapterQuiz.create(questions, boy_name)
+	content.add_child(quiz)
+	quiz.finished.connect(_on_chapter_quiz_finished.bind(String(ch["id"])))
+
+
+## Passing finishes the chapter: it pays and unlocks what it opens, and announces new hunters.
+func _on_chapter_quiz_finished(passed: bool, chapter_id: String) -> void:
+	if passed:
+		var hunters_before: Array = _unlocked_hunters()
+		Snd.play("chapter")
+		toast.show_message("Chapter finished!")
+		for ch in game_state.complete_chapter(chapter_id):
+			toast.show_message("Story: %s" % ch["title"])
+		for id in _unlocked_hunters():
+			if not hunters_before.has(id):
+				toast.show_message("New hunter: %s!" % StoryHunters.name_of(id))
+	else:
+		Snd.play("error")
+		toast.show_message("Almost! Read the chapter and try again.")
+	render_story()
+
+
+## Fellow and own hunters the player can play as right now.
+func _unlocked_hunters() -> Array:
+	var out: Array = []
+	for id in StoryHunters.ORDER:
+		if StoryHunters.unlocked(game_state, id):
+			out.append(id)
+	return out
 
 
 ## Launches Alley Brawl straight into the Grumble King (finale option on the brawl view).

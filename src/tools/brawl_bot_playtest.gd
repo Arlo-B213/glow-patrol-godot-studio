@@ -7,6 +7,7 @@ extends SceneTree
 
 const VIEW := preload("res://scenes/battle/alley_brawl_view.tscn")
 const Player := preload("res://scenes/battle/brawl_player.gd")
+const BrawlMoves := preload("res://scenes/battle/brawl_moves.gd")
 const World := preload("res://scenes/battle/brawl_world.gd")
 const BOT_CONTROLS := preload("res://tools/brawl_bot_controls.gd")
 const MAX_FRAMES := 30000
@@ -20,6 +21,12 @@ func _init() -> void:
 	var gs: Node = root.get_node("GameState")
 	gs.persist_saves = false
 	gs.tutorial_done = true
+	var hunter: String = args[2] if args.size() > 2 else "glow"
+	if hunter != "glow":
+		for ch in StoryArc.CHAPTERS:
+			gs.chapters_done.append(String(ch["id"]))
+	gs.active_hunter = hunter
+	var moves_used := 0
 	var wins := 0
 	for r in runs:
 		seed(1000 + r)
@@ -55,6 +62,9 @@ func _init() -> void:
 			if near and view.punch_cooldown <= 0:
 				Player.trigger_punch(view)
 				punches += 1
+			if view.move_id != "" and view.move_cooldown <= 0 and absf(dx) < 150.0 * view.u and absf(dy) < 0.05:
+				BrawlMoves.trigger(view)
+				moves_used += 1
 		if outcome == "timeout":
 			for e in view.enemies:
 				print("  left enemy x=%.0f y=%.2f mode=%s" % [float(e["x"]), float(e["y"]), String(e["mode"])])
@@ -66,6 +76,7 @@ func _init() -> void:
 			wins += 1
 		view.free()
 		await process_frame
+	print("hunter=%s moves_used=%d" % [gs.active_hunter, moves_used])
 	print("wins %d / %d" % [wins, runs])
 	print("DONE")
 	quit()

@@ -51,6 +51,7 @@ const Hud := preload("res://scenes/battle/brawl_hud.gd")
 const BrawlEnemies := preload("res://scripts/brawl_enemies.gd")
 const BlinkerArt := preload("res://scenes/battle/brawl_art_enemies.gd")
 const PetCompanion := preload("res://scenes/battle/pet_companion.gd")
+const Moves := preload("res://scenes/battle/brawl_moves.gd")
 
 const DEBUG_BOSS_ARG := "--brawl-boss"
 const DEBUG_BOSS_KIND_ARG := "--brawl-boss="
@@ -66,6 +67,10 @@ var reach: float = 1.0
 var anim_t := 0
 ## Active-pet sidekick (null when no hatched pet); see pet_companion.gd.
 var companion: RefCounted = null
+## The playing hunter's Lanternboy move ("" for none), its cooldown in frames and the heart cap.
+var move_id := ""
+var move_cooldown := 0
+var max_hearts := BRAWL_HEARTS
 var world := World.new()
 var hud: Control
 var controls: Control
@@ -165,7 +170,11 @@ func _ready() -> void:
 	controls = Controls.new()
 	add_child(controls)
 	controls.punch_pressed.connect(_on_punch)
+	controls.move_pressed.connect(_on_move)
 	look = game_state.hunter_look()
+	var move: Dictionary = StoryHunters.move_of(game_state.active_hunter)
+	move_id = String(move.get("id", ""))
+	controls.move_name = String(move.get("caption", ""))
 	reach = game_state.weapon_reach()
 	companion = PetCompanion.create(game_state)
 	_apply_debug_args()
@@ -249,6 +258,9 @@ func _rescale(k: float) -> void:
 ## One fixed 60 Hz simulation step.
 func _tick() -> void:
 	anim_t += 1
+	if move_cooldown > 0:
+		move_cooldown -= 1
+	controls.move_ready_ratio = Moves.ready_ratio(move_cooldown)
 	Player.update(self)
 	if not ended and not in_fight and zone_i < World.ZONES.size() and player_x >= World.zone_trigger_px(zone_i, size.x):
 		_enter_zone(zone_i)
@@ -460,6 +472,11 @@ func spawn_particles(pos: Vector2, color: Color) -> void:
 func _on_punch() -> void:
 	if running and quiz_card == null:
 		Player.trigger_punch(self)
+
+
+func _on_move() -> void:
+	if running and quiz_card == null:
+		Moves.trigger(self)
 
 
 ## A strike from `from_x` landed (blocks are resolved by brawl_combat.gd first).

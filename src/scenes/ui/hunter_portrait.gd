@@ -20,6 +20,8 @@ var hero: bool = false:
 
 var _look_override: Dictionary = {}
 var _time: float = 0.0
+## The 3D Gloom Breaker, created on first use in hero mode and hidden for other outfits.
+var _model: BreakerModelView
 
 
 func _init() -> void:
@@ -74,6 +76,25 @@ func _draw() -> void:
 		look = gs.hunter_look()
 	var t: float = _time if idle_bob else 0.0
 	if hero:
-		HunterHero.draw_hero(self, Rect2(Vector2.ZERO, size), look, t, idle_bob)
+		_draw_hero_look(look, t)
 		return
 	HunterArt.draw_portrait(self, Rect2(Vector2.ZERO, size), look, t)
+
+
+## Hero mode: the stage backdrop, then the figure. The Gloom Breaker is a 3D model laid over the
+## backdrop; every other outfit keeps the code-drawn figure.
+func _draw_hero_look(look: Dictionary, t: float) -> void:
+	var rect := Rect2(Vector2.ZERO, size)
+	var breaker: bool = String(look.get("outfit_style", "")) == "breaker"
+	HunterHero.draw_hero(self, rect, look, t, idle_bob, not breaker)
+	if not breaker:
+		if _model != null:
+			_model.visible = false
+		return
+	if _model == null:
+		_model = BreakerModelView.new()
+		add_child(_model)
+	_model.visible = true
+	_model.position = HunterHero.figure_rect(rect).position
+	_model.size = HunterHero.figure_rect(rect).size
+	_model.set_angle(-1.0 if HunterMotion.motion_on() else 0.0)

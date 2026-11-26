@@ -19,6 +19,11 @@ func setup(game_state: Node) -> LoungeMap:
 	add_theme_constant_override("separation", 12)
 	for boy in game_state.LANTERNBOYS:
 		add_child(_place_card(boy))
+	# Bottom padding so the last place's buttons scroll clear of the nav bar.
+	var pad := Control.new()
+	pad.custom_minimum_size = Vector2(0, 180)
+	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(pad)
 	return self
 
 func _place_card(boy: Dictionary) -> PanelContainer:
@@ -26,6 +31,8 @@ func _place_card(boy: Dictionary) -> PanelContainer:
 	var affection: int = int(_game_state.affection.get(boy_id, 0))
 	var card := PanelContainer.new()
 	card.theme_type_variation = "CardPanel"
+	# Pass touches through so a drag on a card scrolls the list; taps still reach the buttons.
+	card.mouse_filter = Control.MOUSE_FILTER_PASS
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	card.add_child(box)
@@ -33,7 +40,7 @@ func _place_card(boy: Dictionary) -> PanelContainer:
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 12)
 	box.add_child(top)
-	top.add_child(ClubCards.portrait_tile(boy_id, Color(boy["color"]), Vector2(72, 72), 16))
+	top.add_child(ClubCards.portrait_tile(boy_id, Color(boy["color"]), Vector2(124, 124), 16))
 	var text := VBoxContainer.new()
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(text)
@@ -46,6 +53,7 @@ func _place_card(boy: Dictionary) -> PanelContainer:
 	talk.text = "Talk to %s" % boy["name"]
 	talk.theme_type_variation = "SecondaryButton"
 	talk.focus_mode = Control.FOCUS_NONE
+	talk.mouse_filter = Control.MOUSE_FILTER_PASS
 	talk.custom_minimum_size = Vector2(0, 52)
 	talk.pressed.connect(func(): talk_requested.emit(boy_id))
 	box.add_child(talk)
@@ -58,6 +66,7 @@ func _mission_button(mission: Dictionary, affection: int) -> Button:
 	var btn := Button.new()
 	btn.theme_type_variation = "SecondaryButton"
 	btn.focus_mode = Control.FOCUS_NONE
+	btn.mouse_filter = Control.MOUSE_FILTER_PASS
 	btn.custom_minimum_size = Vector2(0, 56)
 	btn.disabled = not open
 	if open:

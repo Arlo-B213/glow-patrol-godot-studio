@@ -1,7 +1,7 @@
 extends RefCounted
 ## Loads the approved character art from res://assets/art/characters/<id>/<expression>.png.
 ## Returns null when a file is missing, so callers fall back to the code-drawn art.
-## Images are read from the bytes (no editor import needed) and cached per path.
+## Textures load through ResourceLoader (they are imported at export) and are cached per path.
 
 const ROOT := "res://assets/art/characters"
 
@@ -19,10 +19,9 @@ static func texture(id: String, expression: String = "neutral") -> Texture2D:
 	if _cache.has(path):
 		return _cache[path]
 	var tex: Texture2D = null
-	if FileAccess.file_exists(path):
-		var img := Image.new()
-		if img.load_png_from_buffer(FileAccess.get_file_as_bytes(path)) == OK:
-			tex = ImageTexture.create_from_image(img)
+	# Exported builds ship imported textures, not the source PNG, so load through ResourceLoader.
+	if ResourceLoader.exists(path):
+		tex = load(path) as Texture2D
 	_cache[path] = tex
 	return tex
 

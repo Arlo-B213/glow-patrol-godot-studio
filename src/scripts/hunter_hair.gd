@@ -2,8 +2,8 @@ extends RefCounted
 const FD := preload("res://scripts/fast_draw.gd")
 ## Hair for the idol hunter (Story 032): gradient masses, strand highlights, side-swept
 ## fringe with a parting, and tails that lag the head (secondary motion via `sway`).
-## Styles: bob, twintails (both selectable in game) plus ponytail, which the art already
-## supports and only needs a GameState.HAIRSTYLES entry. All polygons are simple.
+## Styles: bob, twintails, ponytail and long (the last two are the main hunter and Pearl)
+## are selectable through GameState.HAIRSTYLES. All polygons are simple.
 
 const Shade := preload("res://scripts/hunter_shade.gd")
 const PINK := Color("#FF5FA2")
@@ -104,6 +104,8 @@ static func back_front(ci: CanvasItem, head: Vector2, k: float, hair: Color, sty
 			tail(ci, proot, Vector2(0.55, 0.83).normalized(), 56.0 * k, 17.0 * k, sway * 1.4 + 4.0, k, hair, alpha, 4.0)
 			_back_mass(ci, head, k, base, dark, sway, 0.55, w)
 			_scrunchie(ci, proot, 5.2 * k, alpha, w)
+		"long":
+			_back_mass(ci, head, k, base, dark, sway, 1.9, w)
 		_:
 			_back_mass(ci, head, k, base, dark, sway, 1.0, w)
 
@@ -208,6 +210,10 @@ static func back_side(ci: CanvasItem, head: Vector2, u: float, f: float, sway: f
 		var proot: Vector2 = head + Vector2(-f * 9.0, -8.0) * u
 		tail(ci, proot, Vector2(-f * 0.7, 0.72).normalized(), 38.0 * u, 11.0 * u, -f * (sway * 0.9 + 3.0), u, hair, alpha, 3.0)
 		_scrunchie(ci, proot, 3.8 * u, alpha, w)
+	if style == "long":
+		for side in [-1.0, 1.0]:
+			var lock_root: Vector2 = head + Vector2(side * 9.0 - f * 2.0, 2.0) * u
+			tail(ci, lock_root, Vector2(side * 0.08 - f * 0.12, 1.0).normalized(), 42.0 * u, 12.0 * u, sway * 0.7 - f * 2.0 + side, u, hair, alpha)
 	var pts := PackedVector2Array()
 	var bc: Vector2 = head + Vector2(-f * 2.0, 3.0) * u
 	for i in range(24):

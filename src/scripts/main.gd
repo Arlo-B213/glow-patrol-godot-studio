@@ -371,6 +371,16 @@ func _open_settings() -> void:
 	page.closed.connect(func():
 		_top.update_motion_button()
 		set_screen("home"))
+	page.preview_requested.connect(_open_breaker_preview)
+	content_area.add_child(page)
+
+
+## Debug-only: replaces the content area with the 3D Gloom Breaker preview; Back returns to Settings.
+func _open_breaker_preview() -> void:
+	for child in content_area.get_children():
+		child.queue_free()
+	var page := BreakerPreviewPage.new().setup()
+	page.closed.connect(_open_settings)
 	content_area.add_child(page)
 
 

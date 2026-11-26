@@ -4,10 +4,14 @@ extends Control
 ## but disabled until their owning stories (044, 045) ship.
 
 signal closed
+## Emitted by the debug-only "3D preview" row, to open the Gloom Breaker 3D preview.
+signal preview_requested
 
 const PALETTE_LABELS := {"off": "Off", "protan": "Protan", "deutan": "Deutan", "tritan": "Tritan"}
 
 var _gs: Node
+## Keeps the debug friend-code panel's signal handlers alive while the page exists.
+var _friend: FriendDebugRow
 
 
 ## Builds the page for `game_state`.
@@ -36,7 +40,50 @@ func setup(game_state: Node) -> SettingsPage:
 	list.add_child(_toggle_row("Dyslexia-friendly font", "Easier letter shapes for reading. Story 044.",
 			_gs.dyslexia_font, false, Callable()))
 	list.add_child(_palette_row())
+	if OS.is_debug_build():
+		list.add_child(_section("Debug"))
+		list.add_child(_preview_row())
+		list.add_child(_cloud_test_row())
+		_friend = FriendDebugRow.new()
+		list.add_child(_friend.build(_gs, self))
 	return self
+
+
+## Debug builds only: a row whose button opens the 3D Gloom Breaker preview.
+func _preview_row() -> Control:
+	var parts := _row_box("3D preview", "Gloom Breaker as extruded 3D slabs. Debug builds only.", true)
+	var open := Button.new()
+	open.text = "Open"
+	open.theme_type_variation = "SecondaryButton"
+	open.custom_minimum_size = Vector2(120, 56)
+	open.pressed.connect(func(): preview_requested.emit())
+	(parts[1] as HBoxContainer).add_child(open)
+	return parts[0]
+
+
+## Debug builds only: signs in to Firebase anonymously, writes one test profile and reads it back.
+func _cloud_test_row() -> Control:
+	var parts := _row_box("Cloud test", "Firebase sign-in, save and load. Debug builds only.", true)
+	var status := Label.new()
+	status.text = "Not run yet"
+	status.theme_type_variation = "Caption"
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var client := FirebaseClient.new()
+	add_child(client)
+	client.signed_in.connect(func(uid: String): client.set_document("players/" + uid, {"name": "debug", "stars": 1}))
+	client.document_saved.connect(func(path: String): status.text = "Saved " + path + ", loading...")
+	client.document_saved.connect(func(path: String): client.get_document(path))
+	client.document_loaded.connect(func(path: String, data: Dictionary): status.text = "Loaded " + path + ": " + str(data))
+	client.request_failed.connect(func(message: String): status.text = "Failed: " + message)
+	var run := Button.new()
+	run.text = "Test"
+	run.theme_type_variation = "SecondaryButton"
+	run.custom_minimum_size = Vector2(120, 56)
+	run.pressed.connect(func(): status.text = "Signing in..."; client.sign_in_anonymously())
+	(parts[1] as HBoxContainer).add_child(run)
+	(parts[1] as HBoxContainer).get_child(0).add_child(status)
+	return parts[0]
+
 
 
 func _header() -> Control:

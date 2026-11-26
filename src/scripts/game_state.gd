@@ -71,6 +71,8 @@ const LANTERNBOYS := [
 ]
 
 const HAIRSTYLES := [
+	{"id": "ponytail", "name": "Long Ponytail", "cost": 0},
+	{"id": "long", "name": "Long Hair", "cost": 0},
 	{"id": "bob", "name": "Classic Bob", "cost": 0},
 	{"id": "twintails", "name": "Twin Tails", "cost": 35},
 ]
@@ -156,7 +158,7 @@ var equipped_outfit: String = "breaker"
 var unlocked_weapons: Array = ["glowstick"]
 var equipped_weapon: String = "glowstick"
 var unlocked_hairstyles: Array = ["bob"]
-var hairstyle: String = "bob"
+var hairstyle: String = "ponytail"
 var unlocked_hair_colors: Array = ["violet"]
 var hair_color: String = "violet"
 var unlocked_headwear: Array = ["none"]
@@ -190,8 +192,14 @@ var tutorial_done: bool = false
 var streak: int = 0                  ## consecutive days with a claimed Daily Glow Bonus
 var last_login_date: String = ""     ## "YYYY-MM-DD" of the last claimed bonus
 var stickers: Array = []             ## earned sticker ids (see Stickers.STICKERS)
-## Story 020: viewed Lanternboy arc scene ids and whether the finale reward was paid.
-var seen_scenes: Array = []
+## Saga v2 (story_arc.gd): whether the Lounge was visited (chapter 1 trigger). Saves carry STORY_VERSION.
+const STORY_VERSION := 3
+var lounge_visited: bool = false
+## Ids of chapters whose quiz was passed, in order (see StoryArc). Gates the next chapter.
+var chapters_done: Array = []
+## Playable hunter: "glow" (the player) or a fellow hunter id (StoryHunters).
+var active_hunter: String = "glow"
+## Whether the finale reward was paid.
 var finale_done: bool = false
 ## Scratch instances used in checks set this false so nothing touches the real save.
 var persist_saves: bool = true
@@ -279,6 +287,13 @@ func weapon_by_id(id: String) -> Dictionary:
 ## The hunter's equipped look for HunterArt: outfit/hair/glow colours plus hairstyle,
 ## headwear and face_acc ids. Built the same way for every screen.
 func hunter_look() -> Dictionary:
+	if active_hunter != "glow" and StoryHunters.unlocked(self, active_hunter):
+		return StoryHunters.look(active_hunter)
+	return base_look()
+
+
+## The player's own hunter (outfit, hair, weapon, accessories), ignoring the fellow-hunter pick.
+func base_look() -> Dictionary:
 	return {
 		"outfit": outfit_by_id(equipped_outfit)["outfit"],
 		"outfit_style": String(outfit_by_id(equipped_outfit).get("style", "track")),
@@ -324,21 +339,68 @@ func record_mission(mission_id: String, won: bool, score: int = 0) -> int:
 	var gained: int = LoungeMissions.affection_reward(won)
 	var boy: String = m["boy"]
 	affection[boy] = int(affection.get(boy, 0)) + gained
+	check_story(true)
 	save_game()
 	return gained
 
 
 func record_battle_win() -> Array:
-	var arc := preload("res://scripts/story_arc.gd")
 	story_wins += 1
-	var fresh: Array = []
-	var count: int = arc.unlocked_count(story_wins)
-	while story_claimed < count:
-		fresh.append(arc.CHAPTERS[story_claimed])
-		story_claimed += 1
-		earn_points(arc.REWARD_PER_CHAPTER)
-	StoryRewards.sync_outfits(self)
+	var fresh: Array = check_story(true)
 	save_game()
+	return fresh
+
+
+## Marks the Lounge as visited (chapter 1 trigger). Returns the chapters it unlocked.
+func mark_lounge_visit() -> Array:
+	if lounge_visited:
+		return []
+	lounge_visited = true
+	var fresh: Array = check_story(true)
+	save_game()
+	return fresh
+
+
+## True when chapter `id` has been finished (its quiz passed).
+func chapter_done(id: String) -> bool:
+	return chapters_done.has(id)
+
+
+## Marks a chapter finished, then claims any chapter that is now open. Returns the chapters
+## newly unlocked (paid as they are claimed). Does nothing when the chapter is already done.
+func complete_chapter(id: String) -> Array:
+	if chapters_done.has(id):
+		return []
+	chapters_done.append(id)
+	var fresh: Array = check_story(true)
+	save_game()
+	return fresh
+
+
+## Picks the playable hunter. False (no change) when a fellow hunter is still locked.
+func set_active_hunter(id: String) -> bool:
+	if not StoryHunters.unlocked(self, id):
+		return false
+	active_hunter = id
+	save_game()
+	return true
+
+
+## A chapter may be claimed only once the one before it is finished.
+func _previous_done() -> bool:
+	return story_claimed == 0 or chapters_done.has(String(StoryArc.CHAPTERS[story_claimed - 1]["id"]))
+
+
+## Claims, in order, every chapter whose trigger is met. Pays StoryArc.REWARD_PER_CHAPTER per
+## chapter when `pay` is true (the old-save migration passes false). Does not save.
+func check_story(pay: bool) -> Array:
+	var fresh: Array = []
+	while story_claimed < StoryArc.CHAPTERS.size() and _previous_done() and StoryArc.trigger_met(StoryArc.CHAPTERS[story_claimed], self):
+		fresh.append(StoryArc.CHAPTERS[story_claimed])
+		story_claimed += 1
+		if pay:
+			earn_points(StoryArc.REWARD_PER_CHAPTER)
+	StoryRewards.sync_outfits(self)
 	return fresh
 
 
@@ -640,7 +702,10 @@ func to_save_dict() -> Dictionary:
 		"streak": streak,
 		"last_login_date": last_login_date,
 		"stickers": stickers,
-		"seen_scenes": seen_scenes,
+		"lounge_visited": lounge_visited,
+		"chapters_done": chapters_done,
+		"active_hunter": active_hunter,
+		"story_version": STORY_VERSION,
 		"finale_done": finale_done,
 	}
 
@@ -696,9 +761,20 @@ func apply_save_dict(parsed: Dictionary) -> void:
 	last_login_date = str(parsed.get("last_login_date", ""))
 	var raw_st = parsed.get("stickers", [])
 	stickers = (raw_st as Array).duplicate() if typeof(raw_st) == TYPE_ARRAY else []
-	var raw_sc = parsed.get("seen_scenes", [])
-	seen_scenes = (raw_sc as Array).duplicate() if typeof(raw_sc) == TYPE_ARRAY else []
 	finale_done = bool(parsed.get("finale_done", false))
+	lounge_visited = bool(parsed.get("lounge_visited", false))
+	var raw_done = parsed.get("chapters_done", [])
+	chapters_done = (raw_done as Array).duplicate() if typeof(raw_done) == TYPE_ARRAY else []
+	active_hunter = String(parsed.get("active_hunter", "glow"))
+	if int(parsed.get("story_version", 1)) < STORY_VERSION:
+		# Pre-saga save: its chapters were won on the old track. Keep the progress, but claim
+		# the new chapters silently (no repeat star payouts) against the new triggers.
+		# Chapters claimed on the old track count as finished, so the chain carries on from them.
+		chapters_done = []
+		for i in mini(story_claimed, StoryArc.CHAPTERS.size()):
+			chapters_done.append(String(StoryArc.CHAPTERS[i]["id"]))
+		lounge_visited = story_claimed > 0
+		check_story(false)
 	StoryRewards.sync_outfits(self)
 	_load_pets(parsed)
 

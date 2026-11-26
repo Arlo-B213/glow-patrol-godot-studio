@@ -1,0 +1,19 @@
+{
+ "clips": [
+  {
+   "name": "idle",
+   "duration": 15.366666793823242
+  },
+  {
+   "name": "walk",
+   "duration": 2.366666555404663
+  },
+  {
+   "name": "idle_spritecast",
+   "duration": 4
+  }
+ ],
+ "height": 1.0000005870285036,
+ "footY": 0.8464101615137755,
+ "px": 1024
+}

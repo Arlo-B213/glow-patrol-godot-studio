@@ -1,0 +1,9 @@
+{
+  "name": "moonbun",
+  "kind": "animal",
+  "design": "design.png",
+  "description": "Moonbun, a round moon-rabbit pet for kids: pale lilac-white fur, long ears that glow like little lanterns, four legs, big happy eyes, chibi-anime style, clean outlines.",
+  "notes": "four legs visible, ears up, no clothes, no logos",
+  "mirror": true,
+  "frame_px": 256
+}

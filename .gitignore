@@ -182,3 +182,6 @@ $RECYCLE.BIN/
 agent/
 .claude/skills/ultimate-ai-media-generator-skill/
 skills-lock.json
+
+# Raw generator downloads (not for import into Godot)
+design/art/pipeline/raw/
