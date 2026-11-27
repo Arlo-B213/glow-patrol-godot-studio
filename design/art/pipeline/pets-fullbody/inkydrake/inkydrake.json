@@ -1,0 +1,9 @@
+{
+  "name": "inkydrake",
+  "kind": "animal",
+  "design": "design.png",
+  "description": "Inkydrake, a tiny friendly teal dragon pet for kids: teal scales, soft wing-fins with pink edges, small ink-spot freckles, four short legs, big happy eyes, chibi-anime style, clean outlines.",
+  "notes": "four legs visible, wings folded, tail behind, no fire, no clothes, no logos",
+  "mirror": true,
+  "frame_px": 256
+}

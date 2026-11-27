@@ -160,6 +160,7 @@ func tap(pos: Vector2) -> void:
 		var br: float = boss["r"]
 		if bd.length_squared() <= br * br * 1.3 * reach * reach:
 			hit = true
+			Haptics.pulse("zap_strike")
 			_hit_boss(pos)
 	if not hit:
 		for i in range(demons.size() - 1, -1, -1):
@@ -168,6 +169,7 @@ func tap(pos: Vector2) -> void:
 			if pos.distance_squared_to(d["pos"]) <= dr * dr * 1.4 * reach * reach:
 				_hit_demon(i, pos)
 				hit = true
+				Haptics.pulse("zap_strike")
 				break
 	_bolt_id += 1
 	bolts.append({"a": tip, "b": pos, "t": 0.0, "id": _bolt_id, "w": 2.0 + float(combo % COMBO_STEP) * 0.5, "hit": hit})

@@ -21,7 +21,19 @@ const SPOT_WARM := Color("#FFE3A8")
 
 ## Draws the stage and the full-body hunter inside `rect` (in `ci` canvas pixels).
 ## `t` is seconds for the idle animation; `animate` = false (or reduced motion) gives a still.
-static func draw_hero(ci: CanvasItem, rect: Rect2, look: Dictionary, t: float = 0.0, animate: bool = true) -> void:
+## The figure's rect inside the hero `rect`: the backdrop is drawn around it, and the 3D model fills it.
+static func figure_rect(rect: Rect2) -> Rect2:
+	var w: float = rect.size.x
+	var h: float = rect.size.y
+	var inner_h: float = h * 0.82
+	# Keep the inner rect tall and narrow so draw_portrait always picks the full-body framing
+	# (it crops to the bust when the rect is squarer than about 1:1.2).
+	var inner_w: float = minf(w, inner_h * 0.66)
+	return Rect2(rect.position.x + (w - inner_w) * 0.5, rect.position.y + h * 0.04, inner_w, inner_h)
+
+
+## `figure` = false draws the stage only (the caller draws the figure, e.g. the 3D model).
+static func draw_hero(ci: CanvasItem, rect: Rect2, look: Dictionary, t: float = 0.0, animate: bool = true, figure: bool = true) -> void:
 	if rect.size.x <= 8.0 or rect.size.y <= 8.0:
 		return
 	var live: bool = animate and t != 0.0 and HunterMotion.motion_on()
@@ -40,12 +52,8 @@ static func draw_hero(ci: CanvasItem, rect: Rect2, look: Dictionary, t: float = 
 	_draw_floor(ci, Vector2(cx, floor_y), w * 0.36, h * 0.05, glow)
 	_draw_sparkles(ci, rect, tt, live)
 
-	var inner_h: float = h * 0.82
-	# Keep the inner rect tall and narrow so draw_portrait always picks the full-body framing
-	# (it crops to the bust when the rect is squarer than about 1:1.2).
-	var inner_w: float = minf(w, inner_h * 0.66)
-	var inner := Rect2(rect.position.x + (w - inner_w) * 0.5, rect.position.y + h * 0.04, inner_w, inner_h)
-	HunterArt.draw_portrait(ci, inner, look, t, 1.0, animate)
+	if figure:
+		HunterArt.draw_portrait(ci, figure_rect(rect), look, t, 1.0, animate)
 
 
 static func _draw_backdrop(ci: CanvasItem, rect: Rect2, t: float, live: bool) -> void:

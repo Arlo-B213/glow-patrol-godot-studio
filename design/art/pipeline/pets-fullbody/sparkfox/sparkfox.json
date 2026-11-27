@@ -1,0 +1,10 @@
+{
+  "name": "sparkfox",
+  "kind": "animal",
+  "design": "design.png",
+  "description": "Sparkfox, a small friendly fox pet for kids: warm orange fur with gold markings, a fluffy tail that glows like a gold lantern, big happy eyes, small pointed ears, four legs, chibi-anime style, clean outlines.",
+  "notes": "four legs visible, tail held up and out behind, no clothes, no logos",
+  "mirror": true,
+  "frame_px": 256,
+  "face_flip": true
+}

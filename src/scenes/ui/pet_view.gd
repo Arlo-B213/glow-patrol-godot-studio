@@ -9,6 +9,11 @@ extends Control
 ## Emitted when the pet is tapped (the Pets screen uses it for petting).
 signal tapped
 
+## Pets with no legs: they hover (a slow bob) instead of standing on the ground.
+const HOVER_SPECIES := ["xolo", "puff"]
+## Seconds for one full hover bob.
+const HOVER_PERIOD := 2.4
+
 var species := "xolo"
 var stage := 1
 ## PetArt.MOOD_* (face); a temporary happy mood after a reaction overrides it.
@@ -121,4 +126,10 @@ func _draw() -> void:
 	if _react != "":
 		ex["react"] = _react
 		ex["rt"] = _react_t
+	# Legless pets (Xolo, Puff) hover instead of walking: a slow bob of 3% of the view height.
+	var hover := 0.0
+	if animate and HOVER_SPECIES.has(species):
+		hover = sin(_t * TAU / HOVER_PERIOD) * size.y * 0.03
+	draw_set_transform(Vector2(0.0, hover))
 	PetArt.draw(self, species, stage, Rect2(Vector2.ZERO, size), _t, animate, shown, _bounce, flip, ex)
+	draw_set_transform(Vector2.ZERO)

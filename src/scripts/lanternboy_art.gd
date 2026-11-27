@@ -10,9 +10,12 @@ const P := preload("res://scripts/lanternboy_parts.gd")
 const Cast := preload("res://scripts/lanternboy_cast.gd")
 const NunArt := preload("res://scripts/lanternboy_nun.gd")
 const Expr := preload("res://scripts/hunter_expr.gd")
+const Light := preload("res://scripts/scene_light.gd")
 
 const FULL_W := 100.0
 const FULL_H := 130.0
+## Whole-figure vertical stretch about the feet: a taller, leaner anime silhouette.
+const STRETCH := 1.06
 const CROP := 90.0
 
 
@@ -32,8 +35,8 @@ static func draw(ci: CanvasItem, boy_id: String, rect: Rect2, t: float = 0.0,
 		s = minf(rect.size.x, rect.size.y) / CROP
 		origin = rect.position + (rect.size - Vector2(CROP, CROP) * s) * 0.5 - Vector2(5.0, 6.0) * s
 	else:
-		s = minf(rect.size.x / FULL_W, rect.size.y / FULL_H)
-		origin = rect.position + (rect.size - Vector2(FULL_W, FULL_H) * s) * 0.5
+		s = minf(rect.size.x / FULL_W, rect.size.y / (FULL_H * STRETCH))
+		origin = rect.position + (rect.size - Vector2(FULL_W, FULL_H * STRETCH) * s) * 0.5
 	origin.y -= bounce * 8.0 * s
 	var bob: float = sin(tt * 2.2) * 1.0 if anim else 0.0
 	origin.y += bob * s
@@ -44,7 +47,11 @@ static func draw(ci: CanvasItem, boy_id: String, rect: Rect2, t: float = 0.0,
 		tilt = 0.09 + (sin(tt * 4.0) * 0.045 if anim else 0.0)
 	var pivot := Vector2(50.0, 125.0) * s
 	var rot := Transform2D(tilt, Vector2.ZERO)
-	ci.draw_set_transform(origin + pivot - rot * pivot, tilt, Vector2(s, s * breath))
+	# Hop squash and stretch: taller at the top of a bounce, narrower to keep the volume.
+	var hop_x: float = 1.0 - 0.03 * bounce
+	var hop_y: float = 1.0 + 0.05 * bounce
+	ci.draw_set_transform(origin + pivot - rot * pivot, tilt, Vector2(s * hop_x, s * breath * STRETCH * hop_y))
+	Light.contact_shadow(ci, Vector2(50.0, 126.0), 26.0, 3.6)
 	var late: float = 0.7 if boy_id == "nun" else 0.0
 	P.expr = expression if Expr.TABLE.has(expression) else ("happy" if bounce > 0.3 else "neutral")
 	P.closed = _blink(tt + late) if anim else 0.0

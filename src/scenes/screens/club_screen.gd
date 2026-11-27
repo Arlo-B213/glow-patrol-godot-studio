@@ -4,6 +4,9 @@ extends Control
 ## Card visuals live in res://scripts/club_cards.gd (ClubCards).
 
 const HunterPortrait := preload("res://scenes/ui/hunter_portrait.gd")
+
+## A mission was picked on the Lounge map; main.gd runs it.
+signal mission_requested(mission: Dictionary)
 ## Height of the live preview at the top of the Closet and Style tabs.
 const PREVIEW_HEIGHT := 340.0
 const PREVIEW_WIDTH := 260.0
@@ -27,7 +30,11 @@ func _ready() -> void:
 	for key in sub_tabs.keys():
 		var btn: Button = sub_tabs[key]
 		btn.pressed.connect(_on_sub_tab_pressed.bind(key))
-	render_sub("closet")
+	var start := "closet"
+	if game_state.open_lounge_on_club:
+		game_state.open_lounge_on_club = false
+		start = "lounge"
+	render_sub(start)
 
 
 func _on_sub_tab_pressed(key: String) -> void:
@@ -90,13 +97,20 @@ func _item_state(unlocked: bool, equipped: bool) -> String:
 
 func render_closet() -> void:
 	_add_preview()
+	_add_hunter_row()
+	if game_state.active_hunter != "glow":
+		var note := Label.new()
+		note.text = "%s has her own look. Pick You above to change outfits." % StoryHunters.name_of(game_state.active_hunter)
+		note.theme_type_variation = "Muted"
+		note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		sub_content.add_child(note)
 	var grid := _new_grid()
 	for outfit in game_state.all_outfits():
 		var outfit_id: String = outfit["id"]
 		var unlocked: bool = game_state.unlocked_outfits.has(outfit_id)
 		var equipped: bool = game_state.equipped_outfit == outfit_id
 
-		var card_look: Dictionary = game_state.hunter_look()
+		var card_look: Dictionary = game_state.base_look()
 		card_look["outfit"] = outfit["outfit"]
 		card_look["outfit_style"] = String(outfit.get("style", "track"))
 		var mini: Control = HunterPortrait.new()
@@ -108,6 +122,33 @@ func render_closet() -> void:
 
 		grid.add_child(ClubCards.item_card(mini, outfit["name"], _item_state(unlocked, equipped),
 			int(outfit["cost"]), "Tap to wear", 130, _on_outfit_pressed.bind(outfit_id)))
+
+
+## Picker for the playable hunter: You, then fellow hunters (locked until their chapter is done).
+func _add_hunter_row() -> void:
+	var grid := _new_grid()
+	for id in StoryHunters.ORDER:
+		var unlocked: bool = StoryHunters.unlocked(game_state, id)
+		var equipped: bool = game_state.active_hunter == id
+		var mini: Control = HunterPortrait.new()
+		mini.idle_bob = false
+		mini.custom_minimum_size = Vector2(48, 60)
+		mini.set_look(StoryHunters.look(id) if id != "glow" else game_state.base_look())
+		if not unlocked:
+			mini.modulate = Color(1, 1, 1, 0.5)
+		var title: String = StoryHunters.name_of(id) if unlocked else "???"
+		var state: String = ClubCards.STATE_EQUIPPED if equipped else ClubCards.STATE_NORMAL
+		grid.add_child(ClubCards.item_card(mini, title, state, 0, "Tap to play as", 130, _on_hunter_pressed.bind(id)))
+
+
+func _on_hunter_pressed(id: String) -> void:
+	if not StoryHunters.unlocked(game_state, id):
+		Snd.play("error")
+		toast.show_message(StoryHunters.hint(id))
+		return
+	game_state.set_active_hunter(id)
+	toast.show_message("Playing as %s" % StoryHunters.name_of(id))
+	render_sub("closet")
 
 
 func _on_outfit_pressed(outfit_id: String) -> void:
@@ -163,10 +204,15 @@ func _on_weapon_pressed(weapon_id: String) -> void:
 
 
 func render_lounge() -> void:
-	for boy in game_state.LANTERNBOYS:
-		var boy_id: String = boy["id"]
-		var affection: int = int(game_state.affection.get(boy_id, 0))
-		sub_content.add_child(ClubCards.lounge_row(boy, affection, _on_boy_pressed.bind(boy_id)))
+	for ch in game_state.mark_lounge_visit():
+		toast.show_message("Story: %s" % ch["title"])
+		var outfit: Dictionary = StoryRewards.outfit_for_title(String(ch["title"]))
+		if not outfit.is_empty():
+			toast.show_message("New outfit: %s" % outfit["name"])
+	var map := LoungeMap.new().setup(game_state)
+	map.mission_requested.connect(func(m: Dictionary): mission_requested.emit(m))
+	map.talk_requested.connect(_on_boy_pressed)
+	sub_content.add_child(map)
 
 
 func _on_boy_pressed(boy_id: String) -> void:
@@ -187,67 +233,7 @@ func open_dialogue(boy_id: String) -> void:
 		func(): render_sub("lounge"),
 		func():
 			refs["portrait"].bounce()
-			_on_high_five_pressed(boy_id, refs["line"], refs["meter"]),
-		_scene_button_text(boy_id), _on_scene_button.bind(boy_id)))
-
-
-## Label of the Lounge 'Story scene' button: "" when the boy has no unlocked scene yet.
-func _scene_button_text(boy_id: String) -> String:
-	if not ArcScenes.new_scene(game_state, boy_id).is_empty():
-		return "Story scene (new!)"
-	return "Story scenes" if not ArcScenes.unlocked_for(game_state, boy_id).is_empty() else ""
-
-
-## A new scene opens straight away; otherwise the replay list opens.
-func _on_scene_button(boy_id: String) -> void:
-	var fresh: Dictionary = ArcScenes.new_scene(game_state, boy_id)
-	if fresh.is_empty():
-		open_scene_list(boy_id)
-	else:
-		open_scene(boy_id, str(fresh["id"]))
-
-
-## Replay list: one 56 px button per scene; locked ones show the friendship needed.
-func open_scene_list(boy_id: String) -> void:
-	for child in sub_content.get_children():
-		child.queue_free()
-	var head := Label.new()
-	head.text = "%s - Story scenes" % game_state.lanternboy_by_id(boy_id)["name"]
-	head.theme_type_variation = "Heading"
-	sub_content.add_child(head)
-	for s in ArcScenes.scenes_for(boy_id):
-		var btn := Button.new()
-		btn.theme_type_variation = "SecondaryButton"
-		btn.focus_mode = Control.FOCUS_NONE
-		btn.custom_minimum_size.y = 56
-		if ArcScenes.is_unlocked(game_state, s):
-			btn.text = String(s["title"])
-			btn.pressed.connect(open_scene.bind(boy_id, str(s["id"])))
-		else:
-			btn.text = "Locked - friendship %d%%" % int(s["affection"])
-			btn.disabled = true
-		sub_content.add_child(btn)
-	var back := Button.new()
-	back.text = "Back"
-	back.theme_type_variation = "SecondaryButton"
-	back.focus_mode = Control.FOCUS_NONE
-	back.custom_minimum_size.y = 48
-	back.pressed.connect(open_dialogue.bind(boy_id))
-	sub_content.add_child(back)
-
-
-## Plays a scene; the first view pays ArcScenes.FIRST_VIEW_STARS once and plays the chapter sound.
-func open_scene(boy_id: String, scene_id: String) -> void:
-	var scene: Dictionary = ArcScenes.by_id(scene_id)
-	if scene.is_empty() or not ArcScenes.is_unlocked(game_state, scene):
-		open_dialogue(boy_id)
-		return
-	for child in sub_content.get_children():
-		child.queue_free()
-	if ArcScenes.mark_seen(game_state, scene):
-		Snd.play("chapter")
-		toast.show_message("Story scene: +%d Star Points" % ArcScenes.FIRST_VIEW_STARS)
-	sub_content.add_child(ArcSceneView.create(game_state.lanternboy_by_id(boy_id), scene, open_dialogue.bind(boy_id)))
+			_on_high_five_pressed(boy_id, refs["line"], refs["meter"])))
 
 
 func _style_unlocked_list(category: String) -> Array:

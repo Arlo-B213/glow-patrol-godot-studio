@@ -8,14 +8,16 @@ extends ScrollContainer
 var _gs: Node
 var _on_back: Callable
 var _on_finale: Callable
+var _on_quiz: Callable
 
 
 ## `gs` is the GameState node; `on_finale` starts the finale patrol.
-static func create(gs: Node, on_back: Callable, on_finale: Callable) -> StoryPanel:
+static func create(gs: Node, on_back: Callable, on_finale: Callable, on_quiz: Callable = Callable()) -> StoryPanel:
 	var p := StoryPanel.new()
 	p._gs = gs
 	p._on_back = on_back
 	p._on_finale = on_finale
+	p._on_quiz = on_quiz
 	return p
 
 
@@ -30,11 +32,11 @@ func _ready() -> void:
 	title.text = StoryArc.TITLE
 	title.theme_type_variation = "Heading"
 	vbox.add_child(title)
-	var wins: int = int(_gs.story_wins)
+	var claimed: int = int(_gs.story_claimed)
 	var chapters := StoryArc.CHAPTERS
 	var bar := ProgressBar.new()
 	bar.max_value = chapters.size()
-	bar.value = StoryArc.unlocked_count(wins)
+	bar.value = claimed
 	bar.show_percentage = false
 	bar.custom_minimum_size.y = 14
 	vbox.add_child(bar)
@@ -46,7 +48,7 @@ func _ready() -> void:
 		done.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(done)
 	for i in chapters.size():
-		vbox.add_child(_chapter_card(i, chapters[i], wins))
+		vbox.add_child(_chapter_card(i, chapters[i], claimed))
 	if _gs.finale_done:
 		vbox.add_child(_text_card("Epilogue", StoryArc.FINALE_TEXT))
 	var back := Button.new()
@@ -76,10 +78,25 @@ func _text_card(head_text: String, body_text: String) -> PanelContainer:
 	return card
 
 
-func _chapter_card(i: int, ch: Dictionary, wins: int) -> PanelContainer:
-	var open: bool = wins >= int(ch["wins"])
+func _chapter_card(i: int, ch: Dictionary, claimed: int) -> PanelContainer:
+	var open: bool = i < claimed
 	var card := _text_card("Chapter %d: %s" % [i + 1, ch["title"] if open else "???"],
-		String(ch["text"]) if open else "Clear %d more patrol(s) to unlock." % (int(ch["wins"]) - wins))
+		StoryArc.text_of(ch) if open else StoryArc.trigger_hint(ch))
+	if open:
+		var col := card.get_child(0) as VBoxContainer
+		if _gs.chapter_done(String(ch["id"])):
+			var finished := Label.new()
+			finished.text = "Chapter finished!"
+			finished.theme_type_variation = "Muted"
+			col.add_child(finished)
+		else:
+			var quiz_btn := Button.new()
+			quiz_btn.text = "Take the chapter quiz"
+			quiz_btn.theme_type_variation = "PrimaryButton"
+			quiz_btn.focus_mode = Control.FOCUS_NONE
+			quiz_btn.custom_minimum_size.y = 56
+			quiz_btn.pressed.connect(_on_quiz.bind(i))
+			col.add_child(quiz_btn)
 	if i == StoryArc.CHAPTERS.size() - 1 and open:
 		var btn := Button.new()
 		btn.text = "Replay finale" if _gs.finale_done else "Face the Grumble King"

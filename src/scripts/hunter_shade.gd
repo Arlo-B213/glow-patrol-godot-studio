@@ -13,6 +13,9 @@ const SKIN_LIGHT := Color("#FFF0E4")
 const INK := Color("#1A0B33")
 const OUTLINE_ALPHA := 0.7
 const MIN_PIECE_AREA := 0.4
+## Multiplier on every outline width drawn by this file. The hunter's entry points raise it for a
+## bolder silhouette; it is reset to 1.0 when they return. Single-threaded draw code, so this is safe.
+static var outline_scale: float = 1.0
 
 
 ## `col` with its alpha multiplied by `a`.
@@ -81,6 +84,7 @@ static func taper_pts(a: Vector2, b: Vector2, ra: float, rb: float, seg: int = 6
 ## Tapered limb of widths `wa` -> `wb` with outline, a 3-tone body (base, shadow stripe,
 ## highlight stripe) and an optional rim light `rim` (alpha 0 = none) on the lit side.
 static func taper(ci: CanvasItem, a: Vector2, b: Vector2, wa: float, wb: float, col: Color, outline_w: float, light_side: float = -1.0, rim: Color = Color(0, 0, 0, 0)) -> void:
+	outline_w *= outline_scale
 	FD.poly(ci, taper_pts(a, b, wa * 0.5 + outline_w, wb * 0.5 + outline_w), ink(col))
 	FD.poly(ci, taper_pts(a, b, wa * 0.5, wb * 0.5), col)
 	var n: Vector2 = (b - a).orthogonal().normalized()
@@ -98,6 +102,7 @@ static func fill(ci: CanvasItem, pts, col: Color, outline_w: float, outline_col:
 	if poly.size() < 3:
 		return
 	FD.poly(ci, poly, col)
+	outline_w *= outline_scale
 	if outline_w > 0.0:
 		var closed := PackedVector2Array(poly)
 		closed.append(poly[0])
@@ -107,6 +112,7 @@ static func fill(ci: CanvasItem, pts, col: Color, outline_w: float, outline_col:
 ## Filled circle plus an arc outline.
 static func circle(ci: CanvasItem, center: Vector2, r: float, col: Color, outline_w: float, outline_col: Color) -> void:
 	FD.circle(ci, center, r, col)
+	outline_w *= outline_scale
 	if outline_w > 0.0:
 		FD.arc(ci, center, r, 0.0, TAU, 24, outline_col, outline_w, true)
 
@@ -114,6 +120,7 @@ static func circle(ci: CanvasItem, center: Vector2, r: float, col: Color, outlin
 ## Limb: a capsule from `a` to `b` of width `w` with outline, a lit stripe on the
 ## `light_side` (-1 left, 1 right) and a shadow stripe on the other.
 static func limb(ci: CanvasItem, a: Vector2, b: Vector2, w: float, col: Color, outline_w: float, light_side: float = -1.0) -> void:
+	outline_w *= outline_scale
 	FD.poly(ci, capsule(a, b, w * 0.5 + outline_w), ink(col))
 	FD.poly(ci, capsule(a, b, w * 0.5), col)
 	var n: Vector2 = (b - a).orthogonal().normalized()

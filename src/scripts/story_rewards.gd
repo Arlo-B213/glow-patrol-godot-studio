@@ -11,7 +11,7 @@ const FINALE_EGG := "sparkfox"
 const FINALE_EGG_FALLBACK_STARS := 20
 
 const OUTFITS_BY_CHAPTER := {
-	0: {"id": "lamplighter", "name": "Lamplighter Robe", "cost": 0, "hair": Color("#7A3B12"), "outfit": Color("#FFA94D"), "style": "robe", "chapter_title": "Lights Out on Pudding Lane"},
+	0: {"id": "lamplighter", "name": "Lamplighter Robe", "cost": 0, "hair": Color("#7A3B12"), "outfit": Color("#FFA94D"), "style": "robe", "chapter_title": "The Missing Lantern"},
 	4: {"id": "lanternking", "name": "Lantern Hero Cape", "cost": 0, "hair": Color("#101033"), "outfit": Color("#FF8FC8"), "style": "cape", "chapter_title": "Grumble King's Last Grumble", "finale": true},
 }
 
@@ -41,7 +41,7 @@ static func outfit_for_title(title: String) -> Dictionary:
 ## finale_done) to unlocked_outfits. Returns the outfits added. Safe to call repeatedly.
 static func sync_outfits(gs: Object) -> Array:
 	var added: Array = []
-	var chapters: int = StoryArc.unlocked_count(int(gs.story_wins))
+	var chapters: int = int(gs.story_claimed)
 	for ch in OUTFITS_BY_CHAPTER.keys():
 		var o: Dictionary = OUTFITS_BY_CHAPTER[ch]
 		var earned: bool = bool(gs.finale_done) if o.get("finale", false) else int(ch) < chapters

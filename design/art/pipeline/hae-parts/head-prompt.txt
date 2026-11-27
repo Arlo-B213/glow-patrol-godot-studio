@@ -1,0 +1,1 @@
+Using the reference image, output only the HEAD of this exact character: same face, same hair top, same colours, same art style and line weight, same size and position as in the reference. Neck cut off cleanly. Nothing else. Isolated on a perfectly flat pure green #00FF00 background, no shadows, no glow, no floor, no vignette.

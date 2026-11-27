@@ -70,7 +70,7 @@ func _add_help_row() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	$VBox.add_child(row)
-	for spec in [["How to play", "tutorial"], ["Stickers", "stickers"]]:
+	for spec in [["How to play", "tutorial"], ["Stickers", "stickers"], ["Settings", "settings"]]:
 		var b := Button.new()
 		b.text = spec[0]
 		b.theme_type_variation = "SecondaryButton"

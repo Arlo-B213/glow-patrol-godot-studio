@@ -22,13 +22,13 @@ static func eye(ci: CanvasItem, c: Vector2, s: float, outward: float, iris: Colo
 	Expr.eye(ci, c, s, outward, iris, alpha, Expr.params("neutral"), closed)
 
 
-## Face-shaped polygon: a round head with a slightly narrower chin.
+## Face-shaped polygon: round cranium, cheeks that taper to a soft pointed anime chin.
 static func _head_pts(c: Vector2, r: float, n: int) -> PackedVector2Array:
 	var pts := PackedVector2Array()
 	for i in range(n):
 		var a: float = TAU * float(i) / float(n)
 		var sa: float = maxf(sin(a), 0.0)
-		pts.append(c + Vector2(cos(a) * r * (1.0 - 0.17 * sa * sa), sin(a) * r * (1.0 + 0.04 * sa)))
+		pts.append(c + Vector2(cos(a) * r * (1.0 - 0.3 * pow(sa, 2.5)), sin(a) * r * (1.0 + 0.1 * sa)))
 	return pts
 
 

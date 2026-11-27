@@ -50,6 +50,16 @@ static func ln(ci: CanvasItem, o: Vector2, s: float, a: Vector2, b: Vector2, col
 	ci.draw_line(o + a * s, o + b * s, col, maxf(1.0, w * s))
 
 
+## Soft cloth fold: a short quadratic curve from `a` to `b`, bowed sideways by `bow`.
+static func fold(ci: CanvasItem, o: Vector2, s: float, a: Vector2, b: Vector2, bow: float, col: Color, w: float) -> void:
+	var mid: Vector2 = (a + b) * 0.5 + Vector2(bow, 0.0)
+	var pts := PackedVector2Array()
+	for i in range(6):
+		var t: float = float(i) / 5.0
+		pts.append(o + ((1.0 - t) * (1.0 - t) * a + 2.0 * (1.0 - t) * t * mid + t * t * b) * s)
+	ci.draw_polyline(pts, col, maxf(1.0, w * s), true)
+
+
 ## Dashed stitching line from `a` to `b` with `n` dashes.
 static func stitch(ci: CanvasItem, o: Vector2, s: float, a: Vector2, b: Vector2, col: Color, n: int = 5) -> void:
 	for i in range(n):

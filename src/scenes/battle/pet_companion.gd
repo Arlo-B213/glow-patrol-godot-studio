@@ -10,6 +10,8 @@ var species := ""
 var stage := 1
 var boss_chip := 0
 var x := 0.0
+## Lane depth (0 back .. 1 front); trails the player's depth like `x` trails theirs.
+var d := 0.55
 
 var _every := 8.0
 var _timer := 0.0
@@ -40,14 +42,16 @@ static func create(gs: Node) -> RefCounted:
 
 
 ## Advances follow/bob/zap timers. `u` is the view's layout scale.
-func update(delta: float, player_x: float, facing: int, moving: bool, u: float) -> void:
+func update(delta: float, player_x: float, facing: int, moving: bool, u: float, player_d: float = 0.55) -> void:
 	_t += delta
 	var want := player_x - float(facing) * 46.0 * u
 	if not _started:
 		x = want
+		d = player_d
 		_started = true
 	var before := x
 	x = lerpf(x, want, clampf(delta * 4.0, 0.0, 1.0))
+	d = lerpf(d, player_d, clampf(delta * 3.0, 0.0, 1.0))
 	_moving = lerpf(_moving, 1.0 if (moving or absf(x - before) > 0.2) else 0.0, clampf(delta * 6.0, 0.0, 1.0))
 	if _every > 0.0 and not _ready_to_zap:
 		_timer += delta
@@ -75,14 +79,15 @@ func muzzle(ground_y: float, u: float) -> Vector2:
 
 
 ## Draws the pet and any spark on `ci`; `facing` is the hunter's facing (the pet mirrors it).
-func draw(ci: CanvasItem, ground_y: float, u: float, facing: int) -> void:
+## `cam` is the canvas offset the caller draws world-space actors with (Alley Brawl's camera).
+func draw(ci: CanvasItem, ground_y: float, u: float, facing: int, cam: Vector2 = Vector2.ZERO) -> void:
 	var side := 64.0 * u
 	var rect := Rect2(Vector2(x - side * 0.5, ground_y + 4.0 * u - side * 0.92), Vector2(side, side))
 	var hop := 0.0
 	if UiMotion.enabled():
 		hop = absf(sin(_t * (9.0 if _moving > 0.3 else 3.0))) * (0.3 if _moving > 0.3 else 0.12)
 	var mood: int = PetArt.MOOD_HAPPY if _spark_life > 0.0 else PetArt.MOOD_NORMAL
-	var ex := {"ready": _ready_to_zap}
+	var ex := {"ready": _ready_to_zap, "base": Transform2D(0.0, cam)}
 	if _spark_life > 0.0:
 		# Attack: lunge toward the target with a lean and a determined face.
 		ex["react"] = "attack"

@@ -7,6 +7,7 @@ extends RefCounted
 const STATE_NORMAL := "normal"
 const STATE_EQUIPPED := "equipped"
 const STATE_LOCKED := "locked"
+const CharacterArt := preload("res://scripts/character_art.gd")
 
 
 static func _label(text: String, variation: String, align: int = HORIZONTAL_ALIGNMENT_CENTER,
@@ -164,38 +165,6 @@ static func set_meter(meter: HBoxContainer, value: int) -> void:
 	(meter.get_meta("pct") as Label).text = "%d%%" % value
 
 
-## Lounge list row card for one Lanternboy.
-static func lounge_row(boy: Dictionary, affection: int, on_pressed: Callable) -> PanelContainer:
-	var card := PanelContainer.new()
-	card.theme_type_variation = "CardPanel"
-	card.custom_minimum_size = Vector2(0, 88)
-	var row := HBoxContainer.new()
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 12)
-	card.add_child(row)
-	var tile := portrait_tile(String(boy["id"]), Color(boy["color"]), Vector2(72, 72), 16)
-	tile.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(tile)
-	var col := VBoxContainer.new()
-	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_theme_constant_override("separation", 2)
-	row.add_child(col)
-	col.add_child(_label(boy["name"], "Heading", HORIZONTAL_ALIGNMENT_LEFT, false))
-	col.add_child(_label(boy["role"], "Muted", HORIZONTAL_ALIGNMENT_LEFT))
-	col.add_child(friend_meter(affection))
-	var btn := Button.new()
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.flat = true
-	var empty := StyleBoxEmpty.new()
-	for sname in ["normal", "hover", "pressed", "focus", "disabled"]:
-		btn.add_theme_stylebox_override(sname, empty)
-	btn.pressed.connect(on_pressed)
-	card.add_child(btn)
-	return card
-
-
 ## Builds the Lanternboy dialogue card into `parent`. Returns
 ## {"line": Label, "meter": HBoxContainer} for the high-five handler.
 static func dialogue_view(parent: Control, boy: Dictionary, line: String, affection: int,
@@ -238,6 +207,16 @@ static func dialogue_view(parent: Control, boy: Dictionary, line: String, affect
 	return {"line": line_lbl, "meter": meter, "portrait": stage.get_child(0)}
 
 
+## Looping idle motion for approved art: a slow breathing scale and a small sway.
+static func _idle_motion(pic: Control) -> void:
+	var breathe := pic.create_tween().set_loops()
+	breathe.tween_property(pic, "scale", Vector2(1.02, 1.02), 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	breathe.tween_property(pic, "scale", Vector2.ONE, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	var sway := pic.create_tween().set_loops()
+	sway.tween_property(pic, "rotation", deg_to_rad(1.0), 2.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(pic, "rotation", deg_to_rad(-1.0), 2.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
 ## Dark rounded tile with an accent border/glow holding a LanternboyPortrait (clipped).
 static func portrait_tile(boy_id: String, accent: Color, px: Vector2, radius: int = 16) -> PanelContainer:
 	var tile := PanelContainer.new()
@@ -249,5 +228,22 @@ static func portrait_tile(boy_id: String, accent: Color, px: Vector2, radius: in
 		(sb as StyleBoxFlat).shadow_color = Color(accent.r, accent.g, accent.b, 0.3)
 		(sb as StyleBoxFlat).shadow_size = 8
 	tile.add_theme_stylebox_override("panel", sb)
-	tile.add_child(LanternboyPortrait.new().setup(boy_id, px.x, px.y))
+	# Rigged characters play their animated parts; the rest use approved art, then the fallback.
+	if RigLibrary.has_rig(boy_id):
+		tile.add_child(RigLibrary.portrait(boy_id, px))
+		return tile
+	# Approved art when it exists; the code-drawn Lanternboy is the fallback.
+	var art := CharacterArt.texture(boy_id, "neutral")
+	if art != null:
+		var pic := TextureRect.new()
+		pic.texture = art
+		pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		pic.custom_minimum_size = px
+		pic.pivot_offset = px * 0.5
+		pic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		tile.add_child(pic)
+		_idle_motion(pic)
+	else:
+		tile.add_child(LanternboyPortrait.new().setup(boy_id, px.x, px.y))
 	return tile

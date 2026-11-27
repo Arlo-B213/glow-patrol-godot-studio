@@ -19,6 +19,7 @@ static func payout_for(score: int) -> int:
 # ---------------- Data tables ----------------
 
 const OUTFITS := [
+	{"id": "breaker", "name": "Gloom Breaker", "cost": 0, "hair": Color("#2A1F55"), "outfit": Color("#6C5CE7"), "style": "breaker"},
 	{"id": "starter", "name": "Practice Fit", "cost": 0, "hair": Color("#3B2A6B"), "outfit": Color("#6C5CE7"), "style": "track"},
 	{"id": "stage", "name": "Stage Sparkle", "cost": 40, "hair": Color("#B93B6B"), "outfit": Color("#FF5FA2"), "style": "sequin"},
 	{"id": "beat", "name": "Beat Armor", "cost": 60, "hair": Color("#154C40"), "outfit": Color("#52E8C6"), "style": "armor"},
@@ -70,6 +71,8 @@ const LANTERNBOYS := [
 ]
 
 const HAIRSTYLES := [
+	{"id": "ponytail", "name": "Long Ponytail", "cost": 0},
+	{"id": "long", "name": "Long Hair", "cost": 0},
 	{"id": "bob", "name": "Classic Bob", "cost": 0},
 	{"id": "twintails", "name": "Twin Tails", "cost": 35},
 ]
@@ -89,6 +92,7 @@ const HEADWEAR := [
 	{"id": "star-clip", "name": "Star Clip", "cost": 25},
 	{"id": "flower-crown", "name": "Flower Crown", "cost": 45},
 	{"id": "cat-ears", "name": "Cat Ears", "cost": 40},
+	{"id": "lightning-streak", "name": "Lightning Streak", "cost": 35},
 ]
 
 const FACE_ACC := [
@@ -149,12 +153,12 @@ const PET_SLOW_GROWTH_MULT := 0.4
 
 var star_points: int = 20
 var total_earned: int = 20
-var unlocked_outfits: Array = ["starter"]
-var equipped_outfit: String = "starter"
+var unlocked_outfits: Array = ["breaker", "starter"]
+var equipped_outfit: String = "breaker"
 var unlocked_weapons: Array = ["glowstick"]
 var equipped_weapon: String = "glowstick"
 var unlocked_hairstyles: Array = ["bob"]
-var hairstyle: String = "bob"
+var hairstyle: String = "ponytail"
 var unlocked_hair_colors: Array = ["violet"]
 var hair_color: String = "violet"
 var unlocked_headwear: Array = ["none"]
@@ -162,6 +166,12 @@ var headwear: String = "none"
 var unlocked_face_acc: Array = ["none"]
 var face_acc: String = "none"
 var affection: Dictionary = {"hae": 0, "bit": 0, "nun": 0}
+## Missions finished per mission id (Lounge missions, see LoungeMissions).
+var mission_done: Dictionary = {}
+## Best brawl score per mission id, for the mission cards.
+var mission_best: Dictionary = {}
+## Set when a mission ends so the Club opens on the Lounge tab next time.
+var open_lounge_on_club := false
 var best_scores: Dictionary = {"battle": 0, "rhythm": 0, "memory": 0, "brawl": 0, "catch": 0, "lantern": 0, "study_math": 0, "study_grammar": 0, "study_reading": 0}
 var grade: int = 3
 var story_wins: int = 0
@@ -169,6 +179,11 @@ var story_claimed: int = 0
 var sound_on: bool = true
 ## Accessibility: when true, UI animations jump straight to their final state.
 var reduce_motion: bool = false
+## Settings (Story 051). Effects arrive with stories 040 (haptics), 044 (dyslexia font), 045 (palettes).
+var haptics_on: bool = true
+var dyslexia_font: bool = false
+var colour_palette: String = "off"   ## off | protan | deutan | tritan
+const COLOUR_PALETTES := ["off", "protan", "deutan", "tritan"]
 ## Pets: id -> {name, growth, hunger (100 = full), happiness, last_ts}. Never removed, never harmed.
 var owned_pets: Dictionary = {}
 var active_pet: String = ""
@@ -177,8 +192,14 @@ var tutorial_done: bool = false
 var streak: int = 0                  ## consecutive days with a claimed Daily Glow Bonus
 var last_login_date: String = ""     ## "YYYY-MM-DD" of the last claimed bonus
 var stickers: Array = []             ## earned sticker ids (see Stickers.STICKERS)
-## Story 020: viewed Lanternboy arc scene ids and whether the finale reward was paid.
-var seen_scenes: Array = []
+## Saga v2 (story_arc.gd): whether the Lounge was visited (chapter 1 trigger). Saves carry STORY_VERSION.
+const STORY_VERSION := 3
+var lounge_visited: bool = false
+## Ids of chapters whose quiz was passed, in order (see StoryArc). Gates the next chapter.
+var chapters_done: Array = []
+## Playable hunter: "glow" (the player) or a fellow hunter id (StoryHunters).
+var active_hunter: String = "glow"
+## Whether the finale reward was paid.
 var finale_done: bool = false
 ## Scratch instances used in checks set this false so nothing touches the real save.
 var persist_saves: bool = true
@@ -194,8 +215,18 @@ signal points_earned(amount: int)
 
 
 ## Stores the reduced-motion preference and saves it.
+## Haptics follow the Settings toggle; turning reduce motion on also turns haptics off (Story 040 AC-d).
+func set_haptics(v: bool) -> void:
+	haptics_on = v
+	Haptics.enabled = v
+	save_game()
+
+
 func set_reduce_motion(v: bool) -> void:
 	reduce_motion = v
+	if v:
+		haptics_on = false
+	Haptics.enabled = haptics_on
 	save_game()
 
 
@@ -208,6 +239,8 @@ func level_for_xp(xp: int) -> int:
 
 
 func earn_points(amount: int) -> void:
+	if amount >= Haptics.SP_BURST_MIN:
+		Haptics.pulse("sp_burst")
 	var before_level := level_for_xp(total_earned)
 	star_points += amount
 	total_earned += amount
@@ -254,6 +287,13 @@ func weapon_by_id(id: String) -> Dictionary:
 ## The hunter's equipped look for HunterArt: outfit/hair/glow colours plus hairstyle,
 ## headwear and face_acc ids. Built the same way for every screen.
 func hunter_look() -> Dictionary:
+	if active_hunter != "glow" and StoryHunters.unlocked(self, active_hunter):
+		return StoryHunters.look(active_hunter)
+	return base_look()
+
+
+## The player's own hunter (outfit, hair, weapon, accessories), ignoring the fellow-hunter pick.
+func base_look() -> Dictionary:
 	return {
 		"outfit": outfit_by_id(equipped_outfit)["outfit"],
 		"outfit_style": String(outfit_by_id(equipped_outfit).get("style", "track")),
@@ -287,17 +327,80 @@ func style_item_by_id(list: Array, id: String) -> Dictionary:
 
 ## Counts a cleared patrol toward the story arc. Returns the chapters newly
 ## unlocked (and pays StoryArc.REWARD_PER_CHAPTER stars for each), then saves.
-func record_battle_win() -> Array:
-	var arc := preload("res://scripts/story_arc.gd")
-	story_wins += 1
-	var fresh: Array = []
-	var count: int = arc.unlocked_count(story_wins)
-	while story_claimed < count:
-		fresh.append(arc.CHAPTERS[story_claimed])
-		story_claimed += 1
-		earn_points(arc.REWARD_PER_CHAPTER)
-	StoryRewards.sync_outfits(self)
+## Records a finished Lounge mission: counts it, raises the boy's affection, and saves.
+## Returns the affection gained (0 for an unknown mission).
+func record_mission(mission_id: String, won: bool, score: int = 0) -> int:
+	var m: Dictionary = LoungeMissions.by_id(mission_id)
+	if m.is_empty():
+		return 0
+	mission_done[mission_id] = int(mission_done.get(mission_id, 0)) + 1
+	if score > int(mission_best.get(mission_id, 0)):
+		mission_best[mission_id] = score
+	var gained: int = LoungeMissions.affection_reward(won)
+	var boy: String = m["boy"]
+	affection[boy] = int(affection.get(boy, 0)) + gained
+	check_story(true)
 	save_game()
+	return gained
+
+
+func record_battle_win() -> Array:
+	story_wins += 1
+	var fresh: Array = check_story(true)
+	save_game()
+	return fresh
+
+
+## Marks the Lounge as visited (chapter 1 trigger). Returns the chapters it unlocked.
+func mark_lounge_visit() -> Array:
+	if lounge_visited:
+		return []
+	lounge_visited = true
+	var fresh: Array = check_story(true)
+	save_game()
+	return fresh
+
+
+## True when chapter `id` has been finished (its quiz passed).
+func chapter_done(id: String) -> bool:
+	return chapters_done.has(id)
+
+
+## Marks a chapter finished, then claims any chapter that is now open. Returns the chapters
+## newly unlocked (paid as they are claimed). Does nothing when the chapter is already done.
+func complete_chapter(id: String) -> Array:
+	if chapters_done.has(id):
+		return []
+	chapters_done.append(id)
+	var fresh: Array = check_story(true)
+	save_game()
+	return fresh
+
+
+## Picks the playable hunter. False (no change) when a fellow hunter is still locked.
+func set_active_hunter(id: String) -> bool:
+	if not StoryHunters.unlocked(self, id):
+		return false
+	active_hunter = id
+	save_game()
+	return true
+
+
+## A chapter may be claimed only once the one before it is finished.
+func _previous_done() -> bool:
+	return story_claimed == 0 or chapters_done.has(String(StoryArc.CHAPTERS[story_claimed - 1]["id"]))
+
+
+## Claims, in order, every chapter whose trigger is met. Pays StoryArc.REWARD_PER_CHAPTER per
+## chapter when `pay` is true (the old-save migration passes false). Does not save.
+func check_story(pay: bool) -> Array:
+	var fresh: Array = []
+	while story_claimed < StoryArc.CHAPTERS.size() and _previous_done() and StoryArc.trigger_met(StoryArc.CHAPTERS[story_claimed], self):
+		fresh.append(StoryArc.CHAPTERS[story_claimed])
+		story_claimed += 1
+		if pay:
+			earn_points(StoryArc.REWARD_PER_CHAPTER)
+	StoryRewards.sync_outfits(self)
 	return fresh
 
 
@@ -558,7 +661,15 @@ func _persist() -> void:
 func save_game() -> void:
 	if not persist_saves:
 		return
-	var data := {
+	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(to_save_dict()))
+		f.close()
+
+
+## Every persisted field. Must stay in step with apply_save_dict().
+func to_save_dict() -> Dictionary:
+	return {
 		"owned_pets": owned_pets,
 		"active_pet": active_pet,
 		"star_points": star_points,
@@ -576,19 +687,27 @@ func save_game() -> void:
 		"unlocked_face_acc": unlocked_face_acc,
 		"face_acc": face_acc,
 		"affection": affection,
+		"mission_done": mission_done,
+		"mission_best": mission_best,
 		"best_scores": best_scores,
 		"grade": grade,
 		"story_wins": story_wins,
 		"story_claimed": story_claimed,
 		"sound_on": sound_on,
 		"reduce_motion": reduce_motion,
-		"seen_scenes": seen_scenes,
+		"haptics_on": haptics_on,
+		"dyslexia_font": dyslexia_font,
+		"colour_palette": colour_palette,
+		"tutorial_done": tutorial_done,
+		"streak": streak,
+		"last_login_date": last_login_date,
+		"stickers": stickers,
+		"lounge_visited": lounge_visited,
+		"chapters_done": chapters_done,
+		"active_hunter": active_hunter,
+		"story_version": STORY_VERSION,
 		"finale_done": finale_done,
 	}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify(data))
-		f.close()
 
 
 func load_game() -> void:
@@ -602,9 +721,16 @@ func load_game() -> void:
 	var parsed = JSON.parse_string(text)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
+	apply_save_dict(parsed)
+
+
+## Restores state from a parsed save; missing keys keep their current value.
+func apply_save_dict(parsed: Dictionary) -> void:
 	star_points = parsed.get("star_points", star_points)
 	total_earned = parsed.get("total_earned", total_earned)
 	unlocked_outfits = parsed.get("unlocked_outfits", unlocked_outfits)
+	if not unlocked_outfits.has("breaker"):
+		unlocked_outfits.append("breaker")
 	equipped_outfit = parsed.get("equipped_outfit", equipped_outfit)
 	unlocked_weapons = parsed.get("unlocked_weapons", unlocked_weapons)
 	equipped_weapon = parsed.get("equipped_weapon", equipped_weapon)
@@ -617,20 +743,38 @@ func load_game() -> void:
 	unlocked_face_acc = parsed.get("unlocked_face_acc", unlocked_face_acc)
 	face_acc = parsed.get("face_acc", face_acc)
 	affection = parsed.get("affection", affection)
+	mission_done = parsed.get("mission_done", mission_done)
+	mission_best = parsed.get("mission_best", mission_best)
 	best_scores = parsed.get("best_scores", best_scores)
 	grade = parsed.get("grade", grade)
 	story_wins = int(parsed.get("story_wins", story_wins))
 	story_claimed = int(parsed.get("story_claimed", story_claimed))
 	sound_on = parsed.get("sound_on", sound_on)
 	reduce_motion = parsed.get("reduce_motion", reduce_motion)
+	haptics_on = bool(parsed.get("haptics_on", haptics_on))
+	Haptics.enabled = haptics_on
+	dyslexia_font = bool(parsed.get("dyslexia_font", dyslexia_font))
+	var palette := str(parsed.get("colour_palette", colour_palette))
+	colour_palette = palette if COLOUR_PALETTES.has(palette) else "off"
 	tutorial_done = bool(parsed.get("tutorial_done", false))
 	streak = int(parsed.get("streak", 0))
 	last_login_date = str(parsed.get("last_login_date", ""))
 	var raw_st = parsed.get("stickers", [])
 	stickers = (raw_st as Array).duplicate() if typeof(raw_st) == TYPE_ARRAY else []
-	var raw_sc = parsed.get("seen_scenes", [])
-	seen_scenes = (raw_sc as Array).duplicate() if typeof(raw_sc) == TYPE_ARRAY else []
 	finale_done = bool(parsed.get("finale_done", false))
+	lounge_visited = bool(parsed.get("lounge_visited", false))
+	var raw_done = parsed.get("chapters_done", [])
+	chapters_done = (raw_done as Array).duplicate() if typeof(raw_done) == TYPE_ARRAY else []
+	active_hunter = String(parsed.get("active_hunter", "glow"))
+	if int(parsed.get("story_version", 1)) < STORY_VERSION:
+		# Pre-saga save: its chapters were won on the old track. Keep the progress, but claim
+		# the new chapters silently (no repeat star payouts) against the new triggers.
+		# Chapters claimed on the old track count as finished, so the chain carries on from them.
+		chapters_done = []
+		for i in mini(story_claimed, StoryArc.CHAPTERS.size()):
+			chapters_done.append(String(StoryArc.CHAPTERS[i]["id"]))
+		lounge_visited = story_claimed > 0
+		check_story(false)
 	StoryRewards.sync_outfits(self)
 	_load_pets(parsed)
 
